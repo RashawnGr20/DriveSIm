@@ -28,7 +28,7 @@ while True:
 
     if results.multi_face_landmarks: 
         for face_landmarks in results.multi_face_landmarks:
-            nose = face_landmarks.landmark[1]
+            nose = tracker.get_body_pos(face_landmarks)
             #numerical data based on the position of the nose 
             print(f"Nose - x; {nose.x:.3f}, y: {nose.y:.3f}, z: {nose.z:.3f}")
 

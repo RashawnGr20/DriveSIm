@@ -1,4 +1,6 @@
 import mediapipe as mp
+import cv2
+from collections import namedtuple
 
 mp_face_mesh = mp.solutions.face_mesh 
 
@@ -13,13 +15,21 @@ class HeadTracker:
         )
         self.mp_drawing =  mp.solutions.drawing_utils
 
-        def process_frame(self, frame) :
-                
-            import cv2
-
+    def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.face_mesh.process(rgb_frame) 
             return results 
         
-        def get_body_pos (self, face_landmarks ) :
-            print(self)
+    def get_body_pos (self, face_landmarks ) :
+        Nose = namedtuple('Nose', ['x','y','z'])
+        nose = face_landmarks.landmark[1]
+
+        return Nose(nose.x, nose.y, nose.z) 
+    
+
+    def draw_landmarks(self, frame, face_landmarks) :
+         self.mp_drawing.draw_landmarks(
+                frame,
+                face_landmarks,
+                mp.solutions.face_mesh.FACEMESH_TESSELATION
+         )
