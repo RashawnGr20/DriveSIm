@@ -36,11 +36,11 @@ while True:
 
             vectors = tracker.pitch_vectors(smoothed_pos)
 
-            pitch_vect = vectors["pitch_vect"]
-            yaw_vect = vectors["yaw_vect"]
-            roll_vect = vectors["roll_vect"]
+            pitch_angle = vectors["pitch_angle"]
+            yaw_angle = vectors["yaw_angle"]
+            roll_angle = vectors["roll_angle"]
 
-            print(f"Pitch: {pitch_vect}, Yaw: {yaw_vect}, Roll: {roll_vect}")
+            print(f"Pitch: {pitch_angle}, Yaw: {yaw_angle}, Roll: {roll_angle}")
 
     cv2.imshow("Camera Feed", frame)
 

@@ -1,6 +1,7 @@
 import mediapipe as mp
 import cv2
 from collections import namedtuple
+import math
 
 mp_face_mesh = mp.solutions.face_mesh 
 point3D = namedtuple("Point3D", ["x", "y", "z"])
@@ -71,12 +72,19 @@ class HeadTracker:
         chin = smoothed_points["Chin"]
         cheek = smoothed_points["Cheek"]
 
-        pitch_vect = (chin.x - forehead.x, chin.y - forehead.y)
-        yaw_vect = (-(nose.x - cheek.x), nose.y - cheek.y)
-        roll_vect = (cheek.x - forehead.x, cheek.y - forehead.y)
+        pitch_vectx = (chin.x - forehead.x) 
+        pitch_vecty = (chin.y - forehead.y)
+        yaw_vectx = (-(nose.x - cheek.x))
+        yaw_vecty = (nose.y - cheek.y)
+        roll_vectx = (cheek.x - forehead.x) 
+        roll_vecty = (cheek.y - forehead.y)
+
+        pitch_angle = math.atan2(pitch_vecty, pitch_vectx)
+        yaw_angle = math.atan2(yaw_vectx, yaw_vecty)
+        roll_angle = math.atan2(roll_vecty, roll_vectx)
 
         return { 
-            "pitch_vect": pitch_vect,
-            "yaw_vect": yaw_vect,
-            "roll_vect": roll_vect
+            "pitch_angle": pitch_angle,
+            "yaw_angle": yaw_angle,
+            "roll_angle": roll_angle
         }
