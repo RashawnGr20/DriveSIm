@@ -1,0 +1,5 @@
+# Ignore virtual environments
+drivesim_env/
+derivesim_env/
+*.pyc
+__pycache__/  
