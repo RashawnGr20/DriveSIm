@@ -50,7 +50,7 @@ class HeadTracker:
                 print(f"{name:<10} -> x: {p.x:.3f}  y: {p.y:.3f}  z: {p.z:.3f} ")
           print("\n----------")  
 
-    def smoothed_points(new_point, old_point, alpha=0.2) :
+    def smoothed_points(self, new_point, old_point, alpha=0.2) :
           smoothed = {}
           for name, new_p in new_point.items(): 
                 if old_point is None :
@@ -58,9 +58,9 @@ class HeadTracker:
                 else :
                       old_point = old_point[name]
                       smoothed[name] = point3D(
-                            x = alpha * new_p + (1-alpha) * old_point, 
-                            y = alpha * new_p + (1-alpha) * old_point, 
-                            z = alpha * new_p + (1-alpha) * old_point
+                            x = alpha * new_p.x + (1-alpha) * old_point.x, 
+                            y = alpha * new_p.y + (1-alpha) * old_point.y, 
+                            z = alpha * new_p.z + (1-alpha) * old_point.z
                       )
 
           return smoothed

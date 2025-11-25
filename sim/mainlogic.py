@@ -30,13 +30,13 @@ while True:
         for face_landmarks in results.multi_face_landmarks:
             raw_pos  = tracker.get_body_pos(face_landmarks)
 
-            smoothed_pos = tracker.smoothed_points(raw_pos, prev_smoothed, alpha=0.2)
+            smoothed_pos = tracker.smoothed_points(raw_pos, prev_smoothed, 0.2)
 
             prev_smoothed = smoothed_pos
 
             vectors = tracker.pitch_vectors(smoothed_pos)
 
-            pitch_vect = vectors["pitch_vec"]
+            pitch_vect = vectors["pitch_vect"]
             yaw_vect = vectors["yaw_vect"]
             roll_vect = vectors["roll_vect"]
 
