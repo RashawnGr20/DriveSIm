@@ -44,7 +44,7 @@ class HeadTracker:
                 face_landmarks,
                 mp.solutions.face_mesh.FACEMESH_TESSELATION
          )
-    def print_landmarks(pos) :
+    def print_landmarks(self, pos) :
           print("\n---Tracker---")
           for name, p in pos.items() :
                 print(f"{name:<10} -> x: {p.x:.3f}  y: {p.y:.3f}  z: {p.z:.3f} ")
