@@ -1,0 +1,3 @@
+FOR X: when the nose moves to the right the x value decreases, when the nose moves to the left the x value increases 
+FOR Y: when the nose moves down, the y value increases. when the nose moves up the y value decreases. 
+FOR Z: when the nose moves up and down, the z value decreases, as well as left and right. 
