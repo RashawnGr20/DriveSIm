@@ -49,3 +49,34 @@ class HeadTracker:
           for name, p in pos.items() :
                 print(f"{name:<10} -> x: {p.x:.3f}  y: {p.y:.3f}  z: {p.z:.3f} ")
           print("\n----------")  
+
+    def smoothed_points(new_point, old_point, alpha=0.2) :
+          smoothed = {}
+          for name, new_p in new_point.items(): 
+                if old_point is None :
+                      smoothed[name] = new_p
+                else :
+                      old_point = old_point[name]
+                      smoothed[name] = point3D(
+                            x = alpha * new_p + (1-alpha) * old_point, 
+                            y = alpha * new_p + (1-alpha) * old_point, 
+                            z = alpha * new_p + (1-alpha) * old_point
+                      )
+
+          return smoothed
+    
+    def pitch_vectors(self, smoothed_points) :
+        nose = smoothed_points["Nose"]
+        forehead = smoothed_points["Forehead"]
+        chin = smoothed_points["Chin"]
+        cheek = smoothed_points["Cheek"]
+
+        pitch_vect = (chin.x - forehead.x, chin.y - forehead.y)
+        yaw_vect = (-(nose.x - cheek.x), nose.y - cheek.y)
+        roll_vect = (cheek.x - forehead.x, cheek.y - forehead.y)
+
+        return { 
+            "pitch_vect": pitch_vect,
+            "yaw_vect": yaw_vect,
+            "roll_vect": roll_vect
+        }
