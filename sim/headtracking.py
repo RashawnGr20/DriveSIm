@@ -56,11 +56,11 @@ class HeadTracker:
                 if old_point is None :
                       smoothed[name] = new_p
                 else :
-                      old_point = old_point[name]
+                      old_p = old_point[name]
                       smoothed[name] = point3D(
-                            x = alpha * new_p.x + (1-alpha) * old_point.x, 
-                            y = alpha * new_p.y + (1-alpha) * old_point.y, 
-                            z = alpha * new_p.z + (1-alpha) * old_point.z
+                            x = alpha * new_p.x + (1-alpha) * old_p.x, 
+                            y = alpha * new_p.y + (1-alpha) * old_p.y, 
+                            z = alpha * new_p.z + (1-alpha) * old_p.z
                       )
 
           return smoothed
