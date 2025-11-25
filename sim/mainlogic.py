@@ -20,7 +20,7 @@ while True:
 
     if results.multi_face_landmarks: 
         for face_landmarks in results.multi_face_landmarks:
-            tracker.mpdrawing.draw_landmarks(
+            tracker.mp_drawing.draw_landmarks(
                 frame,
                 face_landmarks,
                 mp.solutions.face_mesh.FACEMESH_TESSELATION
