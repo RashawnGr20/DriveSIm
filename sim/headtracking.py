@@ -79,9 +79,9 @@ class HeadTracker:
         roll_vectx = (cheek.x - forehead.x) 
         roll_vecty = (cheek.y - forehead.y)
 
-        pitch_angle = math.atan2(pitch_vecty, pitch_vectx)
-        yaw_angle = math.atan2(yaw_vectx, yaw_vecty)
-        roll_angle = math.atan2(roll_vecty, roll_vectx)
+        pitch_angle = math.atan2(pitch_vecty, pitch_vectx)*(180/math.pi)
+        yaw_angle = math.atan2(yaw_vectx, yaw_vecty)*(180/math.pi)
+        roll_angle = math.atan2(roll_vecty, roll_vectx)*(180/math.pi)
 
         return { 
             "pitch_angle": pitch_angle,
