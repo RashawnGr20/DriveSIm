@@ -21,14 +21,21 @@ while True:
 
     results = tracker.process_frame(frame)
 
-    if not results.multi_face_landmarks: 
-        if prev_smoothed is not None :
-            vectors =  vectors = tracker.pitch_vectors(prev_smoothed)
-            print(f"Pitch: {vectors['pitch_angle']}, Yaw: {vectors['yaw_angle']}, Roll: {vectors['roll_angle']}")
-        cv2.imshow("Camera feed", frame)
+    if not results.multi_face_landmarks:
+    
+        if prev_angles is not None and prev_prev_angles is not None:
+            predicted_pitch = prev_angles["pitch"] + (prev_angles["pitch"] - prev_prev_angles["pitch"])
+            predicted_yaw   = prev_angles["yaw"]   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
+            predicted_roll  = prev_angles["roll"]  + (prev_angles["roll"]  - prev_prev_angles["roll"])
+            print(f"Face lost → Pitch: {predicted_pitch:.2f}, Yaw: {predicted_yaw:.2f}, Roll: {predicted_roll:.2f}")
+    
+    
+        cv2.imshow("Camera Feed", frame)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         continue
+
     
   
     for face_landmarks in results.multi_face_landmarks:
