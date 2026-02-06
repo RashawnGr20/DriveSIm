@@ -17,6 +17,8 @@ prev_prev_angles = None
 baseline_angles = None 
 baseline_buffer = []
 BASELINE_FRAMES = 30 
+prev_rel = None
+prev_prev_rel = None
 
 DEADZONE_PITCH = 3
 DEADZONE_YAW = 3
@@ -90,6 +92,11 @@ while True:
             print(f"BASELINE set: pitch={avg_pitch:.2f}, yaw={avg_yaw:.2f}, roll={avg_roll:.2f},")
             prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_angles = None
+
+            prev_rel = {"pitch": 0, "yaw": 0, "roll": 0}
+            prev_prev_rel = None
+
+
             prev_smoothed = smoothed_pos
             continue
 
@@ -97,17 +104,14 @@ while True:
         rel_yaw = yaw - baseline_angles["yaw"]
         rel_roll = roll - baseline_angles["roll"]
 
-        print(f"REL     set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
-
+        print(f"REL    set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
     
-        if prev_angles and prev_prev_angles:
+        if prev_rel and prev_prev_rel:
             final_pitch = rel_pitch + (prev_angles["pitch"] - prev_prev_angles["pitch"])
             final_yaw   = rel_yaw   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
             final_roll  = rel_roll  + (prev_angles["roll"]  - prev_prev_angles["roll"])
         else:
             final_pitch, final_yaw, final_roll = rel_pitch, rel_yaw, rel_roll
-
-
         
         final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
         final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
@@ -115,8 +119,12 @@ while True:
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
 
+        prev_prev_rel = prev_rel.copy if prev_rel else None 
+        prev_rel = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
+
         prev_prev_angles = prev_angles.copy() if prev_angles else None
         prev_angles = {"pitch": final_pitch, "yaw": final_yaw, "roll": final_roll}
+        
         prev_smoothed = smoothed_pos
 
         print(f"FINAL     Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
