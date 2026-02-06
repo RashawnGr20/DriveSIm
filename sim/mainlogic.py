@@ -2,6 +2,9 @@ import cv2
 import mediapipe as mp
 from headtracking import HeadTracker
 from feedback import feedBackEngine
+from scenegen import SceneGen
+
+scene = SceneGen()
 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
@@ -41,6 +44,7 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
+    
 
     results = tracker.process_frame(frame)
 
@@ -55,6 +59,12 @@ while True:
             final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
 
             pose = feedback.update(final_pitch, final_yaw, final_roll)
+
+
+            if not scene.update(final_pitch, final_yaw, final_roll, pose) :
+                break; 
+            
+            
             print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
 
         cv2.imshow("Camera Feed", frame)
