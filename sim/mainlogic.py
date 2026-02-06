@@ -16,7 +16,7 @@ prev_angles = None
 prev_prev_angles = None
 baseline_angles = None 
 baseline_buffer = []
-BASELINE_FRAMES = 30 
+BASELINE_FRAMES = 60 
 prev_rel = None
 prev_prev_rel = None
 
@@ -28,6 +28,9 @@ def apply_deadzone(angle, threshold):
     if abs(angle) < threshold :
         return 0 
     return angle 
+
+def clamp(x, upper) :
+    return max(-upper, min(upper, x))
 
 while True:
     ret, frame = cap.read()
@@ -75,9 +78,13 @@ while True:
         if baseline_angles is None : 
             baseline_buffer.append((pitch, yaw, roll))
 
-            if len(baseline_buffer) < BASELINE_FRAMES : 
-                prev_smoothed = smoothed_pos
-                continue
+            if len(baseline_buffer) >= 5 : 
+                recent = baseline_buffer[-5:]
+                spread_yaw = max(y for _, y, _ in recent) - min(y for _, y, _ in recent)
+                if spread_yaw > 4 :
+                    baseline_buffer.clear()
+                    prev_smoothed = smoothed_pos
+                    continue
 
             avg_pitch = sum(p for p, _, _ in baseline_buffer) / BASELINE_FRAMES
             avg_yaw   = sum(y for _, y, _ in baseline_buffer) / BASELINE_FRAMES
@@ -107,9 +114,15 @@ while True:
         print(f"REL    set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
     
         if prev_rel and prev_prev_rel:
-            final_pitch = rel_pitch + (prev_angles["pitch"] - prev_prev_angles["pitch"])
-            final_yaw   = rel_yaw   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
-            final_roll  = rel_roll  + (prev_angles["roll"]  - prev_prev_angles["roll"])
+            dp = clamp(prev_rel["pitch"] - prev_prev_rel["pitch"], 3)
+            dy = clamp(prev_rel["yaw"] - prev_prev_rel["yaw"], 3)
+            dr = clamp(prev_rel["roll"] - prev_prev_rel["roll"], 3)
+
+
+            final_pitch = rel_pitch + dp
+            final_yaw = rel_yaw + dy
+            final_roll = rel_roll+ dr
+
         else:
             final_pitch, final_yaw, final_roll = rel_pitch, rel_yaw, rel_roll
         
