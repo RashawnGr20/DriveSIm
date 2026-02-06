@@ -67,6 +67,9 @@ while True:
         yaw   = vectors["yaw_angle"]
         roll  = vectors["roll_angle"]
 
+        print(f"RAW:     pitch={pitch:.2f}, yaw={yaw:.2f}, roll={roll:.2f},")
+
+
         if baseline_angles is None : 
             baseline_buffer.append((pitch, yaw, roll))
 
@@ -84,6 +87,7 @@ while True:
                 "roll": avg_roll         
             }
 
+            print(f"BASELINE set: pitch={avg_pitch:.2f}, yaw={avg_yaw:.2f}, roll={avg_roll:.2f},")
             prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_angles = None
             prev_smoothed = smoothed_pos
@@ -92,8 +96,10 @@ while True:
         rel_pitch = pitch - baseline_angles["pitch"]
         rel_yaw = yaw - baseline_angles["yaw"]
         rel_roll = roll - baseline_angles["roll"]
-        
 
+        print(f"REL     set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
+
+    
         if prev_angles and prev_prev_angles:
             final_pitch = rel_pitch + (prev_angles["pitch"] - prev_prev_angles["pitch"])
             final_yaw   = rel_yaw   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
@@ -113,7 +119,7 @@ while True:
         prev_angles = {"pitch": final_pitch, "yaw": final_yaw, "roll": final_roll}
         prev_smoothed = smoothed_pos
 
-        print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
+        print(f"FINAL     Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
 
     cv2.imshow("Camera Feed", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

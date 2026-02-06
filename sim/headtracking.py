@@ -72,14 +72,16 @@ class HeadTracker:
         chin = smoothed_points["Chin"]
         cheek = smoothed_points["Cheek"]
 
-        pitch_vectx = (chin.x - forehead.x) 
-        pitch_vecty = (chin.y - forehead.y)
+        dy_pitch = chin.y - forehead.y
+        dz_pitch = chin.z - forehead.z
+
+        pitch_angle = -math.atan2(dz_pitch, dy_pitch) * (180/math.pi)
+
         yaw_vectx = (-(nose.x - cheek.x))
         yaw_vecty = (nose.y - cheek.y)
         roll_vectx = (cheek.x - forehead.x) 
         roll_vecty = (cheek.y - forehead.y)
 
-        pitch_angle = math.atan2(pitch_vecty, pitch_vectx)*(180/math.pi)
         yaw_angle = math.atan2(yaw_vectx, yaw_vecty)*(180/math.pi)
         roll_angle = math.atan2(roll_vecty, roll_vectx)*(180/math.pi)
 
