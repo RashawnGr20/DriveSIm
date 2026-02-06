@@ -9,15 +9,15 @@ class feedBackEngine:
 
     def assign_pose(self, pitch, yaw, roll) :
 
-        if yaw > 35 :
+        if yaw > 20 :
             return "LEFT BLINDSPOT"
-        elif yaw < -35 : 
+        elif yaw < -20 : 
             return "RIGHT BLINDSPOT"
-        elif yaw > 15 :
+        elif yaw > 5 :
             return "LEFT MIRROR" 
-        elif yaw < -15 :
+        elif yaw < -5 :
             return "RIGHT MIRROR"
-        elif pitch > 20 :
+        elif pitch > 10 :
             return "LOOKING DOWN"
         else :
             return "FORWARD"

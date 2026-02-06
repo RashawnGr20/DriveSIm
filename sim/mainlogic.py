@@ -18,6 +18,15 @@ baseline_angles = None
 baseline_buffer = []
 BASELINE_FRAMES = 30 
 
+DEADZONE_PITCH = 3
+DEADZONE_YAW = 3
+DEADZONE_ROLL = 3
+
+def apply_deadzone(angle, threshold): 
+    if abs(angle) < threshold :
+        return 0 
+    return angle 
+
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -30,6 +39,10 @@ while True:
             final_pitch = prev_angles["pitch"] + (prev_angles["pitch"] - prev_prev_angles["pitch"])
             final_yaw   = prev_angles["yaw"]   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
             final_roll  = prev_angles["roll"]  + (prev_angles["roll"]  - prev_prev_angles["roll"])
+
+            final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
+            final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
+            final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
 
             pose = feedback.update(final_pitch, final_yaw, final_roll)
             print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
@@ -87,6 +100,12 @@ while True:
             final_pitch += rel_pitch - prev_prev_angles["pitch"]
             final_yaw   += rel_yaw   - prev_prev_angles["yaw"]
             final_roll  += rel_roll  - prev_prev_angles["roll"]
+
+
+        
+        final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
+        final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
+        final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
 
