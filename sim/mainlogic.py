@@ -15,6 +15,8 @@ prev_smoothed = None
 prev_angles = None
 prev_prev_angles = None
 baseline_angles = None 
+baseline_buffer = []
+BASELINE_FRAMES = 30 
 
 while True:
     ret, frame = cap.read()
@@ -53,10 +55,20 @@ while True:
         roll  = vectors["roll_angle"]
 
         if baseline_angles is None : 
+            baseline_buffer.append((pitch, yaw, roll))
+
+            if len(baseline_buffer) < BASELINE_FRAMES : 
+                prev_smoothed = smoothed_pos
+                continue
+
+            avg_pitch = sum(p for p, _, _ in baseline_buffer) / BASELINE_FRAMES
+            avg_yaw   = sum(y for _, y, _ in baseline_buffer) / BASELINE_FRAMES
+            avg_roll  = sum(r for _, _, r in baseline_buffer) / BASELINE_FRAMES
+
             baseline_angles = {
-                "pitch": pitch, 
-                'yaw': yaw,
-                "roll": roll 
+                "pitch": avg_pitch, 
+                 "yaw": avg_yaw,
+                "roll": avg_roll         
             }
 
             prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
