@@ -66,6 +66,15 @@ class HeadTracker:
 
           return smoothed
     
+    def wrap_deg(self, a) :
+          
+          while a > 180 :
+                a -= 360
+          while a < -180 :
+                a+= 360
+          return a 
+    
+    
     def pitch_vectors(self, smoothed_points) :
         nose = smoothed_points["Nose"]
         forehead = smoothed_points["Forehead"]
@@ -83,6 +92,7 @@ class HeadTracker:
         roll_vecty = (cheek.y - forehead.y)
 
         yaw_angle = math.atan2(dx_yaw, dz_yaw)*(180/math.pi)
+        yaw_angle = self.wrap_deg(yaw_angle)
         roll_angle = math.atan2(roll_vecty, roll_vectx)*(180/math.pi)
 
         return { 

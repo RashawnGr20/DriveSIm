@@ -32,6 +32,7 @@ def apply_deadzone(angle, threshold):
 def clamp(x, upper) :
     return max(-upper, min(upper, x))
 
+
 while True:
     ret, frame = cap.read()
     if not ret:
