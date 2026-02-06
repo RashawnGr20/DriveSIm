@@ -86,6 +86,10 @@ while True:
                     prev_smoothed = smoothed_pos
                     continue
 
+            if len(baseline_buffer) < BASELINE_FRAMES:
+                prev_smoothed = smoothed_pos
+                continue
+
             avg_pitch = sum(p for p, _, _ in baseline_buffer) / BASELINE_FRAMES
             avg_yaw   = sum(y for _, y, _ in baseline_buffer) / BASELINE_FRAMES
             avg_roll  = sum(r for _, _, r in baseline_buffer) / BASELINE_FRAMES
@@ -132,7 +136,7 @@ while True:
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
 
-        prev_prev_rel = prev_rel.copy if prev_rel else None 
+        prev_prev_rel = prev_rel.copy() if prev_rel else None 
         prev_rel = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
 
         prev_prev_angles = prev_angles.copy() if prev_angles else None
