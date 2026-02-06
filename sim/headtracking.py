@@ -84,16 +84,16 @@ class HeadTracker:
         dy_pitch = chin.y - forehead.y
         dz_pitch = chin.z - forehead.z
 
-        pitch_angle = math.atan2(dz_pitch, dy_pitch) * (180/math.pi)
+        
 
         dx_yaw = nose.x - cheek.x
         dz_yaw = nose.z - cheek.z
         roll_vectx = (cheek.x - forehead.x) 
         roll_vecty = (cheek.y - forehead.y)
 
-        yaw_angle = math.atan2(dx_yaw, dz_yaw)*(180/math.pi)
-        yaw_angle = self.wrap_deg(yaw_angle)
-        roll_angle = math.atan2(roll_vecty, roll_vectx)*(180/math.pi)
+        yaw_angle = self.wrap(math.atan2(dx_yaw, dz_yaw)*(180/math.pi))
+        roll_angle = self.wrap(math.atan2(roll_vecty, roll_vectx)*(180/math.pi))
+        pitch_angle = self.wrap(math.atan2(dz_pitch, dy_pitch) * (180/math.pi))
 
         return { 
             "pitch_angle": pitch_angle,

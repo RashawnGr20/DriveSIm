@@ -32,6 +32,10 @@ def apply_deadzone(angle, threshold):
 def clamp(x, upper) :
     return max(-upper, min(upper, x))
 
+def angle_diff_deg(a, b) : 
+
+    return (a-b + 180) % 360 - 180
+
 
 while True:
     ret, frame = cap.read()
@@ -112,9 +116,9 @@ while True:
             prev_smoothed = smoothed_pos
             continue
 
-        rel_pitch = pitch - baseline_angles["pitch"]
-        rel_yaw = yaw - baseline_angles["yaw"]
-        rel_roll = roll - baseline_angles["roll"]
+        rel_pitch = angle_diff_deg(pitch, baseline_angles["pitch"])
+        rel_yaw =  angle_diff_deg(yaw, baseline_angles["yaw"])
+        rel_roll = angle_diff_deg(roll, baseline_angles["roll"])
 
         print(f"REL    set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
     
