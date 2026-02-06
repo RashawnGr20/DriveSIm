@@ -14,6 +14,7 @@ feedback = feedBackEngine()
 prev_smoothed = None
 prev_angles = None
 prev_prev_angles = None
+baseline_angles = None 
 
 while True:
     ret, frame = cap.read()
@@ -51,17 +52,34 @@ while True:
         yaw   = vectors["yaw_angle"]
         roll  = vectors["roll_angle"]
 
-        final_pitch, final_yaw, final_roll = pitch, yaw, roll
+        if baseline_angles is None : 
+            baseline_angles = {
+                "pitch": pitch, 
+                'yaw': yaw,
+                "roll": roll 
+            }
+
+            prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
+            prev_prev_angles = None
+            prev_smoothed = smoothed_pos
+            continue
+
+        rel_pitch = pitch - baseline_angles["pitch"]
+        rel_yaw = yaw - baseline_angles["yaw"]
+        rel_roll = roll - baseline_angles["roll"]
+        
+        
+        final_pitch, final_yaw, final_roll = rel_pitch, rel_yaw, rel_roll
 
         if prev_angles and prev_prev_angles:
-            final_pitch += pitch - prev_prev_angles["pitch"]
-            final_yaw   += yaw   - prev_prev_angles["yaw"]
-            final_roll  += roll  - prev_prev_angles["roll"]
+            final_pitch += rel_pitch - prev_prev_angles["pitch"]
+            final_yaw   += rel_yaw   - prev_prev_angles["yaw"]
+            final_roll  += rel_roll  - prev_prev_angles["roll"]
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
 
         prev_prev_angles = prev_angles.copy() if prev_angles else None
-        prev_angles = {"pitch": pitch, "yaw": yaw, "roll": roll}
+        prev_angles = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
         prev_smoothed = smoothed_pos
 
         print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
