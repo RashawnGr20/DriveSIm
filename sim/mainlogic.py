@@ -110,7 +110,7 @@ while True:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
 
         prev_prev_angles = prev_angles.copy() if prev_angles else None
-        prev_angles = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
+        prev_angles = {"pitch": final_pitch, "yaw": final_yaw, "roll": final_roll}
         prev_smoothed = smoothed_pos
 
         print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
