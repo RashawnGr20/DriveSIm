@@ -1,19 +1,11 @@
 import cv2
 import mediapipe as mp
-<<<<<<< Updated upstream
 from headtracking import HeadTracker
 from feedback import feedBackEngine
 from scenegen import SceneGen
 
 
-scene = SceneGen(W=1280, H=720, fps= 60)
-=======
-from sim.headtracking import HeadTracker
-from sim.feedback import feedBackEngine
-from sim.scenegen import SceneGen
 
-
->>>>>>> Stashed changes
 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
@@ -22,7 +14,7 @@ if not cap.isOpened():
 
 tracker = HeadTracker()
 feedback = feedBackEngine()
-scene = SceneGen(W=1280, H=720, fps= 60)
+scene = SceneGen(1280,720,60)
 
 prev_smoothed = None
 prev_angles = None
@@ -63,31 +55,30 @@ while True:
             final_yaw   = prev_angles["yaw"]   + (prev_angles["yaw"]   - prev_prev_angles["yaw"])
             final_roll  = prev_angles["roll"]  + (prev_angles["roll"]  - prev_prev_angles["roll"])
 
-            final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
-            final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
-            final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
-
-            pose = feedback.update(final_pitch, final_yaw, final_roll)
+        elif prev_angles :
+            final_pitch, final_yaw, final_roll = prev_angles["pitch"], prev_angles["yaw"], prev_angles["roll"]   
             
-            if prev_angles: 
-<<<<<<< Updated upstream
-                ok = scene.update(prev_angles["pitch"], prev_angles["yaw"], prev_angles["roll"])
-=======
-                ok = scene.update(prev_angles["pitch"], prev_angles["yaw"], prev_angles["roll"], pose)
->>>>>>> Stashed changes
-            else : 
-                ok = scene.update(0,0,0, "FORWARD")
+        else :
+            final_pitch, final_yaw, final_roll = 0,0,0
+            
+           
+        final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
+        final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
+        final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
+
+        pose = feedback.update(final_pitch, final_yaw, final_roll)
+            
+        if not scene.update(final_pitch, final_yaw, final_roll, pose):
+            break; 
                 
-            if not ok : 
-                break
-                
-            print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
+        print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
 
         cv2.imshow("Camera Feed", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         continue
 
+    
     for face_landmarks in results.multi_face_landmarks:
         tracker.mp_drawing.draw_landmarks(
             frame,
@@ -168,6 +159,8 @@ while True:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         
         if not scene.update(final_pitch, final_yaw, final_roll, pose):
+            cap.release()
+            cv2.destroyAllWindows()
             break
 
         prev_prev_rel = prev_rel.copy() if prev_rel else None 
