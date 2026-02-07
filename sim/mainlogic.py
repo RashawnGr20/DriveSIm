@@ -1,11 +1,19 @@
 import cv2
 import mediapipe as mp
+<<<<<<< Updated upstream
 from headtracking import HeadTracker
 from feedback import feedBackEngine
 from scenegen import SceneGen
 
 
 scene = SceneGen(W=1280, H=720, fps= 60)
+=======
+from sim.headtracking import HeadTracker
+from sim.feedback import feedBackEngine
+from sim.scenegen import SceneGen
+
+
+>>>>>>> Stashed changes
 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
@@ -14,6 +22,7 @@ if not cap.isOpened():
 
 tracker = HeadTracker()
 feedback = feedBackEngine()
+scene = SceneGen(W=1280, H=720, fps= 60)
 
 prev_smoothed = None
 prev_angles = None
@@ -61,7 +70,11 @@ while True:
             pose = feedback.update(final_pitch, final_yaw, final_roll)
             
             if prev_angles: 
+<<<<<<< Updated upstream
                 ok = scene.update(prev_angles["pitch"], prev_angles["yaw"], prev_angles["roll"])
+=======
+                ok = scene.update(prev_angles["pitch"], prev_angles["yaw"], prev_angles["roll"], pose)
+>>>>>>> Stashed changes
             else : 
                 ok = scene.update(0,0,0, "FORWARD")
                 
