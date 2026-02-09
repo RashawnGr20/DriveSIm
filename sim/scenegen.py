@@ -25,6 +25,11 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
+        x= max(0, min(self.W, int(self.W/2 + yaw*10)))
+        y= self.H//2
+    
+    
+        pygame.draw.circle(self.screen, (0, 200, 255), (x,y), 15)
 
         pygame.display.flip()
         self.clock.tick(self.fps)
