@@ -5,7 +5,8 @@ from feedback import feedBackEngine
 from scenegen import SceneGen
 
 
-
+import os
+print(os.getcwd())
 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
