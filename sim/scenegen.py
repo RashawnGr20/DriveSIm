@@ -11,7 +11,7 @@ class SceneGen :
         self.fps = fps 
         self.font = pygame.font.SysFont(None, 36)
         base_directory = os.path.dirname(__file__)
-        image_path = os.path.join(base_directory, "Proto_images", "wide_street_01_4k.png")
+        image_path = os.path.join(base_directory, "Proto_images", "venice_sunset_4k.png")
         self.pano = pygame.image.load(image_path).convert()
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
