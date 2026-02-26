@@ -1,4 +1,5 @@
 import pygame
+import os
 
 class SceneGen :
     def __init__(self, W = 1280, H = 720, fps= 60): 
@@ -25,7 +26,9 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        pano = pygame.image.load("Proto_images/wide_street_01_4k.png").convert()
+        base_directory = os.path.dirname(__file__)
+        image_path = os.path.join(base_directory, "Proto_images", "wide_street_01_4k.png")
+        pano = pygame.image.load(image_path).convert()
         pano_width = 4096
         minYaw = -70
         maxYaw = 70
@@ -33,6 +36,8 @@ class SceneGen :
         cam_x = norm*(pano_width - self.W)
         x = max(minYaw, min((pano_width - self.W), cam_x))
         y = self.H//2
+
+       
 
         self.screen.blit(pano, (0,0), (cam_x, 0, self.W, self.H))
     
