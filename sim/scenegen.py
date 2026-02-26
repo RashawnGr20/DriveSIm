@@ -30,8 +30,8 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        minYaw = -70
-        maxYaw = 70
+        minYaw = -60
+        maxYaw = 60
         yaw = max(minYaw, min(yaw, maxYaw))
         norm = (yaw - minYaw) / (maxYaw - minYaw)
         cam_x = norm*(self.pano_width - self.W)
