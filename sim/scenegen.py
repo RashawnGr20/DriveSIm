@@ -25,7 +25,7 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        pano = pygame.image.load("proto_images/wide_street_01_4k.png").convert()
+        pano = pygame.image.load("Proto_images/wide_street_01_4k.png").convert()
         pano_width = 4096
         minYaw = -70
         maxYaw = 70
