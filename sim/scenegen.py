@@ -25,9 +25,16 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        x= max(0, min(self.W, int(self.W/2 + yaw*10)))
-        y= self.H//2
-    
+        pano = pygame.image.load("wide_street_01_4k.png").convert()
+        pano_width = 4096
+        minYaw = -70
+        maxYaw = 70
+        norm = (yaw - minYaw) / (maxYaw - minYaw)
+        cam_x = norm*(pano_width - self.W)
+        x = max(minYaw, min((pano_width - self.W), cam_x))
+        y = self.H//2
+
+        self.screen.blit(pano, (0,0), (cam_x, 0, self.W, self.H))
     
         pygame.draw.circle(self.screen, (0, 200, 255), (x,y), 15)
 
