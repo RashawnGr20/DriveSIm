@@ -2,7 +2,7 @@ import pygame
 import os
 
 class SceneGen :
-    def __init__(self, W = 1280, H = 720, fps= 60): 
+    def __init__(self, W = 1280, H = 720, fps= 60,): 
         pygame.init()
         self.W, self.H = W, H 
         self.screen = pygame.display.set_mode((self.W, self.H))
@@ -10,7 +10,11 @@ class SceneGen :
         self.clock = pygame.time.Clock()
         self.fps = fps 
         self.font = pygame.font.SysFont(None, 36)
-
+        base_directory = os.path.dirname(__file__)
+        image_path = os.path.join(base_directory, "Proto_images", "wide_street_01_4k.png")
+        self.pano = pygame.image.load(image_path).convert()
+        self.pano_width = self.pano.get_width()
+        self.pano_height = self.pano.get_height()
 
     def update(self, pitch, yaw, roll, pose) : 
 
@@ -26,22 +30,16 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        base_directory = os.path.dirname(__file__)
-        image_path = os.path.join(base_directory, "Proto_images", "wide_street_01_4k.png")
-        pano = pygame.image.load(image_path).convert()
-        pano_width = 4096
         minYaw = -70
         maxYaw = 70
+        yaw = max(minYaw, min(yaw, maxYaw))
         norm = (yaw - minYaw) / (maxYaw - minYaw)
-        cam_x = norm*(pano_width - self.W)
-        x = max(minYaw, min((pano_width - self.W), cam_x))
-        y = self.H//2
+        cam_x = norm*(self.pano_width - self.W)
+        x = max(0, min((self.pano_width - self.W), cam_x))
+        y = (self.pano_height - self.H) // 2
+        self.screen.blit(self.pano, (0,0), (x, 0, self.W, self.H))
 
        
-
-        self.screen.blit(pano, (0,0), (cam_x, 0, self.W, self.H))
-    
-        pygame.draw.circle(self.screen, (0, 200, 255), (x,y), 15)
 
         pygame.display.flip()
         self.clock.tick(self.fps)
