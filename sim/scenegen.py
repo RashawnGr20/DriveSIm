@@ -32,8 +32,8 @@ class SceneGen :
         
         minYaw = -60
         maxYaw = 60
-        minPitch = -30
-        maxPitch = 30
+        minPitch = -45
+        maxPitch = 45
         pitch = max(minPitch, min(pitch, maxPitch))
         yaw = max(minYaw, min(yaw, maxYaw))
         normx = (yaw - minYaw) / (maxYaw - minYaw)
