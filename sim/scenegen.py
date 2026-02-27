@@ -32,13 +32,20 @@ class SceneGen :
         
         minYaw = -60
         maxYaw = 60
+        minPitch = -30
+        maxPitch = 30
+        pitch = max(minPitch, min(pitch, maxPitch))
         yaw = max(minYaw, min(yaw, maxYaw))
-        norm = (yaw - minYaw) / (maxYaw - minYaw)
-        cam_x = norm*(self.pano_width - self.W)
+        normx = (yaw - minYaw) / (maxYaw - minYaw)
+        normy = (pitch - minPitch) / (maxPitch - minPitch)
+        cam_x = normx*(self.pano_width - self.W)
+        cam_y = normy*(self.pano_height - self.H)
+
         x = max(0, min((self.pano_width - self.W), cam_x))
-        y = (self.pano_height - self.H) // 2
+        y = max(0, min((self.pano_height - self.H), cam_y))
         self.screen.blit(self.pano, (0,0), (x, y, self.W, self.H))
 
+        
        
 
         pygame.display.flip()
