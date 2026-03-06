@@ -26,14 +26,19 @@ BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
 
-DEADZONE_PITCH = 5
-DEADZONE_YAW = 5
-DEADZONE_ROLL = 5
+DEADZONE_PITCH = 2
+DEADZONE_YAW = 1
+DEADZONE_ROLL = 1
 
-def apply_deadzone(angle, threshold): 
-    if abs(angle) < threshold :
-        return 0 
-    return angle 
+def apply_deadzone(angle, threshold,): 
+    distance = max(0, abs(angle) - threshold) 
+
+    if angle >= 0 :
+        sign = 1
+    else : 
+        sign = -1 
+
+    return sign*distance 
 
 def clamp(x, upper) :
     return max(-upper, min(upper, x))
