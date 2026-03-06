@@ -34,9 +34,10 @@ class SceneGen :
         maxYaw = 60
         minPitch = -15
         maxPitch = 15
-        sens = 1.2
-        pitch = max(minPitch, min(pitch, maxPitch)) * sens
-        yaw = max(minYaw, min(yaw, maxYaw)) * sens 
+        sensX = 1.5
+        sensY = 1.2
+        pitch = max(minPitch, min(pitch, maxPitch)) * sensX
+        yaw = max(minYaw, min(yaw, maxYaw)) * sensY 
         normx = (yaw - minYaw) / (maxYaw - minYaw)
         normy = (pitch - minPitch) / (maxPitch - minPitch)
         cam_x = normx*(self.pano_width - self.W)
