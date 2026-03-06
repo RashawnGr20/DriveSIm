@@ -40,8 +40,8 @@ class SceneGen :
         sensX = 2.5
         sensY = 0.3
         smoothing = 0.18
-        pitch = max(minPitch, min(pitch, maxPitch)) * sensX
-        yaw = max(minYaw, min(yaw, maxYaw)) * sensY 
+        pitch = max(minPitch, min(pitch, maxPitch)) * sensY
+        yaw = max(minYaw, min(yaw, maxYaw)) * sensX 
         normx = (yaw - minYaw) / (maxYaw - minYaw)
         normy = (pitch - minPitch) / (maxPitch - minPitch)
         
