@@ -26,9 +26,9 @@ BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
 
-DEADZONE_PITCH = 3
-DEADZONE_YAW = 3
-DEADZONE_ROLL = 3
+DEADZONE_PITCH = 2
+DEADZONE_YAW = 2
+DEADZONE_ROLL = 2
 
 def apply_deadzone(angle, threshold): 
     if abs(angle) < threshold :
