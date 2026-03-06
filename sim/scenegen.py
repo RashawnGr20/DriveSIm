@@ -16,8 +16,8 @@ class SceneGen :
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
 
-        camera_x = (self.pano_width - self.W) // 2
-        camera_y = (self.pano_height - self.H) // 2
+        self.camera_x = (self.pano_width - self.W) // 2
+        self.camera_y = (self.pano_height - self.H) // 2
 
     def update(self, pitch, yaw, roll, pose) : 
 
