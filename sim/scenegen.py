@@ -33,12 +33,12 @@ class SceneGen :
         surf = self.font.render(text, True, (240, 240, 240))
         self.screen.blit(surf, (20,30))
         
-        minYaw = -60
-        maxYaw = 60
-        minPitch = -15
-        maxPitch = 15
-        sensX = 1.5
-        sensY = 1.2
+        minYaw = -70
+        maxYaw = 70
+        minPitch = -20
+        maxPitch = 20
+        sensX = 1.7
+        sensY = 1.5
         smoothing = 0.18
         pitch = max(minPitch, min(pitch, maxPitch)) * sensX
         yaw = max(minYaw, min(yaw, maxYaw)) * sensY 
