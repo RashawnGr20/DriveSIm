@@ -42,7 +42,7 @@ class SceneGen :
         cam_y = normy*(self.pano_height - self.H)
 
         x = max(0, min((self.pano_width - self.W), cam_x))
-        y = max(0, min((self.pano_height - self.H) * 0.4, cam_y))
+        y = max(0, min((self.pano_height - self.H), cam_y))
         self.screen.blit(self.pano, (0,0), (x, y, self.W, self.H))
 
         
