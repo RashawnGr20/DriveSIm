@@ -11,7 +11,8 @@ class feedBackEngine:
 
         if pitch > 12 :
             return "LOOKING DOWN"
-       
+        if pitch < -15 :
+            return "LOOKING UP"
      
         if yaw > 30 : 
             return "RIGHT BLINDSPOT"
