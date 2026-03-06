@@ -26,9 +26,9 @@ BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
 
-DEADZONE_PITCH = 0.5
-DEADZONE_YAW = 0.5
-DEADZONE_ROLL = 0.5
+DEADZONE_PITCH = 2
+DEADZONE_YAW = 2
+DEADZONE_ROLL = 2
 
 def apply_deadzone(angle, threshold): 
     if abs(angle) < threshold :
@@ -140,18 +140,18 @@ while True:
 
         print(f"REL    set: pitch={rel_pitch:.2f}, yaw={rel_yaw:.2f}, roll={rel_roll:.2f},")
     
-        if prev_rel and prev_prev_rel:
-            dp = clamp(prev_rel["pitch"] - prev_prev_rel["pitch"], 3)
-            dy = clamp(prev_rel["yaw"] - prev_prev_rel["yaw"], 3)
-            dr = clamp(prev_rel["roll"] - prev_prev_rel["roll"], 3)
+        #if prev_rel and prev_prev_rel:
+            #dp = clamp(prev_rel["pitch"] - prev_prev_rel["pitch"], 3)
+            #dy = clamp(prev_rel["yaw"] - prev_prev_rel["yaw"], 3)
+            #dr = clamp(prev_rel["roll"] - prev_prev_rel["roll"], 3)
 
 
-            final_pitch = rel_pitch + dp
-            final_yaw = rel_yaw + dy
-            final_roll = rel_roll+ dr
+            #final_pitch = rel_pitch + dp
+            #final_yaw = rel_yaw + dy
+            #final_roll = rel_roll+ dr
 
-        else:
-            final_pitch, final_yaw, final_roll = rel_pitch, rel_yaw, rel_roll
+        
+        final_pitch, final_yaw, final_roll = rel_pitch, rel_yaw, rel_roll
         
         final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
         final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
