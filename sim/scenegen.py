@@ -16,6 +16,9 @@ class SceneGen :
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
 
+        camera_x = (self.pano_width - self.W) // 2
+        camera_y = (self.pano_height - self.H) // 2
+
     def update(self, pitch, yaw, roll, pose) : 
 
         for event in pygame.event.get()  :
@@ -36,15 +39,20 @@ class SceneGen :
         maxPitch = 15
         sensX = 1.5
         sensY = 1.2
+        smoothing = 0.18
         pitch = max(minPitch, min(pitch, maxPitch)) * sensX
         yaw = max(minYaw, min(yaw, maxYaw)) * sensY 
         normx = (yaw - minYaw) / (maxYaw - minYaw)
         normy = (pitch - minPitch) / (maxPitch - minPitch)
-        cam_x = normx*(self.pano_width - self.W)
-        cam_y = normy*(self.pano_height - self.H)
+        
+        target_x = normx*(self.pano_width - self.W)
+        target_y = normy*(self.pano_height - self.H)
 
-        x = max(0, min((self.pano_width - self.W), cam_x))
-        y = max(0, min((self.pano_height - self.H), cam_y))
+        self.camera_x += (target_x - self.camera_x) * smoothing 
+        self.camera_y += (target_y - self.camera_y) * smoothing
+
+        x = max(0, min((self.pano_width - self.W), self.camera_x))
+        y = max(0, min((self.pano_height - self.H), self.camera_y))
         self.screen.blit(self.pano, (0,0), (x, y, self.W, self.H))
 
         
