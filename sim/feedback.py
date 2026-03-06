@@ -11,8 +11,8 @@ class feedBackEngine:
 
         if pitch > 12 :
             return "LOOKING DOWN"
-        if pitch < -15 :
-            return "LOOKING UP"
+        if pitch < -4 :
+            return "TOP MIRROR"
      
         if yaw > 30 : 
             return "RIGHT BLINDSPOT"
@@ -45,3 +45,6 @@ class feedBackEngine:
             self.confirmed_pose = pose
 
         return self.confirmed_pose
+    
+    
+        
