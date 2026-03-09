@@ -3,10 +3,11 @@ import mediapipe as mp
 from headtracking import HeadTracker
 from feedback import feedBackEngine
 from scenegen import SceneGen
+from scenes import Scene, Metrics
 
+scene_manager = Scene("left_lane_change")
+metrics = Metrics(scene_manager.current_scene.expected_sequence)
 
-import os
-print(os.getcwd())
 
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
@@ -178,6 +179,16 @@ while True:
         prev_smoothed = smoothed_pos
 
         print(f"FINAL     Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
+        
+        pose_counter = feedback.pose_counter
+        result  = scene_manager.evaluation(pose_counter, pose)
+        
+        if result is not None :
+            score = metrics.sequence_score(result)
+            print(f"TOTAL SCORE {score}")
+            break
+        
+        
 
     cv2.imshow("Camera Feed", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

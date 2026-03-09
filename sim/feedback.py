@@ -11,7 +11,7 @@ class feedBackEngine:
 
         if pitch > 12 :
             return "LOOKING DOWN"
-        if pitch < -4 :
+        if pitch < -5 :
             return "TOP MIRROR"
      
         if yaw > 30 : 

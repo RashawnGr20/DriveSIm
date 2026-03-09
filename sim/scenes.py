@@ -1,9 +1,9 @@
 from feedback import feedBackEngine
 
 feedback = feedBackEngine()
-class scene :
+class Scene :
 
-    def __init__(self):
+    def __init__(self, scene_name):
 
         self.scenes = { 
 
@@ -18,7 +18,8 @@ class scene :
             )
         }
 
-    
+        self.current_scene = self.get_scene(scene_name)
+        
     def get_scene(self, selected_scene) :
          
         if selected_scene in self.scenes :
@@ -29,22 +30,9 @@ class scene :
 
 
     
-    def evaluation(self, pose_counter, fps, pose) :         
+    def evaluation(self, pose_counter, pose) :         
         
-        pose = feedback.update()   
-        
-        scene_manager = scene()
-        
-        current_scene = scene_manager.get_scene()
-        
-        scene_result  = current_scene.evaluate(pose, pose_counter)
-        
-        if scene scene_result :
-            pass 
-    
-    
-            
-        
+        return self.current_scene.evaluate(pose, pose_counter)
         
     
     
@@ -74,7 +62,7 @@ class SequenceScene :
                 self.step_lock = True
                 self.observations.append(pose) 
         
-            elif pose in self.expected_sequence and pose != expected_pose and pose_counter >= self.min_glance and self.step.lock == False :
+            elif pose in self.expected_sequence and pose != expected_pose and pose_counter >= self.min_glance and self.step_lock == False :
                 self.curr_step += 1
                 self.observations.append(pose)
         
@@ -88,6 +76,7 @@ class coverageScene :
 
         def __init__(self, min_glance, expected_sequence):
             
+            self.expected_sequence = expected_sequence
             self.min_glance = min_glance 
             self.required_zones = set(expected_sequence)
             self.checked_zones = set()
@@ -106,6 +95,8 @@ class coverageScene :
             if pose in self.required_zones and self.step_lock == False and pose_counter >= self.min_glance:
                 self.checked_zones.add(pose)
                 self.step_lock = True
+            else :
+                return None 
             
             self.last_pose = pose
 
@@ -114,7 +105,42 @@ class coverageScene :
             
 
 
+class Metrics :
+    
+    def __init__(self, expected_sequence):
+        
+        self.last_pose = None 
+        self.pose_counter = 0 
+        self.expected_sequence = expected_sequence
+        self.glance_data = []
+    
+    
+    def record_glance(self, fps, pose) :
+        
+        if pose != self.last_pose :
+            duration = self.pose_counter / fps
+            self.glance_data.append((self.last_pose, duration))
+            
+        self.last_pose = pose
+            
+    
+    
+    def sequence_score(self, observations) :
 
+        score = 0 
+        for i in range(min(len(self.expected_sequence), len(observations))) :
+            
+            if observations[i] == self.expected_sequence[i] :
+                score += 1
+            
+        return (score / len(self.expected_sequence)) * 100
+
+            
+        
+        
+        
+        
+        
 
 
             
