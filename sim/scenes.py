@@ -29,8 +29,22 @@ class scene :
 
 
     
-    def evaluation(self, pose_counter, fps, pose) :
-      pass   
+    def evaluation(self, pose_counter, fps, pose) :         
+        
+        pose = feedback.update()   
+        
+        scene_manager = scene()
+        
+        current_scene = scene_manager.get_scene()
+        
+        scene_result  = current_scene.evaluate(pose, pose_counter)
+        
+        if scene scene_result :
+            pass 
+    
+    
+            
+        
         
     
     
