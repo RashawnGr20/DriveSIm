@@ -4,9 +4,13 @@ from headtracking import HeadTracker
 from feedback import feedBackEngine
 from scenegen import SceneGen
 from scenes import Scene, Metrics
+from UI import UI
+
 
 scene_manager = Scene("left_lane_change")
 metrics = Metrics(scene_manager.current_scene.expected_sequence)
+
+
 
 
 cap = cv2.VideoCapture(0)
@@ -16,7 +20,10 @@ if not cap.isOpened():
 
 tracker = HeadTracker()
 feedback = feedBackEngine()
-scene = SceneGen(1280,720,60)
+scene = SceneGen(1920,1080,60)
+ui = UI(scene.screen, scene.W, scene.H)
+
+scene.ui = ui 
 
 prev_smoothed = None
 prev_angles = None
@@ -169,7 +176,8 @@ while True:
             cap.release()
             cv2.destroyAllWindows()
             break
-
+        
+        
         prev_prev_rel = prev_rel.copy() if prev_rel else None 
         prev_rel = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
 

@@ -2,7 +2,7 @@ import pygame
 import os
 
 class SceneGen :
-    def __init__(self, W = 1280, H = 720, fps= 60,): 
+    def __init__(self, W, H , fps,): 
         pygame.init()
         self.W, self.H = W, H 
         self.screen = pygame.display.set_mode((self.W, self.H))
@@ -55,6 +55,7 @@ class SceneGen :
         y = max(0, min((self.pano_height - self.H), self.camera_y))
         self.screen.blit(self.pano, (0,0), (x, y, self.W, self.H))
 
+        self.ui.draw(pose)
         
        
 
