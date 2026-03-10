@@ -138,7 +138,7 @@ class UI :
         card2 = pygame.Rect(row_x + card_w + gap, row_y, card_w, card_h)
         card3 = pygame.Rect(row_x + 2 * (card_w + gap), row_y, card_w, card_h)
 
-        self.draw_checklist_card(card1, "Observation Sequence", pose, progress_data, self.colors["accent"])
+        self.draw_checklist_card(card1, "Current Posistion", pose, progress_data, self.colors["accent"])
         self.draw_soft_card(card2, "Scan Rate", "12/min", "Last 30 seconds", self.colors["success"])
         self.draw_soft_card(card3, "Hazard Checks", "84%", "Observation coverage", self.colors["warning"])
 
@@ -170,14 +170,14 @@ class UI :
         )
 
 
-        title_surf = self.fonts["small"].render(title, True, (106, 118, 142))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 20))
+        title_surf = self.fonts["small"].render(title, True, (156, 144, 139))
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 8))
 
         value_surf = self.fonts["large"].render(value, True, (232, 236, 242))
-        self.screen.blit(value_surf, (rect.x + 20, rect.y + 50))
+        self.screen.blit(value_surf, (rect.x + 20, rect.y + 33))
 
         if subtitle:
-            subtitle_surf = self.fonts["small"].render(subtitle, True, (92, 104, 126))
+            subtitle_surf = self.fonts["small"].render(subtitle, True, (176, 166, 160))
             self.screen.blit(subtitle_surf, (rect.x + 20, rect.bottom - 30))
 
         pill_rect = pygame.Rect(rect.right - 42, rect.y + 14, 24, 12)
@@ -209,17 +209,20 @@ class UI :
             rect,
             border_radius=radius
         )
+        
+        title_color = (156, 144, 139)
+        section_color = (176, 166, 160)
+        value_color = (232, 236, 242)
 
-    
-        title_surf = self.fonts["small"].render(title, True, (106, 118, 142))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 18))
+        title_surf = self.fonts["small"].render(title, True, title_color)
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 8))
 
         
-        live_pose_surf = self.fonts["medium"].render(pose, True, (232, 236, 242))
-        self.screen.blit(live_pose_surf, (rect.x + 20, rect.y + 42))
+        live_pose_surf = self.fonts["medium"].render(pose, True, value_color)
+        self.screen.blit(live_pose_surf, (rect.x + 20, rect.y + 33))
 
-        sub_surf = self.fonts["small"].render("Required checks", True, (92, 104, 126))
-        self.screen.blit(sub_surf, (rect.x + 20, rect.y + 74))
+        sub_surf = self.fonts["small"].render("Required checks", True, section_color)
+        self.screen.blit(sub_surf, (rect.x + 20, rect.y + 78))
 
 
         pygame.draw.line(
@@ -230,6 +233,7 @@ class UI :
             1
         )
 
+        
         if not progress_data:
             empty_surf = self.fonts["small"].render("No scene data", True, (130, 145, 170))
             self.screen.blit(empty_surf, (rect.x + 20, rect.y + 118))
@@ -249,23 +253,24 @@ class UI :
             is_current = (current_index == i) if current_index is not None else False
 
             if is_done:
-                dot_color = self.colors["success"]
                 text_color = (220, 228, 236)
-                marker = "✓"
             elif is_current:
-                dot_color = accent_color
                 text_color = (235, 238, 244)
-                marker = "•"
             else:
-                dot_color = (90, 92, 100)
                 text_color = (130, 145, 170)
-                marker = "○"
 
-            
-            pygame.draw.circle(self.screen, (36, 46, 72), (rect.x + 30, row_y + 8), 8)
-            pygame.draw.circle(self.screen, dot_color, (rect.x + 30, row_y + 8), 4)
+            center = (rect.x + 30, row_y + 8)
 
-            label = f"{marker} {self.better_pose_naming(item)}"
+            pygame.draw.circle(self.screen, (36, 46, 72), center, 8)
+
+            if is_current:
+                pygame.draw.circle(self.screen, accent_color, center, 7, 2)
+            elif is_done:
+                pygame.draw.circle(self.screen, self.colors["success"], center, 4)
+            else:
+                pygame.draw.circle(self.screen, (90, 92, 100), center, 4, 1)
+
+            label = self.better_pose_naming(item)
             item_surf = self.fonts["small"].render(label, True, text_color)
             self.screen.blit(item_surf, (rect.x + 48, row_y))
     def better_pose_naming(self, text) :
