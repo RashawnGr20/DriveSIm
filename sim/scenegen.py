@@ -15,9 +15,11 @@ class SceneGen :
         self.pano = pygame.image.load(image_path).convert()
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
-
-        self.camera_x = (self.pano_width - self.W) // 2
-        self.camera_y = (self.pano_height - self.H) // 2
+        self.camera_x = 0
+        self.camera_y = 0
+        self.camera_initialized = False 
+        
+        
 
     def update(self, pitch, yaw, roll, pose) : 
 
@@ -25,13 +27,7 @@ class SceneGen :
             if event.type == pygame.QUIT: 
                 pygame.quit()
                 return False 
-            
-
-        self.screen.fill((15,15,18))
-
-        text = F"Pitch {pitch:.2f} | Yaw {yaw:.2f} | Roll {roll:.2f} | {pose}"
-        surf = self.font.render(text, True, (240, 240, 240))
-        self.screen.blit(surf, (20,30))
+        
         
         minYaw = -70
         maxYaw = 70
@@ -45,17 +41,36 @@ class SceneGen :
         normx = (yaw - minYaw) / (maxYaw - minYaw)
         normy = (pitch - minPitch) / (maxPitch - minPitch)
         
-        target_x = normx*(self.pano_width - self.W)
-        target_y = normy*(self.pano_height - self.H)
+        self.ui.draw_background_components()
+        viewport = self.ui.viewport_rect 
+        
+        if self.camera_x == 0 and self.camera_y == 0:
+            self.camera_x = (self.pano_width - viewport.w) // 2
+            self.camera_y = (self.pano_height - viewport.h) // 2
+            self.camera_initialized = True
+
+        target_x = normx*(self.pano_width - viewport.w)
+        target_y = normy*(self.pano_height - viewport.h)
 
         self.camera_x += (target_x - self.camera_x) * smoothing 
         self.camera_y += (target_y - self.camera_y) * smoothing
 
-        x = max(0, min((self.pano_width - self.W), self.camera_x))
-        y = max(0, min((self.pano_height - self.H), self.camera_y))
-        self.screen.blit(self.pano, (0,0), (x, y, self.W, self.H))
+        x = max(0, min((self.pano_width - viewport.w), self.camera_x))
+        y = max(0, min((self.pano_height - viewport.h), self.camera_y))
 
-        self.ui.draw(pose)
+        viewport_surface = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
+        viewport_surface.blit(self.pano, (0, 0), (x, y, viewport.w, viewport.h))
+
+        mask = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255,255,255,255), (0,0,viewport.w,viewport.h), border_radius=10)
+
+        viewport_surface.blit(mask, (0,0), special_flags=pygame.BLEND_RGBA_MULT)
+            
+        self.screen.blit(viewport_surface, (viewport.x, viewport.y))
+
+        self.ui.draw_overlay(pose)
+
+        
         
        
 

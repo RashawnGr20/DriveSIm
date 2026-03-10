@@ -20,10 +20,13 @@ if not cap.isOpened():
 
 tracker = HeadTracker()
 feedback = feedBackEngine()
-scene = SceneGen(1920,1080,60)
+
+scene = SceneGen(1920,1080,60,)
 ui = UI(scene.screen, scene.W, scene.H)
 
-scene.ui = ui 
+scene.ui = ui
+
+
 
 prev_smoothed = None
 prev_angles = None
