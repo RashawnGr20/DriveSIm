@@ -80,7 +80,7 @@ class SequenceScene :
                 'type': "sequence",
                 "expected": self.expected_sequence,
                 "completed": self.observations,
-                "current-index": self.curr_step
+                "current_index": self.curr_step
 
             }
 
@@ -121,7 +121,7 @@ class coverageScene :
                 'type': "coverage",
                 "expected": list(self.expected_sequence),
                 "completed": list(self.observations),
-                "current-index": None
+                "current_index": None
 
             }
 

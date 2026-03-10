@@ -83,10 +83,10 @@ while True:
         final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
         final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
         
-        progress_data = scene_manager.get_progress_data()
-        pose = feedback.update(final_pitch, final_yaw, final_roll, progress_data)
-            
-        if not scene.update(final_pitch, final_yaw, final_roll, pose):
+        
+        pose = feedback.update(final_pitch, final_yaw, final_roll)
+        progress_data = scene_manager.get_progress_data()    
+        if not scene.update(final_pitch, final_yaw, final_roll, pose, progress_data):
             break; 
                 
         print(f"Pitch: {final_pitch:.2f}, Yaw: {final_yaw:.2f}, Roll: {final_roll:.2f}, Pose: {pose}")
