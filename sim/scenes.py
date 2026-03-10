@@ -14,7 +14,7 @@ class Scene :
 
             '4Way_left_turn' : coverageScene(
                 10,
-                ['FORWARD', 'LEFT-MIRROR', 'RIGHT-MIRROR']
+                ['FORWARD', 'LEFT MIRROR', 'RIGHT MIRROR']
             )
         }
 
@@ -34,7 +34,10 @@ class Scene :
         
         return self.current_scene.evaluate(pose, pose_counter)
         
-    
+    def get_progress_data(self) :
+        if self.current_scene :
+            return self.current_scene.get_progress_data()
+        return None 
     
 class SequenceScene :
 
@@ -70,6 +73,16 @@ class SequenceScene :
                 pass 
 
             self.last_pose = pose
+        
+        def get_progress_data(self) :
+
+            return {
+                'type': "sequence",
+                "expected": self.expected_sequence,
+                "completed": self.observations,
+                "current-index": self.curr_step
+
+            }
 
     
 class coverageScene :
@@ -102,7 +115,15 @@ class coverageScene :
 
 
             return self.checked_zones
-            
+    
+        def get_progress_data(self) :
+            return {
+                'type': "coverage",
+                "expected": list(self.expected_sequence),
+                "completed": list(self.observations),
+                "current-index": None
+
+            }
 
 
 class Metrics :

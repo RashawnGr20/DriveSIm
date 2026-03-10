@@ -21,7 +21,7 @@ class SceneGen :
         
         
 
-    def update(self, pitch, yaw, roll, pose) : 
+    def update(self, pitch, yaw, roll, pose, progress_data=None) : 
 
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
@@ -68,7 +68,7 @@ class SceneGen :
             
         self.screen.blit(viewport_surface, (viewport.x, viewport.y))
 
-        self.ui.draw_overlay(pose)
+        self.ui.draw_overlay(pose, progress_data)
 
         
         

@@ -82,8 +82,9 @@ while True:
         final_pitch = apply_deadzone(final_pitch,DEADZONE_PITCH)
         final_yaw = apply_deadzone(final_yaw,DEADZONE_YAW)
         final_roll = apply_deadzone(final_roll,DEADZONE_ROLL)
-
-        pose = feedback.update(final_pitch, final_yaw, final_roll)
+        
+        progress_data = scene_manager.get_progress_data()
+        pose = feedback.update(final_pitch, final_yaw, final_roll, progress_data)
             
         if not scene.update(final_pitch, final_yaw, final_roll, pose):
             break; 
@@ -175,7 +176,8 @@ while True:
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         
-        if not scene.update(final_pitch, final_yaw, final_roll, pose):
+        progress_data = scene_manager.get_progress_data()
+        if not scene.update(final_pitch, final_yaw, final_roll, pose, progress_data):
             cap.release()
             cv2.destroyAllWindows()
             break
