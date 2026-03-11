@@ -773,3 +773,51 @@ class UI :
             (156, 144, 139)
         )
         self.screen.blit(sub_surf, (x, y + 115))
+    
+    def draw_scene_card(self, rect, title, subtitle, tag, accent_color, image):
+        radius = 22
+
+        shadow_rect = rect.move(0, 5)
+        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=radius)
+
+        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+
+        image_rect = pygame.Rect(rect.x + 16, rect.y + 16, rect.w - 32, 150)
+
+        pygame.draw.rect(self.screen, (26, 22, 21), image_rect, border_radius=16)
+
+        scaled_img = pygame.transform.smoothscale(image, (image_rect.w, image_rect.h))
+        image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        image_surface.blit(scaled_img, (0, 0))
+
+        mask = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, image_rect.w, image_rect.h), border_radius=16)
+        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.screen.blit(image_surface, (image_rect.x, image_rect.y))
+
+        tag_rect = pygame.Rect(rect.x + 20, rect.y + 182, 90, 28)
+        pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
+        pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
+
+        tag_surf = self.fonts["small"].render(tag, True, (210, 216, 224))
+        self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
+
+        
+        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 224))
+
+        sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
+        sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
+        self.screen.blit(sub1, (rect.x + 20, rect.y + 264))
+        self.screen.blit(sub2, (rect.x + 20, rect.y + 290))
+
+        
+        button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
+        pygame.draw.rect(self.screen, (42, 34, 31), button_rect, border_radius=12)
+        pygame.draw.rect(self.screen, (82, 70, 66), button_rect, width=1, border_radius=12)
+
+        button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
+        button_text_rect = button_surf.get_rect(center=button_rect.center)
+        self.screen.blit(button_surf, button_text_rect)
