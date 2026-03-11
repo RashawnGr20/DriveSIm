@@ -327,43 +327,6 @@ class UI :
        self.draw_home_feature_pills(shell_rect)
 
     
-    def draw_home_nav(self, shell_rect):
-        nav_y = shell_rect.y + 28
-        pad_x = 40
-
-        brand_color = (232, 236, 242)
-        nav_color = (150, 142, 138)
-        login_color = (150, 142,138)
-        signup_border = (92, 76, 70)
-        signup_fill = (0, 0, 0, 0)
-        signup_text = (232, 236, 242)
-
-        
-        brand_surf = self.fonts["medium"].render("LookFirst", True, brand_color)
-        self.screen.blit(brand_surf, (shell_rect.x + pad_x, nav_y))
-
-      
-        links = ["About", "Features", "Scenarios"]
-        link_spacing = 110
-        center_start_x = shell_rect.centerx - 140
-
-        for i, label in enumerate(links):
-            link_surf = self.fonts["small"].render(label, True, nav_color)
-            self.screen.blit(link_surf, (center_start_x + i * link_spacing, nav_y + 4))
-
-        signup_rect = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
-        pygame.draw.rect(self.screen, (30, 24, 22), signup_rect, border_radius=12)
-        pygame.draw.rect(self.screen, signup_border, signup_rect, width=1, border_radius=12)
-
-        signup_surf = self.fonts["small"].render("Sign Up", True, signup_text)
-        signup_text_rect = signup_surf.get_rect(center=signup_rect.center)
-        self.screen.blit(signup_surf, signup_text_rect)
-
-        login_surf = self.fonts["small"].render("Log In", True, login_color)
-        login_x = signup_rect.x - 70
-        self.screen.blit(login_surf, (login_x, nav_y + 4))
-    
-   
     def draw_home_shell(self):
         margin_x = 20
         margin_y = 16
@@ -399,74 +362,10 @@ class UI :
         pygame.draw.circle(glow, (110, 80, 60, 24), (210, 210), 210)
         self.screen.blit(glow, (self.W - 520, 120))
 
-    def draw_home_hero(self, shell_rect) :
-       
-        hero_x = shell_rect.x + 70
-        hero_y = shell_rect.y + 220
-
-        eyebrow_color = (166, 154, 148)
-        heading_color = (232, 236, 242)
-        desc_color = (156, 144, 139)
-
-        primary_fill = (58, 92, 160)
-        primary_text = (240, 243, 248)
-
-        secondary_fill = (30, 24, 22)
-        secondary_border = (92, 76, 70)
-        secondary_text = (220, 224, 232)
-
-        eyebrow_surf = self.fonts["hero_small"].render("Driving Awareness Training", True, eyebrow_color)
-        self.screen.blit(eyebrow_surf, (hero_x, hero_y))
-
-        heading1 = self.fonts["hero"].render("Driver Observation", True, heading_color)
-        heading2 = self.fonts["hero"].render("Simulator", True, heading_color)
-
-        heading_y = hero_y + 50
-        self.screen.blit(heading1, (hero_x, heading_y))
-        self.screen.blit(heading2, (hero_x, heading_y + heading1.get_height() - 12))
-
-        desc_y = heading_y + heading1.get_height() + heading2.get_height() - 2
-
-        desc1 = self.fonts["hero_small"].render(
-            "Track head movement across panoramic driving scenes",
-            True,
-            desc_color
-        )
-        desc2 = self.fonts["hero_small"].render(
-            "and evaluate mirror checks, blind spot checks,",
-            True,
-            desc_color
-        )
-        desc3 = self.fonts["hero_small"].render(
-            "and scan behavior in real time.",
-            True,
-            desc_color
-        )
-
-        self.screen.blit(desc1, (hero_x, desc_y + 18))
-        self.screen.blit(desc2, (hero_x, desc_y + 44))
-        self.screen.blit(desc3, (hero_x, desc_y + 70))
-
-        button_y = desc_y + 150
-
-        start_rect = pygame.Rect(hero_x, button_y, 180, 50)
-        pygame.draw.rect(self.screen, primary_fill, start_rect, border_radius=18)
-
-        start_surf = self.fonts["small"].render("Start Session", True, primary_text)
-        start_text_rect = start_surf.get_rect(center=start_rect.center)
-        self.screen.blit(start_surf, start_text_rect)
-
-        scenario_rect = pygame.Rect(hero_x + 200, button_y, 180, 50)
-        pygame.draw.rect(self.screen, secondary_fill, scenario_rect, border_radius=18)
-        pygame.draw.rect(self.screen, secondary_border, scenario_rect, width=1, border_radius=18)
-
-        scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
-        scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
-        self.screen.blit(scenario_surf, scenario_text_rect)
     
     def draw_home_preview(self, shell_rect):
-        preview_w = 680
-        preview_h = 360
+        preview_w = 780
+        preview_h = 420
         preview_x = shell_rect.right - preview_w - 70
         preview_y = shell_rect.y + 250
         radius = 26
@@ -533,13 +432,13 @@ class UI :
     
 
     def draw_home_feature_pills(self, shell_rect):
-        preview_w = 600
-        preview_h = 330
+        preview_w = 630
+        preview_h = 350
         preview_x = shell_rect.right - preview_w - 80
         preview_y = shell_rect.y + 220
 
         pill1 = pygame.Rect(preview_x - 150, preview_y + 1, 250, 82)
-        pill2 = pygame.Rect(preview_x + preview_w - 180, preview_y + preview_h + 15, 250, 82)
+        pill2 = pygame.Rect(preview_x + preview_w - 180, preview_y + preview_h + 25, 250, 82)
 
         self.draw_feature_pill(
             pill1,
@@ -566,7 +465,7 @@ class UI :
 
     def draw_home_hero(self, shell_rect):
         hero_x = shell_rect.x + 70
-        hero_y = shell_rect.y + 150
+        hero_y = shell_rect.y + 200
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -618,7 +517,7 @@ class UI :
         self.screen.blit(desc2, (hero_x, desc_y + 44))
         self.screen.blit(desc3, (hero_x, desc_y + 70))
 
-        button_y = desc_y + 128
+        button_y = desc_y + 135
         start_base = pygame.Rect(hero_x, button_y, 180, 50)
         scenario_base = pygame.Rect(hero_x + 200, button_y, 180, 50)
 
@@ -662,3 +561,94 @@ class UI :
         scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
         scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
         self.screen.blit(scenario_surf, scenario_text_rect)
+    
+    def draw_home_nav(self, shell_rect):
+        nav_y = shell_rect.y + 28
+        pad_x = 40
+        mouse_pos = pygame.mouse.get_pos()
+        speed = 0.30
+
+        brand_color = (232, 236, 242)
+
+        nav_base = (150, 142, 138)
+        nav_hover = (214, 218, 224)
+
+        login_base = (180, 172, 168)
+        login_hover = (228, 232, 238)
+
+        signup_fill = (30, 24, 22)
+        signup_hover_fill = (38, 31, 29)
+        signup_border = (92, 76, 70)
+        signup_hover_border = (125, 104, 98)
+        signup_text_base = (232, 236, 242)
+        signup_text_hover = (245, 247, 250)
+
+        brand_surf = self.fonts["medium"].render("LookFirst", True, brand_color)
+        self.screen.blit(brand_surf, (shell_rect.x + pad_x, nav_y))
+
+        links = ["About", "Features", "Scenarios"]
+        link_spacing = 110
+        center_start_x = shell_rect.centerx - 140
+
+        link_data = [
+            ("about", links[0], center_start_x),
+            ("features", links[1], center_start_x + link_spacing),
+            ("scenarios", links[2], center_start_x + 2 * link_spacing),
+        ]
+
+        for key, label, x in link_data:
+            base_surf = self.fonts["small"].render(label, True, nav_base)
+            rect = base_surf.get_rect(topleft=(x, nav_y + 4))
+            hovered = rect.collidepoint(mouse_pos)
+
+            if key == "about":
+                self.about_hover_t += ((1.0 if hovered else 0.0) - self.about_hover_t) * speed
+                hover_t = self.about_hover_t
+                self.about_rect = rect
+            elif key == "features":
+                self.features_hover_t += ((1.0 if hovered else 0.0) - self.features_hover_t) * speed
+                hover_t = self.features_hover_t
+                self.features_rect = rect
+            else:
+                self.scenarios_hover_t += ((1.0 if hovered else 0.0) - self.scenarios_hover_t) * speed
+                hover_t = self.scenarios_hover_t
+                self.scenarios_rect = rect
+
+            text_color = self.lerp_color(nav_base, nav_hover, hover_t)
+            link_surf = self.fonts["small"].render(label, True, text_color)
+            self.screen.blit(link_surf, rect.topleft)
+
+            underline_w = int(rect.w * hover_t)
+            if underline_w > 0:
+                underline_rect = pygame.Rect(rect.x, rect.bottom + 4, underline_w, 2)
+                pygame.draw.rect(self.screen, (110, 140, 210), underline_rect, border_radius=1)
+
+        signup_base = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
+        signup_hovered = signup_base.collidepoint(mouse_pos)
+        self.signup_hover_t += ((1.0 if signup_hovered else 0.0) - self.signup_hover_t) * speed
+
+        signup_lift = int(round(1 * self.signup_hover_t))
+        signup_rect = signup_base.move(0, -signup_lift)
+        self.signup_rect = signup_rect
+
+        signup_fill_color = self.lerp_color(signup_fill, signup_hover_fill, self.signup_hover_t)
+        signup_border_color = self.lerp_color(signup_border, signup_hover_border, self.signup_hover_t)
+        signup_text_color = self.lerp_color(signup_text_base, signup_text_hover, self.signup_hover_t)
+
+        pygame.draw.rect(self.screen, signup_fill_color, signup_rect, border_radius=12)
+        pygame.draw.rect(self.screen, signup_border_color, signup_rect, width=1, border_radius=12)
+
+        signup_surf = self.fonts["small"].render("Sign Up", True, signup_text_color)
+        signup_text_rect = signup_surf.get_rect(center=signup_rect.center)
+        self.screen.blit(signup_surf, signup_text_rect)
+
+        login_surf_base = self.fonts["small"].render("Log In", True, login_base)
+        login_rect = login_surf_base.get_rect(topleft=(signup_rect.x - 62, nav_y + 4))
+        login_hovered = login_rect.collidepoint(mouse_pos)
+
+        self.login_hover_t += ((1.0 if login_hovered else 0.0) - self.login_hover_t) * speed
+        self.login_rect = login_rect
+
+        login_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
+        login_surf = self.fonts["small"].render("Log In", True, login_color)
+        self.screen.blit(login_surf, login_rect.topleft)
