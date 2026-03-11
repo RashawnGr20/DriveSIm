@@ -8,12 +8,12 @@ class Scene :
         self.scenes = { 
 
             'left_lane_change' : SequenceScene(
-                10,
+                60,
                 ['TOP MIRROR', 'LEFT MIRROR', 'LEFT BLINDSPOT'] 
             ),
 
             '4Way_left_turn' : coverageScene(
-                10,
+                60,
                 ['FORWARD', 'LEFT MIRROR', 'RIGHT MIRROR']
             )
         }
