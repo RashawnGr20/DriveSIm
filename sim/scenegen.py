@@ -11,7 +11,7 @@ class SceneGen :
         self.fps = fps 
         self.font = pygame.font.SysFont(None, 36)
         base_directory = os.path.dirname(__file__)
-        image_path = os.path.join(base_directory, "Proto_images", "german_town_street_4k.png")
+        image_path = os.path.join(base_directory, "Proto_images", "kloppenheim_06_4k.png")
         self.pano = pygame.image.load(image_path).convert()
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
@@ -19,14 +19,41 @@ class SceneGen :
         self.camera_y = 0
         self.camera_initialized = False 
         
-        
-
-    def update(self, pitch, yaw, roll, pose, progress_data=None) : 
-
+        self.state = "home"
+        self.ui = None
+    
+    def handle_events(self) :
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
                 pygame.quit()
                 return False 
+        return True 
+
+
+
+    def update_homepage(self) :
+        self.ui.draw_homepage()
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True 
+
+    
+    def update(self, pitch=None, yaw=None, roll=None, pose=None, progress_data=None) :
+        if not self.handle_events() :
+            return False
+        
+        if self.state == "home": 
+            return self.update_homepage()
+        
+        elif self.state == "simulation" :
+            if pitch is None or yaw is None or roll is None or pose is None : 
+                return True 
+            return self.update_simulation(pitch, yaw, roll, pose, progress_data)
+        
+        return True 
+
+
+    def update_simulation(self, pitch, yaw, roll, pose, progress_data=None) : 
         
         
         minYaw = -70

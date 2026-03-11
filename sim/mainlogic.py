@@ -5,6 +5,7 @@ from feedback import feedBackEngine
 from scenegen import SceneGen
 from scenes import Scene, Metrics
 from UI import UI
+import pygame 
 
 
 scene_manager = Scene("left_lane_change")
@@ -25,6 +26,14 @@ scene = SceneGen(1920,1080,60,)
 ui = UI(scene.screen, scene.W, scene.H)
 
 scene.ui = ui
+
+scene.state = "simulation"
+
+running = False
+while running :
+    running = scene.update()
+
+#pygame.quit()
 
 
 

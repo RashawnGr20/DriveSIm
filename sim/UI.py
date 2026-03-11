@@ -11,6 +11,11 @@ class UI :
         small_font_path = os.path.join(base_dir, "fonts", "Nunito-Regular.ttf")
         
         large_font_path = os.path.join(base_dir, "fonts", "Nunito-SemiBold.ttf")
+
+        hero_title_font_path = os.path.join(base_dir, "fonts", "PlusJakartaSans-SemiBold.ttf")
+
+        preview_path = os.path.join(base_dir, "Proto_images", "preview.png")
+        self.home_preview = pygame.image.load(preview_path).convert()
         
         self.W = screen_width
         self.H = screen_height
@@ -38,7 +43,9 @@ class UI :
         self.fonts = {
         "small": pygame.font.Font(small_font_path, 16),
         "medium": pygame.font.Font(small_font_path, 22), 
-        "large": pygame.font.Font(large_font_path, 32)
+        "hero_small": pygame.font.Font(small_font_path, 16), 
+        "hero": pygame.font.Font(hero_title_font_path, 85),
+        "large": pygame.font.Font(large_font_path, 54)
     
         }
 
@@ -293,5 +300,189 @@ class UI :
         return mapping.get(text, text.title())
 
 
+    def draw_homepage(self) :
+       self.draw_home_background()
+       shell_rect = self.draw_home_shell()
+       self.draw_home_nav(shell_rect)
+       self.draw_home_hero(shell_rect)
+       self.draw_home_preview(shell_rect)
 
-  
+    
+    def draw_home_nav(self, shell_rect):
+        nav_y = shell_rect.y + 28
+        pad_x = 40
+
+        brand_color = (232, 236, 242)
+        nav_color = (150, 142, 138)
+        login_color = (150, 142,138)
+        signup_border = (92, 76, 70)
+        signup_fill = (0, 0, 0, 0)
+        signup_text = (232, 236, 242)
+
+        
+        brand_surf = self.fonts["medium"].render("LookFirst", True, brand_color)
+        self.screen.blit(brand_surf, (shell_rect.x + pad_x, nav_y))
+
+      
+        links = ["About", "Features", "Scenarios"]
+        link_spacing = 110
+        center_start_x = shell_rect.centerx - 140
+
+        for i, label in enumerate(links):
+            link_surf = self.fonts["small"].render(label, True, nav_color)
+            self.screen.blit(link_surf, (center_start_x + i * link_spacing, nav_y + 4))
+
+        signup_rect = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
+        pygame.draw.rect(self.screen, (30, 24, 22), signup_rect, border_radius=12)
+        pygame.draw.rect(self.screen, signup_border, signup_rect, width=1, border_radius=12)
+
+        signup_surf = self.fonts["small"].render("Sign Up", True, signup_text)
+        signup_text_rect = signup_surf.get_rect(center=signup_rect.center)
+        self.screen.blit(signup_surf, signup_text_rect)
+
+        login_surf = self.fonts["small"].render("Log In", True, login_color)
+        login_x = signup_rect.x - 70
+        self.screen.blit(login_surf, (login_x, nav_y + 4))
+    
+   
+    def draw_home_shell(self):
+        margin_x = 20
+        margin_y = 16
+        radius = 32
+
+        shell_rect = pygame.Rect(
+            margin_x,
+            margin_y,
+            self.W - 2 * margin_x,
+            self.H - 2 * margin_y
+        )
+
+        shadow_rect = shell_rect.move(0, 8)
+        pygame.draw.rect(self.screen, (8, 7, 7), shadow_rect, border_radius=radius)
+        pygame.draw.rect(self.screen, (30, 24, 22), shell_rect, border_radius=radius)
+
+        return shell_rect
+    
+    def draw_home_background(self):
+        top = (34, 28, 25)
+        bottom = (14, 11, 10)
+
+        for y in range(self.H):
+            t = y / (self.H - 1)
+
+            r = int(top[0] + (bottom[0] - top[0]) * t)
+            g = int(top[1] + (bottom[1] - top[1]) * t)
+            b = int(top[2] + (bottom[2] - top[2]) * t)
+
+            pygame.draw.line(self.screen, (r, g, b), (0, y), (self.W, y))
+
+        glow = pygame.Surface((420, 420), pygame.SRCALPHA)
+        pygame.draw.circle(glow, (110, 80, 60, 24), (210, 210), 210)
+        self.screen.blit(glow, (self.W - 520, 120))
+
+    def draw_home_hero(self, shell_rect) :
+       
+        hero_x = shell_rect.x + 70
+        hero_y = shell_rect.y + 220
+
+        eyebrow_color = (166, 154, 148)
+        heading_color = (232, 236, 242)
+        desc_color = (156, 144, 139)
+
+        primary_fill = (58, 92, 160)
+        primary_text = (240, 243, 248)
+
+        secondary_fill = (30, 24, 22)
+        secondary_border = (92, 76, 70)
+        secondary_text = (220, 224, 232)
+
+        eyebrow_surf = self.fonts["hero_small"].render("Driving Awareness Training", True, eyebrow_color)
+        self.screen.blit(eyebrow_surf, (hero_x, hero_y))
+
+        heading1 = self.fonts["hero"].render("Driver Observation", True, heading_color)
+        heading2 = self.fonts["hero"].render("Simulator", True, heading_color)
+
+        heading_y = hero_y + 50
+        self.screen.blit(heading1, (hero_x, heading_y))
+        self.screen.blit(heading2, (hero_x, heading_y + heading1.get_height() - 12))
+
+        desc_y = heading_y + heading1.get_height() + heading2.get_height() - 2
+
+        desc1 = self.fonts["hero_small"].render(
+            "Track head movement across panoramic driving scenes",
+            True,
+            desc_color
+        )
+        desc2 = self.fonts["hero_small"].render(
+            "and evaluate mirror checks, blind spot checks,",
+            True,
+            desc_color
+        )
+        desc3 = self.fonts["hero_small"].render(
+            "and scan behavior in real time.",
+            True,
+            desc_color
+        )
+
+        self.screen.blit(desc1, (hero_x, desc_y + 18))
+        self.screen.blit(desc2, (hero_x, desc_y + 44))
+        self.screen.blit(desc3, (hero_x, desc_y + 70))
+
+        button_y = desc_y + 140
+
+        start_rect = pygame.Rect(hero_x, button_y, 180, 50)
+        pygame.draw.rect(self.screen, primary_fill, start_rect, border_radius=14)
+
+        start_surf = self.fonts["small"].render("Start Session", True, primary_text)
+        start_text_rect = start_surf.get_rect(center=start_rect.center)
+        self.screen.blit(start_surf, start_text_rect)
+
+        scenario_rect = pygame.Rect(hero_x + 200, button_y, 180, 50)
+        pygame.draw.rect(self.screen, secondary_fill, scenario_rect, border_radius=14)
+        pygame.draw.rect(self.screen, secondary_border, scenario_rect, width=1, border_radius=14)
+
+        scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
+        scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
+        self.screen.blit(scenario_surf, scenario_text_rect)
+    
+    def draw_home_preview(self, shell_rect):
+        preview_w = 600
+        preview_h = 320
+        preview_x = shell_rect.right - preview_w - 90
+        preview_y = shell_rect.y + 180
+        radius = 26
+
+        preview_rect = pygame.Rect(preview_x, preview_y, preview_w, preview_h)
+
+        #pygame.draw.rect(
+            #self.screen,
+            #(26, 21, 20),
+            #preview_rect,
+            #border_radius=radius
+        #)
+
+       
+
+        inset = 10
+        image_rect = pygame.Rect(
+            preview_rect.x + inset,
+            preview_rect.y + inset,
+            preview_rect.w - 2 * inset,
+            preview_rect.h - 2 * inset
+        )
+
+        scaled_img = pygame.transform.smoothscale(self.home_preview, (image_rect.w, image_rect.h))
+
+        image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        image_surface.blit(scaled_img, (0, 0))
+
+        mask = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(
+            mask,
+            (255, 255, 255, 255),
+            (0, 0, image_rect.w, image_rect.h),
+            border_radius=20
+        )
+
+        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        self.screen.blit(image_surface, (image_rect.x, image_rect.y))
