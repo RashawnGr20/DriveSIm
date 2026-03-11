@@ -74,7 +74,19 @@ class UI :
         self.start_button_rect = None
         self.scenario_button_rect = None
 
-  
+        self.about_rect = None
+        self.features_rect = None
+        self.scenarios_rect = None
+        self.login_rect = None
+        self.signup_rect = None
+
+        self.about_hover_t = 0.0
+        self.features_hover_t = 0.0
+        self.scenarios_hover_t = 0.0
+        self.login_hover_t = 0.0
+        self.signup_hover_t = 0.0
+
+        
     def draw_background_components(self) :
     
       self.draw_background()
@@ -438,15 +450,15 @@ class UI :
         button_y = desc_y + 150
 
         start_rect = pygame.Rect(hero_x, button_y, 180, 50)
-        pygame.draw.rect(self.screen, primary_fill, start_rect, border_radius=14)
+        pygame.draw.rect(self.screen, primary_fill, start_rect, border_radius=18)
 
         start_surf = self.fonts["small"].render("Start Session", True, primary_text)
         start_text_rect = start_surf.get_rect(center=start_rect.center)
         self.screen.blit(start_surf, start_text_rect)
 
         scenario_rect = pygame.Rect(hero_x + 200, button_y, 180, 50)
-        pygame.draw.rect(self.screen, secondary_fill, scenario_rect, border_radius=14)
-        pygame.draw.rect(self.screen, secondary_border, scenario_rect, width=1, border_radius=14)
+        pygame.draw.rect(self.screen, secondary_fill, scenario_rect, border_radius=18)
+        pygame.draw.rect(self.screen, secondary_border, scenario_rect, width=1, border_radius=18)
 
         scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
         scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
@@ -615,7 +627,7 @@ class UI :
         scenario_hovered = scenario_base.collidepoint(mouse_pos)
 
         
-        speed = 0.18
+        speed = 0.30
         self.start_hover_t += ((1.0 if start_hovered else 0.0) - self.start_hover_t) * speed
         self.scenario_hover_t += ((1.0 if scenario_hovered else 0.0) - self.scenario_hover_t) * speed
 
@@ -634,18 +646,18 @@ class UI :
         scenario_border_color = self.lerp_color(secondary_border, secondary_hover_border, self.scenario_hover_t)
 
     
-        start_shadow = start_rect.move(0, 4)
-        pygame.draw.rect(self.screen, (24, 20, 19), start_shadow, border_radius=14)
-        pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=14)
+        #start_shadow = start_rect.move(0, 4)
+        #pygame.draw.rect(self.screen, (24, 20, 19), start_shadow, border_radius=14)
+        pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=18)
 
         start_surf = self.fonts["small"].render("Start Session", True, primary_text)
         start_text_rect = start_surf.get_rect(center=start_rect.center)
         self.screen.blit(start_surf, start_text_rect)
 
         scenario_shadow = scenario_rect.move(0, 4)
-        pygame.draw.rect(self.screen, (24, 20, 19), scenario_shadow, border_radius=14)
-        pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=14)
-        pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=14)
+        pygame.draw.rect(self.screen, (24, 20, 19), scenario_shadow, border_radius=18)
+        pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=18)
+        pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=18)
 
         scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
         scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
