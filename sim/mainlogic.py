@@ -12,7 +12,7 @@ from UI import UI
 scene = SceneGen(1920, 1080, 60)
 ui = UI(scene.screen, scene.W, scene.H)
 scene.ui = ui
-scene.state = "home"
+scene.state = "scene_select"
 
 scene_manager = None
 metrics = None
@@ -52,7 +52,7 @@ running = True
 simulation_initialized = False
 
 while running:
-    
+
     if scene.state != "simulation":
         if simulation_initialized:
             if cap is not None:

@@ -24,7 +24,7 @@ class SceneGen :
 
         self.click_to_state = {
             "start_session": "simulation", 
-            "start_scenario": "scene_select", 
+            "select_scenario": "scene_select", 
             "about": "about", 
             "features": "features", 
             "scenarios": "scene_select", 
