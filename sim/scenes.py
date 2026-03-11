@@ -8,7 +8,7 @@ class Scene :
         self.scenes = { 
 
             'left_lane_change' : SequenceScene(
-                60,
+                15,
                 ['TOP MIRROR', 'LEFT MIRROR', 'LEFT BLINDSPOT'] 
             ),
 
@@ -67,6 +67,7 @@ class SequenceScene :
                     self.step_results[self.curr_step] = "correct"
                     self.observed_for_step[self.curr_step] = pose
                     self.curr_step += 1
+                    self.step_lock = True 
                 
                 
         
@@ -74,6 +75,7 @@ class SequenceScene :
                     self.step_results[self.curr_step] = "missed"
                     self.observed_for_step[self.curr_step] = pose
                     self.curr_step += 1
+                    self.step_lock = True
                 
         
             self.last_pose = pose
