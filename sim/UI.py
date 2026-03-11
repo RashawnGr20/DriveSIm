@@ -240,7 +240,7 @@ class UI :
             return
 
         expected = progress_data["expected"]
-        completed = progress_data["completed"]
+        step_results = progress_data["step_results"]
         current_index = progress_data["current_index"]
 
         start_y = rect.y + 116
@@ -249,30 +249,35 @@ class UI :
         for i, item in enumerate(expected):
             row_y = start_y + i * row_gap
 
-            is_done = item in completed
-            is_current = (current_index == i) if current_index is not None else False
+            status = step_results[i]
+            is_current = (current_index == i) if current_index is not None else False 
 
-            if is_done:
+            if status == "correct":
                 text_color = (220, 228, 236)
-            elif is_current:
+            elif status == "missed": 
+                text_color = (170, 120, 120)
+            elif is_current :
                 text_color = (235, 238, 244)
-            else:
+            else :
                 text_color = (130, 145, 170)
 
             center = (rect.x + 30, row_y + 8)
 
             pygame.draw.circle(self.screen, (36, 46, 72), center, 8)
 
-            if is_current:
-                pygame.draw.circle(self.screen, accent_color, center, 7, 2)
-            elif is_done:
+            if status == "correct":
                 pygame.draw.circle(self.screen, self.colors["success"], center, 4)
-            else:
+            elif status == "missed":
+                pygame.draw.circle(self.screen, (170, 90, 90), center, 4)
+            elif is_current:
+                pygame.draw.circle(self.screen,accent_color, center, 7, 2)
+            else : 
                 pygame.draw.circle(self.screen, (90, 92, 100), center, 4, 1)
 
             label = self.better_pose_naming(item)
             item_surf = self.fonts["small"].render(label, True, text_color)
             self.screen.blit(item_surf, (rect.x + 48, row_y))
+    
     def better_pose_naming(self, text) :
 
         mapping = {

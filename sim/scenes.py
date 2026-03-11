@@ -45,41 +45,49 @@ class SequenceScene :
             self.expected_sequence = expected_sequence
             self.min_glance = min_glance 
             self.curr_step = 0
-            self.observations = []
             self.step_lock = False
             self.last_pose = None
+
+            self.step_results = ["pending"] * len(expected_sequence)
+            self.observed_for_step = [None] * len(expected_sequence)
 
         def evaluate(self, pose, pose_counter) :
 
             if self.curr_step >= len(self.expected_sequence) :
-                    return self.observations
-            else :
-                expected_pose = self.expected_sequence[self.curr_step]
+                    return self.step_results
+            
+            expected_pose = self.expected_sequence[self.curr_step]
        
             if self.last_pose and pose != self.last_pose:
                 self.step_lock = False 
         
 
-            if pose == expected_pose and pose_counter >= self.min_glance and self.step_lock == False:
-                self.curr_step += 1
-                self.step_lock = True
-                self.observations.append(pose) 
+            if pose_counter >= self.min_glance and not self.step_lock:
+                if pose == expected_pose :
+                    self.step_results[self.curr_step] = "correct"
+                    self.observed_for_step[self.curr_step] = pose
+                    self.curr_step += 1
+                
+                
         
-            elif pose in self.expected_sequence and pose != expected_pose and pose_counter >= self.min_glance and self.step_lock == False :
-                self.curr_step += 1
-                self.observations.append(pose)
+                elif pose in self.expected_sequence and pose != expected_pose :
+                    self.step_results[self.curr_step] = "missed"
+                    self.observed_for_step[self.curr_step] = pose
+                    self.curr_step += 1
+                
         
-            else : 
-                pass 
-
             self.last_pose = pose
+
+            if self.curr_step >= len(self.expected_sequence) :
+                return self.step_results
         
         def get_progress_data(self) :
 
             return {
                 'type': "sequence",
                 "expected": self.expected_sequence,
-                "completed": self.observations,
+                "step_results": self.step_results,
+                "observed_for_step": self.observed_for_step, 
                 "current_index": self.curr_step
 
             }
@@ -146,15 +154,10 @@ class Metrics :
             
     
     
-    def sequence_score(self, observations) :
+    def sequence_score(self, step_results) :
 
-        score = 0 
-        for i in range(min(len(self.expected_sequence), len(observations))) :
-            
-            if observations[i] == self.expected_sequence[i] :
-                score += 1
-            
-        return (score / len(self.expected_sequence)) * 100
+        correct = sum(1 for result in step_results if result == "correct")
+        return (correct / len(self.expected_sequence)) * 100 
 
             
         
