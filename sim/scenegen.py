@@ -58,6 +58,12 @@ class SceneGen :
         self.clock.tick(self.fps)
         return True 
 
+    def update_scene_select(self) :
+        self.ui.draw_scene_select()
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True 
+
     
     def update(self, pitch=None, yaw=None, roll=None, pose=None, progress_data=None) :
         if not self.handle_events() :

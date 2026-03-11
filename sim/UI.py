@@ -680,6 +680,8 @@ class UI :
         return None
     
 
-    def update_scene_select(self) :
+    def draw_scene_select(self) :
+        self.draw_home_background()
+        shell_rect = self.draw_home_shell()
 
-        self.ui.draw_scene_select()
+
