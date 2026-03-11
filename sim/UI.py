@@ -15,7 +15,11 @@ class UI :
         hero_title_font_path = os.path.join(base_dir, "fonts", "PlusJakartaSans-SemiBold.ttf")
 
         preview_path = os.path.join(base_dir, "Proto_images", "image.png")
+        select_scene_1 = os.path.join(base_dir, "Proto_images", "select_scene_01.png")
+        select_scene_2 = os.path.join(base_dir, "Proto_images", "select_scene_02.png")
         self.home_preview = pygame.image.load(preview_path).convert()
+        self.select_scene_1 = pygame.image.load(select_scene_1).convert()
+        self.select_scene_2 = pygame.image.load(select_scene_2).convert()
         
         self.W = screen_width
         self.H = screen_height
@@ -688,44 +692,9 @@ class UI :
         self.draw_home_nav(shell_rect)
 
 
-    def draw_scene_card(self, rect, title, subtitle, tag, accent_color):
-        radius = 22
-
-        shadow_rect = rect.move(0, 5)
-        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=radius)
-
-        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
-        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
-
-        tag_rect = pygame.Rect(rect.x + 20, rect.y + 18, 90, 28)
-        pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
-        pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
-
-        tag_surf = self.fonts["hero_small"].render(tag, True, (210, 216, 224))
-        self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
-
-        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 72))
-
- 
-        sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
-        sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
-        self.screen.blit(sub1, (rect.x + 20, rect.y + 110))
-        self.screen.blit(sub2, (rect.x + 20, rect.y + 136))
-
-  
-        button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
-        pygame.draw.rect(self.screen, (42, 34, 31), button_rect, border_radius=12)
-        pygame.draw.rect(self.screen, (82, 70, 66), button_rect, width=1, border_radius=12)
-
-        button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
-        button_text_rect = button_surf.get_rect(center=button_rect.center)
-        self.screen.blit(button_surf, button_text_rect)
-    
-
     def draw_scene_cards(self, shell_rect):
-        card_w = 500
-        card_h = 460
+        card_w = 540
+        card_h = 480
         gap = 40
 
         total_w = 3 * card_w + 2 * gap
@@ -741,7 +710,8 @@ class UI :
             "Left Lane Change",
             ("Checks mirror and blind spot", "sequence before lane movement."),
             "Sequence",
-            (82, 145, 255)
+            (82, 145, 255), 
+            self.select_scene_2
         )
 
         self.draw_scene_card(
@@ -749,7 +719,8 @@ class UI :
             "Four-Way Left Turn",
             ("Evaluates observation coverage", "through an intersection turn."),
             "Coverage",
-            (230, 180, 80)
+            (230, 180, 80),
+            self.select_scene_1
         )
 
         self.draw_scene_card(
@@ -757,7 +728,8 @@ class UI :
             "More Coming Soon",
             ("Additional driving scenarios", "are currently in development."),
             "Soon",
-            (120, 170, 140)
+            (120, 170, 140),
+            self.home_preview
         )
 
     def draw_scene_select_header(self, shell_rect):
@@ -783,7 +755,7 @@ class UI :
         pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
         pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
 
-        image_rect = pygame.Rect(rect.x + 16, rect.y + 16, rect.w - 32, 150)
+        image_rect = pygame.Rect(rect.x + 16, rect.y + 16, rect.w - 32, 170)
 
         pygame.draw.rect(self.screen, (26, 22, 21), image_rect, border_radius=16)
 
@@ -797,21 +769,21 @@ class UI :
 
         self.screen.blit(image_surface, (image_rect.x, image_rect.y))
 
-        tag_rect = pygame.Rect(rect.x + 20, rect.y + 182, 90, 28)
+        tag_rect = pygame.Rect(rect.x + 20, rect.y + 196, 90, 28)
         pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
         pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
 
-        tag_surf = self.fonts["small"].render(tag, True, (210, 216, 224))
+        tag_surf = self.fonts["hero_small"].render(tag, True, (210, 216, 224))
         self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
 
         
         title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 224))
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 250))
 
         sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
         sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
-        self.screen.blit(sub1, (rect.x + 20, rect.y + 264))
-        self.screen.blit(sub2, (rect.x + 20, rect.y + 290))
+        self.screen.blit(sub1, (rect.x + 20, rect.y + 290))
+        self.screen.blit(sub2, (rect.x + 20, rect.y + 311))
 
         
         button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
@@ -821,3 +793,5 @@ class UI :
         button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
         button_text_rect = button_surf.get_rect(center=button_rect.center)
         self.screen.blit(button_surf, button_text_rect)
+
+    
