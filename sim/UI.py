@@ -652,3 +652,34 @@ class UI :
         login_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
         login_surf = self.fonts["small"].render("Log In", True, login_color)
         self.screen.blit(login_surf, login_rect.topleft)
+    
+
+    def get_home_click_target(self, mouse_pos) :
+
+        if self.start_button_rect and self.start_button_rect.collidepoint(mouse_pos) :
+            return "start_session"
+
+        if self.scenario_button_rect and self.scenario_button_rect.collidepoint(mouse_pos):
+            return "select_scenario"
+
+        if self.about_rect and self.about_rect.collidepoint(mouse_pos):
+            return "about"
+
+        if self.features_rect and self.features_rect.collidepoint(mouse_pos):
+            return "features"
+
+        if self.scenarios_rect and self.scenarios_rect.collidepoint(mouse_pos):
+            return "scenarios"
+
+        if self.login_rect and self.login_rect.collidepoint(mouse_pos):
+            return "login"
+
+        if self.signup_rect and self.signup_rect.collidepoint(mouse_pos):
+            return "signup"
+
+        return None
+    
+
+    def update_scene_select(self) :
+
+        self.ui.draw_scene_select()

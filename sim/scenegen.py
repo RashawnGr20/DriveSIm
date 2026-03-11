@@ -21,12 +21,33 @@ class SceneGen :
         
         self.state = "home"
         self.ui = None
+
+        self.click_to_state = {
+            "start_session": "simulation", 
+            "start_scenario": "scene_select", 
+            "about": "about", 
+            "features": "features", 
+            "scenarios": "scene_select", 
+            "login": "login", 
+            "signup": "signup" 
+
+        }
     
     def handle_events(self) :
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
                 pygame.quit()
                 return False 
+        
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 :
+                mouse_pos = event.pos
+
+                if self.state == "home" and self.ui :
+                    target = self.ui.get_home_click_target(mouse_pos)
+
+                    if target in self.click_to_state :
+                        self.state = self.click_to_state[target]
+            
         return True 
 
 
@@ -49,7 +70,8 @@ class SceneGen :
             if pitch is None or yaw is None or roll is None or pose is None : 
                 return True 
             return self.update_simulation(pitch, yaw, roll, pose, progress_data)
-        
+        elif self.state == "scene_select" :
+            return self.update_scene_select()
         return True 
 
 
@@ -105,3 +127,4 @@ class SceneGen :
         self.clock.tick(self.fps)
         return True 
 
+    

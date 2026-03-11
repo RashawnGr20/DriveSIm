@@ -29,11 +29,11 @@ scene.ui = ui
 
 scene.state = "home"
 
-running = True
-while running :
-    running = scene.update()
+#running = True
+#while running :
+    #running = scene.update()
 
-pygame.quit()
+#pygame.quit()
 
 
 
