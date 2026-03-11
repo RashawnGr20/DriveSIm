@@ -27,13 +27,13 @@ ui = UI(scene.screen, scene.W, scene.H)
 
 scene.ui = ui
 
-scene.state = "simulation"
+scene.state = "home"
 
-running = False
+running = True
 while running :
     running = scene.update()
 
-#pygame.quit()
+pygame.quit()
 
 
 

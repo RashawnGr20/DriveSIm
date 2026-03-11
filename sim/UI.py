@@ -14,7 +14,7 @@ class UI :
 
         hero_title_font_path = os.path.join(base_dir, "fonts", "PlusJakartaSans-SemiBold.ttf")
 
-        preview_path = os.path.join(base_dir, "Proto_images", "preview.png")
+        preview_path = os.path.join(base_dir, "Proto_images", "image.png")
         self.home_preview = pygame.image.load(preview_path).convert()
         
         self.W = screen_width
@@ -67,6 +67,12 @@ class UI :
 
 
         self.viewport_rect = pygame.Rect(inner_x, inner_y, inner_w, inner_h)
+
+        self.start_hover_t = 0.0
+        self.scenario_hover_t = 0.0
+
+        self.start_button_rect = None
+        self.scenario_button_rect = None
 
   
     def draw_background_components(self) :
@@ -306,6 +312,7 @@ class UI :
        self.draw_home_nav(shell_rect)
        self.draw_home_hero(shell_rect)
        self.draw_home_preview(shell_rect)
+       self.draw_home_feature_pills(shell_rect)
 
     
     def draw_home_nav(self, shell_rect):
@@ -428,7 +435,7 @@ class UI :
         self.screen.blit(desc2, (hero_x, desc_y + 44))
         self.screen.blit(desc3, (hero_x, desc_y + 70))
 
-        button_y = desc_y + 140
+        button_y = desc_y + 150
 
         start_rect = pygame.Rect(hero_x, button_y, 180, 50)
         pygame.draw.rect(self.screen, primary_fill, start_rect, border_radius=14)
@@ -446,10 +453,10 @@ class UI :
         self.screen.blit(scenario_surf, scenario_text_rect)
     
     def draw_home_preview(self, shell_rect):
-        preview_w = 600
-        preview_h = 320
-        preview_x = shell_rect.right - preview_w - 90
-        preview_y = shell_rect.y + 180
+        preview_w = 680
+        preview_h = 360
+        preview_x = shell_rect.right - preview_w - 70
+        preview_y = shell_rect.y + 250
         radius = 26
 
         preview_rect = pygame.Rect(preview_x, preview_y, preview_w, preview_h)
@@ -486,3 +493,160 @@ class UI :
 
         image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
         self.screen.blit(image_surface, (image_rect.x, image_rect.y))
+    
+
+    def draw_feature_pill(self, rect, title, subtitle, accent_color):
+        radius = 18
+
+        pygame.draw.rect(
+            self.screen,
+            (34, 28, 26),
+            rect,
+            border_radius=radius
+        )
+
+        
+        title_surf = self.fonts["small"].render(title, True, (230, 234, 240))
+        self.screen.blit(title_surf, (rect.x + 18, rect.y + 14))
+
+        subtitle_surf = self.fonts["small"].render(subtitle, True, (156, 144, 139))
+        self.screen.blit(subtitle_surf, (rect.x + 18, rect.y + 40))
+
+        pygame.draw.circle(
+            self.screen,
+            accent_color,
+            (rect.right - 18, rect.y + 18),
+            4
+        )
+    
+
+    def draw_home_feature_pills(self, shell_rect):
+        preview_w = 600
+        preview_h = 330
+        preview_x = shell_rect.right - preview_w - 80
+        preview_y = shell_rect.y + 220
+
+        pill1 = pygame.Rect(preview_x - 150, preview_y + 1, 250, 82)
+        pill2 = pygame.Rect(preview_x + preview_w - 180, preview_y + preview_h + 15, 250, 82)
+
+        self.draw_feature_pill(
+            pill1,
+            "Live Head Tracking",
+            "Panoramic view control",
+            (82, 145, 255)
+        )
+
+        self.draw_feature_pill(
+            pill2,
+            "Observation Checks",
+            "Mirror and blind spot review",
+            (230, 180, 80)
+        )
+    
+
+    def lerp_color(self, c1, c2, t) :
+        return (
+            int(c1[0] + (c2[0] - c1[0]) * t),
+            int(c1[1] + (c2[1] - c1[1]) * t),
+            int(c1[2] + (c2[2] - c1[2]) * t),
+        )
+
+
+    def draw_home_hero(self, shell_rect):
+        hero_x = shell_rect.x + 70
+        hero_y = shell_rect.y + 150
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        eyebrow_color = (166, 154, 148)
+        heading_color = (232, 236, 242)
+        desc_color = (156, 144, 139)
+
+        primary_fill = (58, 92, 160)
+        primary_hover = (74, 110, 184)
+        primary_text = (240, 243, 248)
+
+        secondary_fill = (30, 24, 22)
+        secondary_hover_fill = (38, 31, 29)
+        secondary_border = (92, 76, 70)
+        secondary_hover_border = (120, 100, 94)
+        secondary_text = (220, 224, 232)
+
+        eyebrow_surf = self.fonts["small"].render("Driving Awareness Training", True, eyebrow_color)
+        self.screen.blit(eyebrow_surf, (hero_x, hero_y))
+
+   
+        heading1 = self.fonts["hero"].render("Driver Observation", True, heading_color)
+        heading2 = self.fonts["hero"].render("Simulator", True, heading_color)
+
+        heading_y = hero_y + 34
+        self.screen.blit(heading1, (hero_x, heading_y))
+        self.screen.blit(heading2, (hero_x, heading_y + heading1.get_height() - 12))
+
+    
+        desc_y = heading_y + heading1.get_height() + heading2.get_height() - 2
+
+        desc1 = self.fonts["small"].render(
+            "Track head movement across panoramic driving scenes",
+            True,
+            desc_color
+        )
+        desc2 = self.fonts["small"].render(
+            "and evaluate mirror checks, blind spot checks,",
+            True,
+            desc_color
+        )
+        desc3 = self.fonts["small"].render(
+            "and scan behavior in real time.",
+            True,
+            desc_color
+        )
+
+        self.screen.blit(desc1, (hero_x, desc_y + 18))
+        self.screen.blit(desc2, (hero_x, desc_y + 44))
+        self.screen.blit(desc3, (hero_x, desc_y + 70))
+
+        button_y = desc_y + 128
+        start_base = pygame.Rect(hero_x, button_y, 180, 50)
+        scenario_base = pygame.Rect(hero_x + 200, button_y, 180, 50)
+
+        
+        start_hovered = start_base.collidepoint(mouse_pos)
+        scenario_hovered = scenario_base.collidepoint(mouse_pos)
+
+        
+        speed = 0.18
+        self.start_hover_t += ((1.0 if start_hovered else 0.0) - self.start_hover_t) * speed
+        self.scenario_hover_t += ((1.0 if scenario_hovered else 0.0) - self.scenario_hover_t) * speed
+
+        start_lift = int(round(2 * self.start_hover_t))
+        scenario_lift = int(round(2 * self.scenario_hover_t))
+
+        start_rect = start_base.move(0, -start_lift)
+        scenario_rect = scenario_base.move(0, -scenario_lift)
+
+
+        self.start_button_rect = start_rect
+        self.scenario_button_rect = scenario_rect
+
+        start_fill_color = self.lerp_color(primary_fill, primary_hover, self.start_hover_t)
+        scenario_fill_color = self.lerp_color(secondary_fill, secondary_hover_fill, self.scenario_hover_t)
+        scenario_border_color = self.lerp_color(secondary_border, secondary_hover_border, self.scenario_hover_t)
+
+    
+        start_shadow = start_rect.move(0, 4)
+        pygame.draw.rect(self.screen, (24, 20, 19), start_shadow, border_radius=14)
+        pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=14)
+
+        start_surf = self.fonts["small"].render("Start Session", True, primary_text)
+        start_text_rect = start_surf.get_rect(center=start_rect.center)
+        self.screen.blit(start_surf, start_text_rect)
+
+        scenario_shadow = scenario_rect.move(0, 4)
+        pygame.draw.rect(self.screen, (24, 20, 19), scenario_shadow, border_radius=14)
+        pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=14)
+        pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=14)
+
+        scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
+        scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
+        self.screen.blit(scenario_surf, scenario_text_rect)
