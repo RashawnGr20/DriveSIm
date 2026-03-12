@@ -105,6 +105,12 @@ class UI :
         self.start_intro_hover_t = 0.0
         self.back_intro_hover_t = 0.0
 
+        self.retry_button_rect = None
+        self.results_back_button_rect = None
+
+        self.retry_hover_t = 0.0
+        self.results_back_hover_t = 0.0
+
         
     def draw_background_components(self) :
     
@@ -1057,6 +1063,194 @@ class UI :
             return "start_simulation"
 
         if self.back_intro_button_rect and self.back_intro_button_rect.collidepoint(mouse_pos):
+            return "back_to_scenarios"
+
+        return None
+
+
+    def draw_results(self, selected_scene, score, result) :
+
+        self.draw_home_background()
+        shell_rect = self.draw_home_shell()
+        self.draw_home_nav(shell_rect)
+
+        scene_title = "Session Results"
+        if hasattr(self, "scene_lookup") and selected_scene in self.scene_lookup:
+            scene_title = self.scene_lookup[selected_scene]["title"]
+
+        self.draw_results_header(shell_rect, scene_title)
+        self.draw_results_content(shell_rect, scene_title, score, result)
+    
+
+    def draw_results_header(self, shell_rect, scene_title):
+        x = shell_rect.x + 70
+        y = shell_rect.y + 95
+
+        title_surf = self.fonts["hero"].render("Session Complete", True, (232, 236, 242))
+        self.screen.blit(title_surf, (x, y))
+
+        sub_surf = self.fonts["medium"].render(scene_title, True, (186, 176, 170))
+        self.screen.blit(sub_surf, (x, y + 113))
+    
+
+    def draw_results_content(self, shell_rect, scene_title, score, result):
+        if score is None:
+            score = 0
+
+        expected = []
+        statuses = []
+
+        if isinstance(result, list):
+            statuses = result
+
+        if hasattr(self, "scene_lookup"):
+            reverse_key = None
+            for key, data in self.scene_lookup.items():
+                if data["title"] == scene_title:
+                    reverse_key = key
+                    break
+            if reverse_key:
+                expected = self.scene_lookup[reverse_key]["required_checks"]
+
+        if not expected and len(statuses) == 3:
+            expected = ["STEP 1", "STEP 2", "STEP 3"]
+
+        completed = []
+        missed = []
+
+        for i, status in enumerate(statuses):
+            label = expected[i] if i < len(expected) else f"Step {i+1}"
+
+            if status == "correct":
+                completed.append(label)
+            elif status == "missed":
+                missed.append(label)
+
+        score_x = shell_rect.x + 70
+        score_y = shell_rect.y + 290
+
+        score_label_surf = self.fonts["small"].render("Overall Score", True, (166, 154, 148))
+        self.screen.blit(score_label_surf, (score_x, score_y))
+
+        score_text = f"{int(round(score))}%"
+        score_surf = self.fonts["hero"].render(score_text, True, (232, 236, 242))
+        self.screen.blit(score_surf, (score_x, score_y + 28))
+
+        detail_y = shell_rect.y + 500
+        card_w = 600
+        card_h = 330
+        gap = 28
+
+        completed_rect = pygame.Rect(shell_rect.x + 70, detail_y, card_w, card_h)
+        missed_rect = pygame.Rect(shell_rect.x + 70 + card_w + gap, detail_y, card_w, card_h)
+
+        self.draw_results_list_card(completed_rect, "Completed", completed, (90, 200, 120))
+        self.draw_results_list_card(missed_rect, "Missed", missed, (210, 120, 110))
+
+        self.draw_results_buttons(shell_rect)
+    
+
+    def draw_score_card(self, rect, score):
+        radius = 22
+
+        pygame.draw.rect(self.screen, (24, 20, 19), rect.move(0, 5), border_radius=radius)
+        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+
+        label_surf = self.fonts["small"].render("Overall Score", True, (166, 154, 148))
+        self.screen.blit(label_surf, (rect.x + 24, rect.y + 22))
+
+        score_text = f"{int(round(score))}%"
+        score_surf = self.fonts["hero"].render(score_text, True, (232, 236, 242))
+        self.screen.blit(score_surf, (rect.x + 24, rect.y + 58))
+    
+
+    def draw_results_list_card(self, rect, title, items, accent_color):
+        radius = 22
+
+        pygame.draw.rect(self.screen, (24, 20, 19), rect.move(0, 5), border_radius=radius)
+        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+
+        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
+        self.screen.blit(title_surf, (rect.x + 22, rect.y + 20))
+
+        start_y = rect.y + 72
+        row_gap = 32
+
+        if not items:
+            empty_surf = self.fonts["small"].render("None", True, (156, 144, 139))
+            self.screen.blit(empty_surf, (rect.x + 22, start_y))
+            return
+
+        for i, item in enumerate(items):
+            row_y = start_y + i * row_gap
+
+            pygame.draw.circle(self.screen, (42, 34, 31), (rect.x + 28, row_y + 8), 8)
+            pygame.draw.circle(self.screen, accent_color, (rect.x + 28, row_y + 8), 4)
+
+            label = self.better_pose_naming(item)
+            item_surf = self.fonts["small"].render(label, True, (214, 220, 228))
+            self.screen.blit(item_surf, (rect.x + 44, row_y))
+    
+    def draw_results_buttons(self, shell_rect):
+        mouse_pos = pygame.mouse.get_pos()
+        speed = 0.30
+
+        primary_fill = (58, 92, 160)
+        primary_hover = (74, 110, 184)
+        primary_text = (240, 243, 248)
+
+        secondary_fill = (30, 24, 22)
+        secondary_hover_fill = (38, 31, 29)
+        secondary_border = (92, 76, 70)
+        secondary_hover_border = (120, 100, 94)
+        secondary_text = (220, 224, 232)
+
+        y = shell_rect.bottom - 92
+        x = shell_rect.right - 430
+
+        retry_base = pygame.Rect(x, y, 180, 50)
+        back_base = pygame.Rect(x + 200, y, 180, 50)
+
+        retry_hovered = retry_base.collidepoint(mouse_pos)
+        back_hovered = back_base.collidepoint(mouse_pos)
+
+        self.retry_hover_t += ((1.0 if retry_hovered else 0.0) - self.retry_hover_t) * speed
+        self.results_back_hover_t += ((1.0 if back_hovered else 0.0) - self.results_back_hover_t) * speed
+
+        retry_lift = int(round(2 * self.retry_hover_t))
+        back_lift = int(round(2 * self.results_back_hover_t))
+
+        retry_rect = retry_base.move(0, -retry_lift)
+        back_rect = back_base.move(0, -back_lift)
+
+        self.retry_button_rect = retry_rect
+        self.results_back_button_rect = back_rect
+
+        retry_fill = self.lerp_color(primary_fill, primary_hover, self.retry_hover_t)
+        back_fill = self.lerp_color(secondary_fill, secondary_hover_fill, self.results_back_hover_t)
+        back_border = self.lerp_color(secondary_border, secondary_hover_border, self.results_back_hover_t)
+
+        pygame.draw.rect(self.screen, (24, 20, 19), retry_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, retry_fill, retry_rect, border_radius=14)
+
+        retry_surf = self.fonts["small"].render("Retry Scenario", True, primary_text)
+        self.screen.blit(retry_surf, retry_surf.get_rect(center=retry_rect.center))
+
+        pygame.draw.rect(self.screen, (24, 20, 19), back_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, back_fill, back_rect, border_radius=14)
+        pygame.draw.rect(self.screen, back_border, back_rect, width=1, border_radius=14)
+
+        back_surf = self.fonts["small"].render("Back to Scenarios", True, secondary_text)
+        self.screen.blit(back_surf, back_surf.get_rect(center=back_rect.center))
+    
+
+    def get_results_click_target(self, mouse_pos):
+        if self.retry_button_rect and self.retry_button_rect.collidepoint(mouse_pos):
+            return "retry_scenario"
+
+        if self.results_back_button_rect and self.results_back_button_rect.collidepoint(mouse_pos):
             return "back_to_scenarios"
 
         return None

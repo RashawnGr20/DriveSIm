@@ -55,6 +55,10 @@ class SceneGen :
                 "image_key": "select_scene_1"
         }
     }
+        
+        self.transition_alpha = 0
+        self.is_fading_in = False
+        self.fade_speed = 16
 
     def handle_events(self) :
         for event in pygame.event.get()  :
@@ -70,16 +74,18 @@ class SceneGen :
 
                     if target in self.click_to_state :
                         self.state = self.click_to_state[target]
+                        self.start_fade_in()
                 elif self.state == "scene_select" and self.ui :
                     target = self.ui.get_scene_select_click_target(mouse_pos)
 
                     if target == "left_lane_change" :
                         self.selected_scene = "left_lane_change"
                         self.state = "scene_intro"
-
+                        self.start_fade_in()
                     elif target == "four_way_left_turn":
                         self.selected_scene = "4Way_left_turn"
                         self.state = "scene_intro"
+                        self.start_fade_in()
 
                     elif target == "coming_soon":
                         print("More scenarios coming soon.")
@@ -88,21 +94,50 @@ class SceneGen :
 
                     if target == "start_simulation" :
                         self.state = "simulation"
+                        self.start_fade_in()
                     elif target == "back_to_scenarios" :
                         self.state = "scene_select"
+                        self.start_fade_in()
+                
+                elif self.state == "results" and self.ui :
+                    target = self.ui.get_results_click_target(mouse_pos)
 
+                    if target == "retry_scenario" :
+                        self.state = "scene_intro"
+                        self.start_fade_in()
+
+                    elif target == "back_to_scenarios" :
+                        self.state = "scene_select"
+                        self.start_fade_in()
         return True 
 
+    def start_fade_in(self) :
+        self.transition_alpha = 220
+        self.is_fading_in = True 
+    
+    def draw_fade_overlay(self):
+        if not self.is_fading_in:
+            return
 
+        overlay = pygame.Surface((self.W, self.H), pygame.SRCALPHA)
+        overlay.fill((18, 14, 13, self.transition_alpha))
+        self.screen.blit(overlay, (0, 0))
+
+        self.transition_alpha -= self.fade_speed
+        if self.transition_alpha <= 0:
+            self.transition_alpha = 0
+            self.is_fading_in = False
 
     def update_homepage(self) :
         self.ui.draw_homepage()
+        self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True 
 
     def update_scene_select(self) :
         self.ui.draw_scene_select()
+        self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True 
@@ -110,12 +145,15 @@ class SceneGen :
     def update_scene_intro(self):
         scene_data = self.scene_info.get(self.selected_scene)
         self.ui.draw_scene_intro(scene_data)
+        self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True
 
     def update_results(self):
-        self.ui.draw_results(self.selected_scene, self.last_score, self.last_result)
+        scene_data = self.scene_info.get(self.selected_scene)
+        self.ui.draw_results(scene_data, self.last_score, self.last_result)
+        self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True
@@ -191,7 +229,7 @@ class SceneGen :
         
         
        
-
+        self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True 
