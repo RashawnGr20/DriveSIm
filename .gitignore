@@ -1,5 +1,6 @@
 # Ignore virtual environments
 drivesim_env/
 derivesim_env/
+backend_env/
 *.pyc
 __pycache__/  

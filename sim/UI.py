@@ -14,7 +14,7 @@ class UI :
 
         hero_title_font_path = os.path.join(base_dir, "fonts", "PlusJakartaSans-SemiBold.ttf")
 
-        preview_path = os.path.join(base_dir, "Proto_images", "image.png")
+        preview_path = os.path.join(base_dir, "Proto_images", "image_preview_2.png")
         select_scene_1 = os.path.join(base_dir, "Proto_images", "select_scene_01.png")
         select_scene_2 = os.path.join(base_dir, "Proto_images", "select_scene_02.png")
         self.home_preview = pygame.image.load(preview_path).convert()
@@ -83,7 +83,8 @@ class UI :
 
     "scene_card_1": (210, 150, 90),
     "scene_card_2": (162, 120, 84),
-    "scene_card_3": (224, 176, 112)
+    "scene_card_3": (224, 176, 112),
+
 }
         
         self.fonts = {
@@ -534,11 +535,11 @@ class UI :
         secondary_hover_border = self.c("border_hover")
         secondary_text = self.c("text_soft")
 
-        eyebrow_surf = self.fonts["small"].render("Driving Awareness Training", True, eyebrow_color)
+        eyebrow_surf = self.fonts["small"].render("Making better drivers", True, eyebrow_color)
         self.screen.blit(eyebrow_surf, (hero_x, hero_y))
 
-        heading1 = self.fonts["hero"].render("Driver Observation", True, heading_color)
-        heading2 = self.fonts["hero"].render("Simulator", True, heading_color)
+        heading1 = self.fonts["hero"].render("Driver Awareness", True, heading_color)
+        heading2 = self.fonts["hero"].render("Trainer", True, heading_color)
 
         heading_y = hero_y + 34
         self.screen.blit(heading1, (hero_x, heading_y))
@@ -590,15 +591,15 @@ class UI :
         scenario_fill_color = self.lerp_color(secondary_fill, secondary_hover_fill, self.scenario_hover_t)
         scenario_border_color = self.lerp_color(secondary_border, secondary_hover_border, self.scenario_hover_t)
 
-        pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=18)
+        pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=36)
 
         start_surf = self.fonts["small"].render("Start Session", True, primary_text)
         start_text_rect = start_surf.get_rect(center=start_rect.center)
         self.screen.blit(start_surf, start_text_rect)
 
-        scenario_shadow = scenario_rect.move(0, 4)
-        pygame.draw.rect(self.screen, self.c("surface_shadow"), scenario_shadow, border_radius=36)
-        pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=18)
+        #scenario_shadow = scenario_rect.move(0, 4)
+        #pygame.draw.rect(self.screen, self.c("surface_shadow"), scenario_shadow, border_radius=36)
+        pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=36)
         pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=36)
 
         scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)

@@ -180,15 +180,6 @@ class Metrics :
         self.glance_data = []
     
     
-    def record_glance(self, fps, pose) :
-        
-        if pose != self.last_pose :
-            duration = self.pose_counter / fps
-            self.glance_data.append((self.last_pose, duration))
-            
-        self.last_pose = pose
-            
-    
     
     def sequence_score(self, step_results) :
 
