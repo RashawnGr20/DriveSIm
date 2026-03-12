@@ -1068,18 +1068,18 @@ class UI :
         return None
 
 
-    def draw_results(self, selected_scene, score, result) :
+    def draw_results(self, scene_data, score, result) :
 
         self.draw_home_background()
         shell_rect = self.draw_home_shell()
         self.draw_home_nav(shell_rect)
 
         scene_title = "Session Results"
-        if hasattr(self, "scene_lookup") and selected_scene in self.scene_lookup:
-            scene_title = self.scene_lookup[selected_scene]["title"]
+        if scene_data :
+            scene_title = scene_data["title"]
 
         self.draw_results_header(shell_rect, scene_title)
-        self.draw_results_content(shell_rect, scene_title, score, result)
+        self.draw_results_content(shell_rect, scene_data, score, result)
     
 
     def draw_results_header(self, shell_rect, scene_title):
@@ -1093,27 +1093,21 @@ class UI :
         self.screen.blit(sub_surf, (x, y + 113))
     
 
-    def draw_results_content(self, shell_rect, scene_title, score, result):
+    def draw_results_content(self, shell_rect, scene_data, score, result):
         if score is None:
             score = 0
 
         expected = []
         statuses = []
 
-        if isinstance(result, list):
-            statuses = result
-
-        if hasattr(self, "scene_lookup"):
-            reverse_key = None
-            for key, data in self.scene_lookup.items():
-                if data["title"] == scene_title:
-                    reverse_key = key
-                    break
-            if reverse_key:
-                expected = self.scene_lookup[reverse_key]["required_checks"]
-
-        if not expected and len(statuses) == 3:
-            expected = ["STEP 1", "STEP 2", "STEP 3"]
+        if scene_data : 
+            expected = scene_data["required_checks"]
+            
+        if isinstance(result, list) :
+            statuses = result 
+        
+        if not expected and statuses :
+            expected  = [f"STEP {i+1}" for i in range(len(statuses))]
 
         completed = []
         missed = []
@@ -1127,7 +1121,7 @@ class UI :
                 missed.append(label)
 
         score_x = shell_rect.x + 70
-        score_y = shell_rect.y + 290
+        score_y = shell_rect.y + 245
 
         score_label_surf = self.fonts["small"].render("Overall Score", True, (166, 154, 148))
         self.screen.blit(score_label_surf, (score_x, score_y))
