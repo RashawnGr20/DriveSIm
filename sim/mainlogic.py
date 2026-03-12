@@ -12,7 +12,8 @@ from UI import UI
 scene = SceneGen(1920, 1080, 60)
 ui = UI(scene.screen, scene.W, scene.H)
 scene.ui = ui
-scene.state = "home"
+scene.selected_scene = "left_lane_change"
+scene.state = "scene_intro"
 
 scene_manager = None
 metrics = None

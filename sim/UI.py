@@ -47,7 +47,8 @@ class UI :
         self.fonts = {
         "small": pygame.font.Font(small_font_path, 16),
         "medium": pygame.font.Font(small_font_path, 22), 
-        "hero_small": pygame.font.Font(small_font_path, 14), 
+        "hero_small": pygame.font.Font(small_font_path, 14),
+        "intro_small": pygame.font.Font(small_font_path, 19), 
         "hero": pygame.font.Font(hero_title_font_path, 85),
         "large": pygame.font.Font(large_font_path, 54)
     
@@ -927,7 +928,7 @@ class UI :
             shell_rect.x + 34,
             shell_rect.y + 86,
             shell_rect.w - 68,
-            330
+            420
         )
 
         shadow_rect = preview_rect.move(0, 6)
@@ -959,8 +960,8 @@ class UI :
         mouse_pos = pygame.mouse.get_pos()
         speed = 0.12
 
-        content_x = shell_rect.x + 54
-        content_y = shell_rect.y + 455
+        content_x = shell_rect.x + 45
+        content_y = shell_rect.y + 520
 
         title_color = (232, 236, 242)
         desc_color = (156, 144, 139)
@@ -979,25 +980,25 @@ class UI :
         secondary_hover_border = (120, 100, 94)
         secondary_text = (220, 224, 232)
 
-        chip_label = f'{scene_data["type"]} Scenario'
+        chip_label = f'{scene_data["scenario_type"]} Scenario'
         chip_surf = self.fonts["small"].render(chip_label, True, chip_text)
-        chip_rect = pygame.Rect(content_x, content_y, chip_surf.get_width() + 28, 30)
+        chip_rect = pygame.Rect(content_x, content_y + 20, chip_surf.get_width() + 28, 30)
 
         pygame.draw.rect(self.screen, chip_fill, chip_rect, border_radius=12)
         self.screen.blit(chip_surf, (chip_rect.x + 14, chip_rect.y + 5))
 
         title_surf = self.fonts["hero"].render(scene_data["title"], True, title_color)
-        self.screen.blit(title_surf, (content_x, content_y + 44))
+        self.screen.blit(title_surf, (content_x, content_y + 75))
 
         desc = scene_data["description"]
         desc_surf = self.fonts["small"].render(desc, True, desc_color)
-        self.screen.blit(desc_surf, (content_x, content_y + 110))
+        self.screen.blit(desc_surf, (content_x, content_y + 190))
 
         section_surf = self.fonts["small"].render("Required Checks", True, section_color)
-        self.screen.blit(section_surf, (content_x, content_y + 154))
+        self.screen.blit(section_surf, (content_x, content_y + 270))
 
         checks = scene_data["required_checks"]
-        list_y = content_y + 188
+        list_y = content_y + 300
         row_gap = 30
 
         for i, item in enumerate(checks):
@@ -1011,8 +1012,8 @@ class UI :
             item_surf = self.fonts["small"].render(label, True, (214, 220, 228))
             self.screen.blit(item_surf, (content_x + 24, row_y))
 
-        button_y = content_y + 178
-        button_x = shell_rect.right - 430
+        button_y = content_y + 450
+        button_x = shell_rect.right - 1850
 
         start_base = pygame.Rect(button_x, button_y, 180, 50)
         back_base = pygame.Rect(button_x + 200, button_y, 180, 50)
