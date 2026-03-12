@@ -2,5 +2,6 @@
 drivesim_env/
 derivesim_env/
 backend_env/
+.env
 *.pyc
 __pycache__/  
