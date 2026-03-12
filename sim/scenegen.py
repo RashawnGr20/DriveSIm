@@ -21,9 +21,13 @@ class SceneGen :
         
         self.state = "home"
         self.ui = None
+        self.selected_scene = None
+        self.last_score = None 
+        self.last_result = None
+
 
         self.click_to_state = {
-            "start_session": "simulation", 
+            "start_session": "scene_select", 
             "select_scenario": "scene_select", 
             "about": "about", 
             "features": "features", 
@@ -32,7 +36,26 @@ class SceneGen :
             "signup": "signup" 
 
         }
-    
+
+
+        self.scene_info = { 
+            "left_lane_change": {
+                "title": "Left Lane Change",
+                "scenario_type": "Sequence",
+                "description": "Check the required mirror and blind spot observations before lane movement.",
+                "required_checks": ["TOP MIRROR", "LEFT MIRROR", "LEFT BLINDSPOT"],
+               "image_key": "select_scene_2"
+            },
+            
+            "4Way_left_turn": {
+                "title": "Four-Way Left Turn",
+                "scenario_type": "Coverage",
+                "description": "Observe the key zones required for a safe left turn through the intersection.",
+                "required_checks": ["FORWARD", "LEFT MIRROR", "RIGHT MIRROR"],
+                "image_key": "select_scene_1"
+        }
+    }
+
     def handle_events(self) :
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
@@ -47,7 +70,27 @@ class SceneGen :
 
                     if target in self.click_to_state :
                         self.state = self.click_to_state[target]
-            
+                elif self.state == "scene_select" and self.ui :
+                    target = self.ui.get_scene_select_click_target(mouse_pos)
+
+                    if target == "left_lane_change" :
+                        self.selected_scene = "left_lane_change"
+                        self.state = "scene_intro"
+
+                    elif target == "four_way_left_turn":
+                        self.selected_scene = "4Way_left_turn"
+                        self.state = "scene_intro"
+
+                    elif target == "coming_soon":
+                        print("More scenarios coming soon.")
+                elif self.state  == "scene_intro" and self.ui :
+                    target = self.ui.get_scene_intro_click_target(mouse_pos)
+
+                    if target == "start_simulation" :
+                        self.state = "simulation"
+                    elif target == "back_to_scenarios" :
+                        self.state = "scene_select"
+
         return True 
 
 
@@ -63,6 +106,19 @@ class SceneGen :
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True 
+    
+    def update_scene_intro(self):
+        scene_data = self.scene_info.get(self.selected_scene)
+        self.ui.draw_scene_intro(scene_data)
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True
+
+    def update_results(self):
+        self.ui.draw_results(self.selected_scene, self.last_score, self.last_result)
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True
 
     
     def update(self, pitch=None, yaw=None, roll=None, pose=None, progress_data=None) :
@@ -72,12 +128,19 @@ class SceneGen :
         if self.state == "home": 
             return self.update_homepage()
         
+        elif self.state == "scene_select" :
+            return self.update_scene_select()
+
+        elif self.state == "scene_intro" :
+            return self.update_scene_intro()
+        
         elif self.state == "simulation" :
             if pitch is None or yaw is None or roll is None or pose is None : 
                 return True 
             return self.update_simulation(pitch, yaw, roll, pose, progress_data)
-        elif self.state == "scene_select" :
-            return self.update_scene_select()
+        elif self.state == "results" :
+            return self.update_results()
+        
         return True 
 
 

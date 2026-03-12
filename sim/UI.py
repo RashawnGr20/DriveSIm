@@ -90,6 +90,20 @@ class UI :
         self.login_hover_t = 0.0
         self.signup_hover_t = 0.0
 
+        self.scene_card_1_rect = None
+        self.scene_card_2_rect = None
+        self.scene_card_3_rect = None
+
+        self.scene_card_1_hover_t = 0.0
+        self.scene_card_2_hover_t = 0.0
+        self.scene_card_3_hover_t = 0.0
+
+        self.start_intro_button_rect = None
+        self.back_intro_button_rect = None
+
+        self.start_intro_hover_t = 0.0
+        self.back_intro_hover_t = 0.0
+
         
     def draw_background_components(self) :
     
@@ -692,46 +706,6 @@ class UI :
         self.draw_home_nav(shell_rect)
 
 
-    def draw_scene_cards(self, shell_rect):
-        card_w = 540
-        card_h = 480
-        gap = 40
-
-        total_w = 3 * card_w + 2 * gap
-        start_x = shell_rect.centerx - total_w // 2
-        y = shell_rect.y + 300
-
-        card1 = pygame.Rect(start_x, y, card_w, card_h)
-        card2 = pygame.Rect(start_x + card_w + gap, y, card_w, card_h)
-        card3 = pygame.Rect(start_x + 2 * (card_w + gap), y, card_w, card_h)
-
-        self.draw_scene_card(
-            card1,
-            "Left Lane Change",
-            ("Checks mirror and blind spot", "sequence before lane movement."),
-            "Sequence",
-            (82, 145, 255), 
-            self.select_scene_2
-        )
-
-        self.draw_scene_card(
-            card2,
-            "Four-Way Left Turn",
-            ("Evaluates observation coverage", "through an intersection turn."),
-            "Coverage",
-            (230, 180, 80),
-            self.select_scene_1
-        )
-
-        self.draw_scene_card(
-            card3,
-            "More Coming Soon",
-            ("Additional driving scenarios", "are currently in development."),
-            "Soon",
-            (120, 170, 140),
-            self.home_preview
-        )
-
     def draw_scene_select_header(self, shell_rect):
         x = shell_rect.x + 70
         y = shell_rect.y + 90
@@ -795,3 +769,293 @@ class UI :
         self.screen.blit(button_surf, button_text_rect)
 
     
+    def draw_scene_cards(self, shell_rect):
+        mouse_pos = pygame.mouse.get_pos()
+        speed = 0.43
+
+        card_w = 540
+        card_h = 480
+        gap = 40
+
+        total_w = 3 * card_w + 2 * gap
+        start_x = shell_rect.centerx - total_w // 2
+        y = shell_rect.y + 300
+
+        base_card1 = pygame.Rect(start_x, y, card_w, card_h)
+        base_card2 = pygame.Rect(start_x + card_w + gap, y, card_w, card_h)
+        base_card3 = pygame.Rect(start_x + 2 * (card_w + gap), y, card_w, card_h)
+
+        hovered1 = base_card1.collidepoint(mouse_pos)
+        hovered2 = base_card2.collidepoint(mouse_pos)
+        hovered3 = base_card3.collidepoint(mouse_pos)
+
+        self.scene_card_1_hover_t += ((1.0 if hovered1 else 0.0) - self.scene_card_1_hover_t) * speed
+        self.scene_card_2_hover_t += ((1.0 if hovered2 else 0.0) - self.scene_card_2_hover_t) * speed
+        self.scene_card_3_hover_t += ((1.0 if hovered3 else 0.0) - self.scene_card_3_hover_t) * speed
+
+        lift1 = int(round(4 * self.scene_card_1_hover_t))
+        lift2 = int(round(4 * self.scene_card_2_hover_t))
+        lift3 = int(round(4 * self.scene_card_3_hover_t))
+
+        card1 = base_card1.move(0, -lift1)
+        card2 = base_card2.move(0, -lift2)
+        card3 = base_card3.move(0, -lift3)
+
+        self.scene_card_1_rect = card1
+        self.scene_card_2_rect = card2
+        self.scene_card_3_rect = card3
+
+        self.draw_scene_card(
+            card1,
+            "Left Lane Change",
+            ("Checks mirror and blind spot", "sequence before lane movement."),
+            "Sequence",
+            (82, 145, 255),
+            self.select_scene_2,
+            self.scene_card_1_hover_t
+        )
+
+        self.draw_scene_card(
+            card2,
+            "Four-Way Left Turn",
+            ("Evaluates observation coverage", "through an intersection turn."),
+            "Coverage",
+            (230, 180, 80),
+            self.select_scene_1,
+            self.scene_card_2_hover_t
+        )
+
+        self.draw_scene_card(
+            card3,
+            "More Coming Soon",
+            ("Additional driving scenarios", "are currently in development."),
+            "Soon",
+            (120, 170, 140),
+            self.home_preview,
+            self.scene_card_3_hover_t
+        )
+    
+    def draw_scene_card(self, rect, title, subtitle, tag, accent_color, image, hover_t):
+        radius = 22
+
+        border_base = (70, 58, 54)
+        border_hover = (108, 92, 86)
+        border_color = self.lerp_color(border_base, border_hover, hover_t)
+
+        shadow_rect = rect.move(0, 5)
+        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=radius)
+
+        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, border_color, rect, width=1, border_radius=radius)
+
+        image_extra_h = int(round(20 * hover_t))
+        image_rect = pygame.Rect(
+            rect.x + 16,
+            rect.y + 16,
+            rect.w - 32,
+            165 + image_extra_h
+        )
+
+        pygame.draw.rect(self.screen, (26, 22, 21), image_rect, border_radius=16)
+
+        scaled_img = pygame.transform.smoothscale(image, (image_rect.w, image_rect.h))
+        image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        image_surface.blit(scaled_img, (0, 0))
+
+        mask = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, image_rect.w, image_rect.h), border_radius=16)
+        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.screen.blit(image_surface, (image_rect.x, image_rect.y))
+
+        content_shift = image_extra_h
+
+        tag_rect = pygame.Rect(rect.x + 20, rect.y + 195 + content_shift, 90, 28)
+        pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
+        pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
+
+        tag_surf = self.fonts["small"].render(tag, True, (210, 216, 224))
+        self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
+
+        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 238 + content_shift))
+
+        sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
+        sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
+        self.screen.blit(sub1, (rect.x + 20, rect.y + 278 + content_shift))
+        self.screen.blit(sub2, (rect.x + 20, rect.y + 304 + content_shift))
+
+        button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
+        pygame.draw.rect(self.screen, (42, 34, 31), button_rect, border_radius=12)
+        pygame.draw.rect(self.screen, (82, 70, 66), button_rect, width=1, border_radius=12)
+
+        button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
+        button_text_rect = button_surf.get_rect(center=button_rect.center)
+        self.screen.blit(button_surf, button_text_rect)
+    
+    
+    def get_scene_select_click_target(self, mouse_pos):
+        if self.scene_card_1_rect and self.scene_card_1_rect.collidepoint(mouse_pos):
+            return "left_lane_change"
+
+        if self.scene_card_2_rect and self.scene_card_2_rect.collidepoint(mouse_pos):
+            return "four_way_left_turn"
+
+        if self.scene_card_3_rect and self.scene_card_3_rect.collidepoint(mouse_pos):
+            return "coming_soon"
+
+        return None
+    
+
+    def draw_scene_intro(self, scene_data) :
+        self.draw_home_background()
+        shell_rect = self.draw_home_shell()
+        self.draw_home_nav(shell_rect)
+
+        if not scene_data :
+            return 
+
+        self.draw_scene_intro_preview(shell_rect, scene_data)
+        self.draw_scene_intro_details(shell_rect, scene_data)
+    
+
+    def draw_scene_intro_preview(self, shell_rect, scene_data):
+        image_key = scene_data["image_key"]
+        image = getattr(self, image_key)
+
+        preview_rect = pygame.Rect(
+            shell_rect.x + 34,
+            shell_rect.y + 86,
+            shell_rect.w - 68,
+            330
+        )
+
+        shadow_rect = preview_rect.move(0, 6)
+        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=26)
+
+        pygame.draw.rect(self.screen, (28, 23, 22), preview_rect, border_radius=26)
+        pygame.draw.rect(self.screen, (68, 58, 54), preview_rect, width=1, border_radius=26)
+
+        scaled_img = pygame.transform.smoothscale(image, (preview_rect.w, preview_rect.h))
+        image_surface = pygame.Surface((preview_rect.w, preview_rect.h), pygame.SRCALPHA)
+        image_surface.blit(scaled_img, (0, 0))
+
+        mask = pygame.Surface((preview_rect.w, preview_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(
+            mask,
+            (255, 255, 255, 255),
+            (0, 0, preview_rect.w, preview_rect.h),
+            border_radius=26
+        )
+        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.screen.blit(image_surface, (preview_rect.x, preview_rect.y))
+
+        overlay = pygame.Surface((preview_rect.w, preview_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(overlay, (8, 8, 10, 24), (0, 0, preview_rect.w, preview_rect.h), border_radius=26)
+        self.screen.blit(overlay, (preview_rect.x, preview_rect.y))
+    
+    def draw_scene_intro_details(self, shell_rect, scene_data):
+        mouse_pos = pygame.mouse.get_pos()
+        speed = 0.12
+
+        content_x = shell_rect.x + 54
+        content_y = shell_rect.y + 455
+
+        title_color = (232, 236, 242)
+        desc_color = (156, 144, 139)
+        section_color = (186, 176, 170)
+
+        chip_fill = (42, 34, 31)
+        chip_text = (220, 226, 234)
+
+        primary_fill = (58, 92, 160)
+        primary_hover = (74, 110, 184)
+        primary_text = (240, 243, 248)
+
+        secondary_fill = (30, 24, 22)
+        secondary_hover_fill = (38, 31, 29)
+        secondary_border = (92, 76, 70)
+        secondary_hover_border = (120, 100, 94)
+        secondary_text = (220, 224, 232)
+
+        chip_label = f'{scene_data["type"]} Scenario'
+        chip_surf = self.fonts["small"].render(chip_label, True, chip_text)
+        chip_rect = pygame.Rect(content_x, content_y, chip_surf.get_width() + 28, 30)
+
+        pygame.draw.rect(self.screen, chip_fill, chip_rect, border_radius=12)
+        self.screen.blit(chip_surf, (chip_rect.x + 14, chip_rect.y + 5))
+
+        title_surf = self.fonts["hero"].render(scene_data["title"], True, title_color)
+        self.screen.blit(title_surf, (content_x, content_y + 44))
+
+        desc = scene_data["description"]
+        desc_surf = self.fonts["small"].render(desc, True, desc_color)
+        self.screen.blit(desc_surf, (content_x, content_y + 110))
+
+        section_surf = self.fonts["small"].render("Required Checks", True, section_color)
+        self.screen.blit(section_surf, (content_x, content_y + 154))
+
+        checks = scene_data["required_checks"]
+        list_y = content_y + 188
+        row_gap = 30
+
+        for i, item in enumerate(checks):
+            row_y = list_y + i * row_gap
+            center = (content_x + 8, row_y + 9)
+
+            pygame.draw.circle(self.screen, (42, 34, 31), center, 8)
+            pygame.draw.circle(self.screen, (110, 122, 146), center, 4)
+
+            label = self.better_pose_naming(item)
+            item_surf = self.fonts["small"].render(label, True, (214, 220, 228))
+            self.screen.blit(item_surf, (content_x + 24, row_y))
+
+        button_y = content_y + 178
+        button_x = shell_rect.right - 430
+
+        start_base = pygame.Rect(button_x, button_y, 180, 50)
+        back_base = pygame.Rect(button_x + 200, button_y, 180, 50)
+
+        start_hovered = start_base.collidepoint(mouse_pos)
+        back_hovered = back_base.collidepoint(mouse_pos)
+
+        self.start_intro_hover_t += ((1.0 if start_hovered else 0.0) - self.start_intro_hover_t) * speed
+        self.back_intro_hover_t += ((1.0 if back_hovered else 0.0) - self.back_intro_hover_t) * speed
+
+        start_lift = int(round(2 * self.start_intro_hover_t))
+        back_lift = int(round(2 * self.back_intro_hover_t))
+
+        start_rect = start_base.move(0, -start_lift)
+        back_rect = back_base.move(0, -back_lift)
+
+        self.start_intro_button_rect = start_rect
+        self.back_intro_button_rect = back_rect
+
+        start_fill = self.lerp_color(primary_fill, primary_hover, self.start_intro_hover_t)
+        back_fill = self.lerp_color(secondary_fill, secondary_hover_fill, self.back_intro_hover_t)
+        back_border = self.lerp_color(secondary_border, secondary_hover_border, self.back_intro_hover_t)
+
+        pygame.draw.rect(self.screen, (24, 20, 19), start_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, start_fill, start_rect, border_radius=14)
+
+        start_surf = self.fonts["small"].render("Start Simulation", True, primary_text)
+        start_text_rect = start_surf.get_rect(center=start_rect.center)
+        self.screen.blit(start_surf, start_text_rect)
+
+        pygame.draw.rect(self.screen, (24, 20, 19), back_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, back_fill, back_rect, border_radius=14)
+        pygame.draw.rect(self.screen, back_border, back_rect, width=1, border_radius=14)
+
+        back_surf = self.fonts["small"].render("Back to Scenarios", True, secondary_text)
+        back_text_rect = back_surf.get_rect(center=back_rect.center)
+        self.screen.blit(back_surf, back_text_rect)
+    
+    def get_scene_intro_click_target(self, mouse_pos):
+        if self.start_intro_button_rect and self.start_intro_button_rect.collidepoint(mouse_pos):
+            return "start_simulation"
+
+        if self.back_intro_button_rect and self.back_intro_button_rect.collidepoint(mouse_pos):
+            return "back_to_scenarios"
+
+        return None

@@ -13,7 +13,7 @@ class Scene :
             ),
 
             '4Way_left_turn' : coverageScene(
-                60,
+                15,
                 ['FORWARD', 'LEFT MIRROR', 'RIGHT MIRROR']
             )
         }
@@ -130,7 +130,7 @@ class coverageScene :
             return {
                 'type': "coverage",
                 "expected": list(self.expected_sequence),
-                "completed": list(self.observations),
+                "completed": list(self.checked_zones),
                 "current_index": None
 
             }

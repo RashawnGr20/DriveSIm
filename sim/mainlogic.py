@@ -12,7 +12,7 @@ from UI import UI
 scene = SceneGen(1920, 1080, 60)
 ui = UI(scene.screen, scene.W, scene.H)
 scene.ui = ui
-scene.state = "scene_select"
+scene.state = "home"
 
 scene_manager = None
 metrics = None
@@ -65,7 +65,7 @@ while running:
         continue
 
     if scene.state == "simulation" and not simulation_initialized:
-        scene_manager = Scene("left_lane_change")
+        scene_manager = Scene(scene.selected_scene)
         metrics = Metrics(scene_manager.current_scene.expected_sequence)
 
         cap = cv2.VideoCapture(0)
