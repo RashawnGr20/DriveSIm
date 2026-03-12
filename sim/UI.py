@@ -25,24 +25,66 @@ class UI :
         self.H = screen_height
         self.screen = screen 
         self.panel_size = 150
-        self. colors  = {
         
-        "background": (24, 19, 18),
-        "panel": (30, 30 ,40),
-        "text": (230, 230, 235),
-        "accent": (80, 150, 255),
-        "success": (90, 200, 120),
-        "warning": (230, 180, 80),
-        "divider": (80, 80, 90), 
-        "top_grad": (35, 28, 25),
-        "bottom_grad": (14, 11, 10), 
-        "card_shadow": (7,10,18),  
-        "card_outer": (34, 41, 63),
-        "card_inner": (19, 26, 42),
-        "card_border": (56, 68, 102),
-        "muted": (130, 145, 170),
-        "chip": (42, 56, 88)
-        }
+        self.colors = {
+           "background": (232, 224, 214),
+    "top_grad": (238, 230, 220),
+    "bottom_grad": (220, 210, 198),
+    "glow": (204, 186, 166),
+
+    "shell": (244, 238, 230),
+    "shell_shadow": (198, 184, 170),
+
+    "surface": (255, 252, 247),
+    "surface_2": (246, 240, 232),
+    "surface_3": (238, 230, 220),
+    "surface_hover": (230, 222, 212),
+    "surface_shadow": (208, 196, 182),
+
+    "border": (206, 192, 176),
+    "border_strong": (184, 170, 154),
+    "border_hover": (158, 142, 124),
+    "divider": (214, 200, 184),
+
+    "text": (48, 36, 26),
+    "text_soft": (72, 56, 42),
+    "text_muted": (104, 88, 72),
+    "text_subtle": (124, 106, 88),
+    "text_faint": (148, 128, 110),
+    "text_disabled": (166, 146, 128),
+
+    "accent": (172, 118, 70),
+    "accent_hover": (190, 132, 82),
+    "accent_alt": (204, 150, 100),
+
+    "success": (104, 156, 120),
+    "warning": (208, 156, 86),
+    "danger": (188, 96, 88),
+    "danger_text": (160, 112, 106),
+
+    "chip": (240, 232, 222),
+    "chip_text": (86, 66, 46),
+
+    "overlay_tint": (228, 220, 210),
+    "fade": (222, 214, 204),
+
+    "viewport_outer": (222, 212, 200),
+    "viewport_inner": (210, 198, 186),
+    "indicator_bg": (224, 212, 198),
+    "indicator_idle": (150, 136, 120),
+
+    "panel": (228, 218, 206),
+    "card_shadow": (188, 174, 158),
+    "card_outer": (222, 212, 200),
+    "card_inner": (210, 198, 186),
+    "card_border": (182, 166, 148),
+
+    "muted": (132, 114, 96),
+
+    "scene_card_1": (210, 150, 90),
+    "scene_card_2": (162, 120, 84),
+    "scene_card_3": (224, 176, 112)
+}
         
         self.fonts = {
         "small": pygame.font.Font(small_font_path, 16),
@@ -117,50 +159,47 @@ class UI :
       self.draw_background()
       self.draw_vertical_gradient()
       self.draw_view_shell()
-      
+    
+    def c(self, key) :
+        return self.colors[key]
   
-    def draw_background(self) :
-      self.screen.fill(self.colors["background"])
-
+    def draw_background(self):
+        self.screen.fill(self.c("background"))
+    
     def draw_overlay(self, pose, progress_data=None) :
-      self.draw_smaller_cards(pose,progress_data)
-      
-
-    def draw_vertical_gradient(self) :
-      top = self.colors["top_grad"]
-      bottom = self.colors["bottom_grad"]
+        self.draw_smaller_cards(pose, progress_data)
 
 
-      for y in range(self.H) :
-        t = y / ( self.H - 1)
+    def draw_vertical_gradient(self):
+        top = self.c("top_grad")
+        bottom = self.c("bottom_grad")
 
-         
-        r = int(top[0] + (bottom[0] - top[0]) * t)
-        g = int(top[1] + (bottom[1] - top[1]) * t)
-        b = int(top[2] + (bottom[2] - top[2]) * t)
-        
-        pygame.draw.line(self.screen, (r, g, b), (0, y), (self.W - 1, y ))
-  
-    def draw_view_shell(self) :
+        for y in range(self.H):
+            t = y / (self.H - 1)
 
+            r = int(top[0] + (bottom[0] - top[0]) * t)
+            g = int(top[1] + (bottom[1] - top[1]) * t)
+            b = int(top[2] + (bottom[2] - top[2]) * t)
+
+            pygame.draw.line(self.screen, (r, g, b), (0, y), (self.W - 1, y))
+
+
+    def draw_view_shell(self):
         rect = self.viewport_rect
 
         pygame.draw.rect(
             self.screen,
-            (42, 34, 31), 
-            rect.inflate(14,14),
+            self.c("viewport_outer"),
+            rect.inflate(14, 14),
             border_radius=12
         )
 
-
         pygame.draw.rect(
             self.screen,
-            (22,30,48),
+            self.c("viewport_inner"),
             rect,
             border_radius=10
         )
-
-
 
     def draw_mini_bars(self, rect, values, color):
         bar_w = 10
@@ -194,44 +233,42 @@ class UI :
 
         self.draw_mini_bars(card2, [12, 18, 14, 22, 16, 26, 20], self.colors["accent"])
         self.draw_mini_bars(card3, [20, 24, 28, 22, 18, 25, 30], self.colors["warning"])
-    
-  
+
+
+
     def draw_soft_card(self, rect, title, value, subtitle="", accent_color=None):
         if accent_color is None:
-            accent_color = self.colors["accent"]
+            accent_color = self.c("accent")
 
         radius = 18
-
 
         shadow_rect = rect.move(0, 2)
         pygame.draw.rect(
             self.screen,
-            (11, 8, 7),
+            self.c("surface_shadow"),
             shadow_rect,
             border_radius=radius
         )
 
-    
         pygame.draw.rect(
             self.screen,
-            (48, 39, 36),
+            self.c("surface_3"),
             rect,
             border_radius=radius
         )
 
-
-        title_surf = self.fonts["small"].render(title, True, (156, 144, 139))
+        title_surf = self.fonts["small"].render(title, True, self.c("text_faint"))
         self.screen.blit(title_surf, (rect.x + 20, rect.y + 8))
 
-        value_surf = self.fonts["large"].render(value, True, (232, 236, 242))
+        value_surf = self.fonts["large"].render(value, True, self.c("text"))
         self.screen.blit(value_surf, (rect.x + 20, rect.y + 33))
 
         if subtitle:
-            subtitle_surf = self.fonts["small"].render(subtitle, True, (176, 166, 160))
+            subtitle_surf = self.fonts["small"].render(subtitle, True, self.c("text_muted"))
             self.screen.blit(subtitle_surf, (rect.x + 20, rect.bottom - 30))
 
         pill_rect = pygame.Rect(rect.right - 42, rect.y + 14, 24, 12)
-        pygame.draw.rect(self.screen, (36, 46, 72), pill_rect, border_radius=6)
+        pygame.draw.rect(self.screen, self.c("indicator_bg"), pill_rect, border_radius=6)
         pygame.draw.circle(
             self.screen,
             accent_color,
@@ -239,53 +276,51 @@ class UI :
             3
         )
 
+
     def draw_checklist_card(self, rect, title, pose, progress_data=None, accent_color=None):
         if accent_color is None:
-            accent_color = self.colors["accent"]
+            accent_color = self.c("accent")
 
         radius = 18
 
         shadow_rect = rect.move(0, 2)
         pygame.draw.rect(
             self.screen,
-            (11, 8, 7),
+            self.c("surface_shadow"),
             shadow_rect,
             border_radius=radius
         )
 
         pygame.draw.rect(
             self.screen,
-            (48, 39, 36),
+            self.c("surface_3"),
             rect,
             border_radius=radius
         )
-        
-        title_color = (156, 144, 139)
-        section_color = (176, 166, 160)
-        value_color = (232, 236, 242)
+
+        title_color = self.c("text_faint")
+        section_color = self.c("text_muted")
+        value_color = self.c("text")
 
         title_surf = self.fonts["small"].render(title, True, title_color)
         self.screen.blit(title_surf, (rect.x + 20, rect.y + 8))
 
-        
         live_pose_surf = self.fonts["medium"].render(pose, True, value_color)
         self.screen.blit(live_pose_surf, (rect.x + 20, rect.y + 33))
 
         sub_surf = self.fonts["small"].render("Required checks", True, section_color)
         self.screen.blit(sub_surf, (rect.x + 20, rect.y + 78))
 
-
         pygame.draw.line(
             self.screen,
-            (70, 58, 54),
+            self.c("divider"),
             (rect.x + 20, rect.y + 100),
             (rect.right - 20, rect.y + 100),
             1
         )
 
-        
         if not progress_data:
-            empty_surf = self.fonts["small"].render("No scene data", True, (130, 145, 170))
+            empty_surf = self.fonts["small"].render("No scene data", True, self.c("text_disabled"))
             self.screen.blit(empty_surf, (rect.x + 20, rect.y + 118))
             return
 
@@ -300,58 +335,77 @@ class UI :
             row_y = start_y + i * row_gap
 
             status = step_results[i]
-            is_current = (current_index == i) if current_index is not None else False 
+            is_current = (current_index == i) if current_index is not None else False
 
             if status == "correct":
-                text_color = (220, 228, 236)
-            elif status == "missed": 
-                text_color = (170, 120, 120)
-            elif is_current :
-                text_color = (235, 238, 244)
-            else :
-                text_color = (130, 145, 170)
+                text_color = self.c("text_soft")
+            elif status == "missed":
+                text_color = self.c("danger_text")
+            elif is_current:
+                text_color = self.c("text")
+            else:
+                text_color = self.c("text_disabled")
 
             center = (rect.x + 30, row_y + 8)
 
-            pygame.draw.circle(self.screen, (36, 46, 72), center, 8)
+            pygame.draw.circle(self.screen, self.c("indicator_bg"), center, 8)
 
             if status == "correct":
-                pygame.draw.circle(self.screen, self.colors["success"], center, 4)
+                pygame.draw.circle(self.screen, self.c("success"), center, 4)
             elif status == "missed":
-                pygame.draw.circle(self.screen, (170, 90, 90), center, 4)
+                pygame.draw.circle(self.screen, self.c("danger"), center, 4)
             elif is_current:
-                pygame.draw.circle(self.screen,accent_color, center, 7, 2)
-            else : 
-                pygame.draw.circle(self.screen, (90, 92, 100), center, 4, 1)
+                pygame.draw.circle(self.screen, accent_color, center, 7, 2)
+            else:
+                pygame.draw.circle(self.screen, self.c("indicator_idle"), center, 4, 1)
 
             label = self.better_pose_naming(item)
             item_surf = self.fonts["small"].render(label, True, text_color)
             self.screen.blit(item_surf, (rect.x + 48, row_y))
+
     
     def better_pose_naming(self, text) :
-
+        
         mapping = {
-            "TOP MIRROR": "Top Mirror",
-            "LEFT MIRROR": "Left Mirror",
-            "RIGHT MIRROR": "Right Mirror",
-            "LEFT BLINDSPOT": "Left Blind Spot",
-            "RIGHT BLINDSPOT": "Right Blind Spot",
-            "LOOKING DOWN": "Looking Down",
+            "TOP MIRROR": "Top Mirror", 
+            "LEFT MIRROR": "Left Mirror", 
+            "RIGHT MIRROR": "Right Mirror", 
+            "LEFT BLINDSPOT": "Left Blind Spot", 
+            "RIGHT BLINDSPOT": "Right Blind Spot", 
+            "LOOKING DOWN": "Looking Down", 
             "FORWARD": "Forward"
-        }   
 
-        return mapping.get(text, text.title())
-
-
-    def draw_homepage(self) :
-       self.draw_home_background()
-       shell_rect = self.draw_home_shell()
-       self.draw_home_nav(shell_rect)
-       self.draw_home_hero(shell_rect)
-       self.draw_home_preview(shell_rect)
-       self.draw_home_feature_pills(shell_rect)
-
+        }
     
+        return mapping.get(text, text.title())
+    
+    def draw_homepage(self) :
+        self.draw_home_background()
+        shell_rect = self.draw_home_shell()
+        self.draw_home_nav(shell_rect)
+        self.draw_home_hero(shell_rect)
+        self.draw_home_preview(shell_rect)
+        self.draw_home_feature_pills(shell_rect)
+
+        
+    def draw_home_background(self):
+        top = self.c("top_grad")
+        bottom = self.c("bottom_grad")
+
+        for y in range(self.H):
+            t = y / (self.H - 1)
+
+            r = int(top[0] + (bottom[0] - top[0]) * t)
+            g = int(top[1] + (bottom[1] - top[1]) * t)
+            b = int(top[2] + (bottom[2] - top[2]) * t)
+
+            pygame.draw.line(self.screen, (r, g, b), (0, y), (self.W, y))
+
+        glow = pygame.Surface((420, 420), pygame.SRCALPHA)
+        pygame.draw.circle(glow, (*self.c("glow"), 24), (210, 210), 210)
+        self.screen.blit(glow, (self.W - 520, 120))
+
+
     def draw_home_shell(self):
         margin_x = 20
         margin_y = 16
@@ -365,29 +419,12 @@ class UI :
         )
 
         shadow_rect = shell_rect.move(0, 8)
-        pygame.draw.rect(self.screen, (8, 7, 7), shadow_rect, border_radius=radius)
-        pygame.draw.rect(self.screen, (30, 24, 22), shell_rect, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("shell_shadow"), shadow_rect, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("shell"), shell_rect, border_radius=radius)
 
         return shell_rect
-    
-    def draw_home_background(self):
-        top = (34, 28, 25)
-        bottom = (14, 11, 10)
 
-        for y in range(self.H):
-            t = y / (self.H - 1)
 
-            r = int(top[0] + (bottom[0] - top[0]) * t)
-            g = int(top[1] + (bottom[1] - top[1]) * t)
-            b = int(top[2] + (bottom[2] - top[2]) * t)
-
-            pygame.draw.line(self.screen, (r, g, b), (0, y), (self.W, y))
-
-        glow = pygame.Surface((420, 420), pygame.SRCALPHA)
-        pygame.draw.circle(glow, (110, 80, 60, 24), (210, 210), 210)
-        self.screen.blit(glow, (self.W - 520, 120))
-
-    
     def draw_home_preview(self, shell_rect):
         preview_w = 780
         preview_h = 420
@@ -396,15 +433,6 @@ class UI :
         radius = 26
 
         preview_rect = pygame.Rect(preview_x, preview_y, preview_w, preview_h)
-
-        #pygame.draw.rect(
-            #self.screen,
-            #(26, 21, 20),
-            #preview_rect,
-            #border_radius=radius
-        #)
-
-       
 
         inset = 10
         image_rect = pygame.Rect(
@@ -430,22 +458,21 @@ class UI :
         image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
         self.screen.blit(image_surface, (image_rect.x, image_rect.y))
     
-
+    
     def draw_feature_pill(self, rect, title, subtitle, accent_color):
         radius = 18
 
         pygame.draw.rect(
             self.screen,
-            (34, 28, 26),
+            self.c("surface"),
             rect,
             border_radius=radius
         )
 
-        
-        title_surf = self.fonts["small"].render(title, True, (230, 234, 240))
+        title_surf = self.fonts["small"].render(title, True, self.c("text_soft"))
         self.screen.blit(title_surf, (rect.x + 18, rect.y + 14))
 
-        subtitle_surf = self.fonts["small"].render(subtitle, True, (156, 144, 139))
+        subtitle_surf = self.fonts["small"].render(subtitle, True, self.c("text_faint"))
         self.screen.blit(subtitle_surf, (rect.x + 18, rect.y + 40))
 
         pygame.draw.circle(
@@ -454,7 +481,6 @@ class UI :
             (rect.right - 18, rect.y + 18),
             4
         )
-    
 
     def draw_home_feature_pills(self, shell_rect):
         preview_w = 630
@@ -494,24 +520,23 @@ class UI :
 
         mouse_pos = pygame.mouse.get_pos()
 
-        eyebrow_color = (166, 154, 148)
-        heading_color = (232, 236, 242)
-        desc_color = (156, 144, 139)
+        eyebrow_color = self.c("text_subtle")
+        heading_color = self.c("text")
+        desc_color = self.c("text_faint")
 
-        primary_fill = (58, 92, 160)
-        primary_hover = (74, 110, 184)
-        primary_text = (240, 243, 248)
+        primary_fill = self.c("accent")
+        primary_hover = self.c("accent_hover")
+        primary_text = self.c("text")
 
-        secondary_fill = (30, 24, 22)
-        secondary_hover_fill = (38, 31, 29)
-        secondary_border = (92, 76, 70)
-        secondary_hover_border = (120, 100, 94)
-        secondary_text = (220, 224, 232)
+        secondary_fill = self.c("shell")
+        secondary_hover_fill = self.c("surface_hover")
+        secondary_border = self.c("border_strong")
+        secondary_hover_border = self.c("border_hover")
+        secondary_text = self.c("text_soft")
 
         eyebrow_surf = self.fonts["small"].render("Driving Awareness Training", True, eyebrow_color)
         self.screen.blit(eyebrow_surf, (hero_x, hero_y))
 
-   
         heading1 = self.fonts["hero"].render("Driver Observation", True, heading_color)
         heading2 = self.fonts["hero"].render("Simulator", True, heading_color)
 
@@ -519,7 +544,6 @@ class UI :
         self.screen.blit(heading1, (hero_x, heading_y))
         self.screen.blit(heading2, (hero_x, heading_y + heading1.get_height() - 12))
 
-    
         desc_y = heading_y + heading1.get_height() + heading2.get_height() - 2
 
         desc1 = self.fonts["small"].render(
@@ -546,11 +570,9 @@ class UI :
         start_base = pygame.Rect(hero_x, button_y, 180, 50)
         scenario_base = pygame.Rect(hero_x + 200, button_y, 180, 50)
 
-        
         start_hovered = start_base.collidepoint(mouse_pos)
         scenario_hovered = scenario_base.collidepoint(mouse_pos)
 
-        
         speed = 0.30
         self.start_hover_t += ((1.0 if start_hovered else 0.0) - self.start_hover_t) * speed
         self.scenario_hover_t += ((1.0 if scenario_hovered else 0.0) - self.scenario_hover_t) * speed
@@ -561,7 +583,6 @@ class UI :
         start_rect = start_base.move(0, -start_lift)
         scenario_rect = scenario_base.move(0, -scenario_lift)
 
-
         self.start_button_rect = start_rect
         self.scenario_button_rect = scenario_rect
 
@@ -569,9 +590,6 @@ class UI :
         scenario_fill_color = self.lerp_color(secondary_fill, secondary_hover_fill, self.scenario_hover_t)
         scenario_border_color = self.lerp_color(secondary_border, secondary_hover_border, self.scenario_hover_t)
 
-    
-        #start_shadow = start_rect.move(0, 4)
-        #pygame.draw.rect(self.screen, (24, 20, 19), start_shadow, border_radius=14)
         pygame.draw.rect(self.screen, start_fill_color, start_rect, border_radius=18)
 
         start_surf = self.fonts["small"].render("Start Session", True, primary_text)
@@ -579,34 +597,33 @@ class UI :
         self.screen.blit(start_surf, start_text_rect)
 
         scenario_shadow = scenario_rect.move(0, 4)
-        pygame.draw.rect(self.screen, (24, 20, 19), scenario_shadow, border_radius=18)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), scenario_shadow, border_radius=36)
         pygame.draw.rect(self.screen, scenario_fill_color, scenario_rect, border_radius=18)
-        pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=18)
+        pygame.draw.rect(self.screen, scenario_border_color, scenario_rect, width=1, border_radius=36)
 
         scenario_surf = self.fonts["small"].render("Select Scenario", True, secondary_text)
         scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
         self.screen.blit(scenario_surf, scenario_text_rect)
-    
+        
     def draw_home_nav(self, shell_rect):
         nav_y = shell_rect.y + 28
         pad_x = 40
         mouse_pos = pygame.mouse.get_pos()
         speed = 0.30
 
-        brand_color = (232, 236, 242)
+        brand_color = self.c("text")
+        nav_base = self.c("text_faint")
+        nav_hover = self.c("text_soft")
 
-        nav_base = (150, 142, 138)
-        nav_hover = (214, 218, 224)
+        login_base = self.c("text_muted")
+        login_hover = self.c("text_soft")
 
-        login_base = (180, 172, 168)
-        login_hover = (228, 232, 238)
-
-        signup_fill = (30, 24, 22)
-        signup_hover_fill = (38, 31, 29)
-        signup_border = (92, 76, 70)
-        signup_hover_border = (125, 104, 98)
-        signup_text_base = (232, 236, 242)
-        signup_text_hover = (245, 247, 250)
+        signup_fill = self.c("shell")
+        signup_hover_fill = self.c("surface_hover")
+        signup_border = self.c("border_strong")
+        signup_hover_border = self.c("border_hover")
+        signup_text_base = self.c("text")
+        signup_text_hover = self.c("text")
 
         brand_surf = self.fonts["medium"].render("LookFirst", True, brand_color)
         self.screen.blit(brand_surf, (shell_rect.x + pad_x, nav_y))
@@ -646,7 +663,7 @@ class UI :
             underline_w = int(rect.w * hover_t)
             if underline_w > 0:
                 underline_rect = pygame.Rect(rect.x, rect.bottom + 4, underline_w, 2)
-                pygame.draw.rect(self.screen, (110, 140, 210), underline_rect, border_radius=1)
+                pygame.draw.rect(self.screen, self.c("accent_alt"), underline_rect, border_radius=1)
 
         signup_base = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
         signup_hovered = signup_base.collidepoint(mouse_pos)
@@ -677,7 +694,6 @@ class UI :
         login_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
         login_surf = self.fonts["small"].render("Log In", True, login_color)
         self.screen.blit(login_surf, login_rect.topleft)
-    
 
     def get_home_click_target(self, mouse_pos) :
 
@@ -717,28 +733,38 @@ class UI :
         x = shell_rect.x + 70
         y = shell_rect.y + 90
 
-        title_surf = self.fonts["hero"].render("Select a Scenario", True, (232, 236, 242))
+        title_surf = self.fonts["hero"].render("Select a Scenario", True, self.c("text"))
         self.screen.blit(title_surf, (x, y))
 
         sub_surf = self.fonts["small"].render(
             "Choose a driving situation to begin a guided observation session.",
             True,
-            (156, 144, 139)
+            self.c("text_faint")
         )
         self.screen.blit(sub_surf, (x, y + 115))
     
-    def draw_scene_card(self, rect, title, subtitle, tag, accent_color, image):
+    def draw_scene_card(self, rect, title, subtitle, tag, accent_color, image, hover_t):
         radius = 22
 
+        border_base = self.c("border")
+        border_hover = self.c("border_hover")
+        border_color = self.lerp_color(border_base, border_hover, hover_t)
+
         shadow_rect = rect.move(0, 5)
-        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), shadow_rect, border_radius=radius)
 
-        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
-        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface"), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, border_color, rect, width=1, border_radius=radius)
 
-        image_rect = pygame.Rect(rect.x + 16, rect.y + 16, rect.w - 32, 170)
+        image_extra_h = int(round(20 * hover_t))
+        image_rect = pygame.Rect(
+            rect.x + 16,
+            rect.y + 16,
+            rect.w - 32,
+            165 + image_extra_h
+        )
 
-        pygame.draw.rect(self.screen, (26, 22, 21), image_rect, border_radius=16)
+        pygame.draw.rect(self.screen, self.c("shell"), image_rect, border_radius=16)
 
         scaled_img = pygame.transform.smoothscale(image, (image_rect.w, image_rect.h))
         image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
@@ -750,31 +776,30 @@ class UI :
 
         self.screen.blit(image_surface, (image_rect.x, image_rect.y))
 
-        tag_rect = pygame.Rect(rect.x + 20, rect.y + 196, 90, 28)
-        pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
+        content_shift = image_extra_h
+
+        tag_rect = pygame.Rect(rect.x + 20, rect.y + 195 + content_shift, 90, 28)
+        pygame.draw.rect(self.screen, self.c("chip"), tag_rect, border_radius=10)
         pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
 
-        tag_surf = self.fonts["hero_small"].render(tag, True, (210, 216, 224))
+        tag_surf = self.fonts["hero_small"].render(tag, True, self.c("chip_text"))
         self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
 
-        
-        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 250))
+        title_surf = self.fonts["medium"].render(title, True, self.c("text"))
+        self.screen.blit(title_surf, (rect.x + 20, rect.y + 238 + content_shift))
 
-        sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
-        sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
-        self.screen.blit(sub1, (rect.x + 20, rect.y + 290))
-        self.screen.blit(sub2, (rect.x + 20, rect.y + 311))
+        sub1 = self.fonts["small"].render(subtitle[0], True, self.c("text_faint"))
+        sub2 = self.fonts["small"].render(subtitle[1], True, self.c("text_faint"))
+        self.screen.blit(sub1, (rect.x + 20, rect.y + 278 + content_shift))
+        self.screen.blit(sub2, (rect.x + 20, rect.y + 304 + content_shift))
 
-        
         button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
-        pygame.draw.rect(self.screen, (42, 34, 31), button_rect, border_radius=12)
-        pygame.draw.rect(self.screen, (82, 70, 66), button_rect, width=1, border_radius=12)
+        pygame.draw.rect(self.screen, self.c("surface_2"), button_rect, border_radius=12)
+        pygame.draw.rect(self.screen, self.c("border_strong"), button_rect, width=1, border_radius=12)
 
-        button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
+        button_surf = self.fonts["small"].render("Select Scenario", True, self.c("text_soft"))
         button_text_rect = button_surf.get_rect(center=button_rect.center)
         self.screen.blit(button_surf, button_text_rect)
-
     
     def draw_scene_cards(self, shell_rect):
         mouse_pos = pygame.mouse.get_pos()
@@ -817,7 +842,7 @@ class UI :
             "Left Lane Change",
             ("Checks mirror and blind spot", "sequence before lane movement."),
             "Sequence",
-            (82, 145, 255),
+            self.c("scene_card_1"),
             self.select_scene_2,
             self.scene_card_1_hover_t
         )
@@ -827,7 +852,7 @@ class UI :
             "Four-Way Left Turn",
             ("Evaluates observation coverage", "through an intersection turn."),
             "Coverage",
-            (230, 180, 80),
+            self.c("scene_card_2"),
             self.select_scene_1,
             self.scene_card_2_hover_t
         )
@@ -837,68 +862,10 @@ class UI :
             "More Coming Soon",
             ("Additional driving scenarios", "are currently in development."),
             "Soon",
-            (120, 170, 140),
+            self.c("scene_card_3"),
             self.home_preview,
             self.scene_card_3_hover_t
         )
-    
-    def draw_scene_card(self, rect, title, subtitle, tag, accent_color, image, hover_t):
-        radius = 22
-
-        border_base = (70, 58, 54)
-        border_hover = (108, 92, 86)
-        border_color = self.lerp_color(border_base, border_hover, hover_t)
-
-        shadow_rect = rect.move(0, 5)
-        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=radius)
-
-        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
-        pygame.draw.rect(self.screen, border_color, rect, width=1, border_radius=radius)
-
-        image_extra_h = int(round(20 * hover_t))
-        image_rect = pygame.Rect(
-            rect.x + 16,
-            rect.y + 16,
-            rect.w - 32,
-            165 + image_extra_h
-        )
-
-        pygame.draw.rect(self.screen, (26, 22, 21), image_rect, border_radius=16)
-
-        scaled_img = pygame.transform.smoothscale(image, (image_rect.w, image_rect.h))
-        image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
-        image_surface.blit(scaled_img, (0, 0))
-
-        mask = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
-        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, image_rect.w, image_rect.h), border_radius=16)
-        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-
-        self.screen.blit(image_surface, (image_rect.x, image_rect.y))
-
-        content_shift = image_extra_h
-
-        tag_rect = pygame.Rect(rect.x + 20, rect.y + 195 + content_shift, 90, 28)
-        pygame.draw.rect(self.screen, (42, 34, 31), tag_rect, border_radius=10)
-        pygame.draw.circle(self.screen, accent_color, (tag_rect.x + 14, tag_rect.centery), 4)
-
-        tag_surf = self.fonts["small"].render(tag, True, (210, 216, 224))
-        self.screen.blit(tag_surf, (tag_rect.x + 24, tag_rect.y + 5))
-
-        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
-        self.screen.blit(title_surf, (rect.x + 20, rect.y + 238 + content_shift))
-
-        sub1 = self.fonts["small"].render(subtitle[0], True, (156, 144, 139))
-        sub2 = self.fonts["small"].render(subtitle[1], True, (156, 144, 139))
-        self.screen.blit(sub1, (rect.x + 20, rect.y + 278 + content_shift))
-        self.screen.blit(sub2, (rect.x + 20, rect.y + 304 + content_shift))
-
-        button_rect = pygame.Rect(rect.x + 20, rect.bottom - 60, rect.w - 40, 42)
-        pygame.draw.rect(self.screen, (42, 34, 31), button_rect, border_radius=12)
-        pygame.draw.rect(self.screen, (82, 70, 66), button_rect, width=1, border_radius=12)
-
-        button_surf = self.fonts["small"].render("Select Scenario", True, (230, 234, 240))
-        button_text_rect = button_surf.get_rect(center=button_rect.center)
-        self.screen.blit(button_surf, button_text_rect)
     
     
     def get_scene_select_click_target(self, mouse_pos):
@@ -938,10 +905,10 @@ class UI :
         )
 
         shadow_rect = preview_rect.move(0, 6)
-        pygame.draw.rect(self.screen, (24, 20, 19), shadow_rect, border_radius=26)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), shadow_rect, border_radius=26)
 
-        pygame.draw.rect(self.screen, (28, 23, 22), preview_rect, border_radius=26)
-        pygame.draw.rect(self.screen, (68, 58, 54), preview_rect, width=1, border_radius=26)
+        pygame.draw.rect(self.screen, self.c("shell"), preview_rect, border_radius=26)
+        pygame.draw.rect(self.screen, self.c("border"), preview_rect, width=1, border_radius=26)
 
         scaled_img = pygame.transform.smoothscale(image, (preview_rect.w, preview_rect.h))
         image_surface = pygame.Surface((preview_rect.w, preview_rect.h), pygame.SRCALPHA)
@@ -959,9 +926,9 @@ class UI :
         self.screen.blit(image_surface, (preview_rect.x, preview_rect.y))
 
         overlay = pygame.Surface((preview_rect.w, preview_rect.h), pygame.SRCALPHA)
-        pygame.draw.rect(overlay, (8, 8, 10, 24), (0, 0, preview_rect.w, preview_rect.h), border_radius=26)
+        pygame.draw.rect(overlay, (*self.c("overlay_tint"), 24), (0, 0, preview_rect.w, preview_rect.h), border_radius=26)
         self.screen.blit(overlay, (preview_rect.x, preview_rect.y))
-    
+
     def draw_scene_intro_details(self, shell_rect, scene_data):
         mouse_pos = pygame.mouse.get_pos()
         speed = 0.30
@@ -969,22 +936,22 @@ class UI :
         content_x = shell_rect.x + 45
         content_y = shell_rect.y + 520
 
-        title_color = (232, 236, 242)
-        desc_color = (156, 144, 139)
-        section_color = (186, 176, 170)
+        title_color = self.c("text")
+        desc_color = self.c("text_faint")
+        section_color = self.c("text_muted")
 
-        chip_fill = (42, 34, 31)
-        chip_text = (220, 226, 234)
+        chip_fill = self.c("chip")
+        chip_text = self.c("text_soft")
 
-        primary_fill = (58, 92, 160)
-        primary_hover = (74, 110, 184)
-        primary_text = (240, 243, 248)
+        primary_fill = self.c("accent")
+        primary_hover = self.c("accent_hover")
+        primary_text = self.c("text")
 
-        secondary_fill = (30, 24, 22)
-        secondary_hover_fill = (38, 31, 29)
-        secondary_border = (92, 76, 70)
-        secondary_hover_border = (120, 100, 94)
-        secondary_text = (220, 224, 232)
+        secondary_fill = self.c("shell")
+        secondary_hover_fill = self.c("surface_hover")
+        secondary_border = self.c("border_strong")
+        secondary_hover_border = self.c("border_hover")
+        secondary_text = self.c("text_soft")
 
         chip_label = f'{scene_data["scenario_type"]} Scenario'
         chip_surf = self.fonts["small"].render(chip_label, True, chip_text)
@@ -1011,11 +978,11 @@ class UI :
             row_y = list_y + i * row_gap
             center = (content_x + 8, row_y + 9)
 
-            pygame.draw.circle(self.screen, (42, 34, 31), center, 8)
-            pygame.draw.circle(self.screen, (110, 122, 146), center, 4)
+            pygame.draw.circle(self.screen, self.c("chip"), center, 8)
+            pygame.draw.circle(self.screen, self.c("accent_alt"), center, 4)
 
             label = self.better_pose_naming(item)
-            item_surf = self.fonts["small"].render(label, True, (214, 220, 228))
+            item_surf = self.fonts["small"].render(label, True, self.c("text_soft"))
             self.screen.blit(item_surf, (content_x + 24, row_y))
 
         button_y = content_y + 450
@@ -1043,21 +1010,21 @@ class UI :
         back_fill = self.lerp_color(secondary_fill, secondary_hover_fill, self.back_intro_hover_t)
         back_border = self.lerp_color(secondary_border, secondary_hover_border, self.back_intro_hover_t)
 
-        pygame.draw.rect(self.screen, (24, 20, 19), start_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), start_rect.move(0, 4), border_radius=14)
         pygame.draw.rect(self.screen, start_fill, start_rect, border_radius=14)
 
         start_surf = self.fonts["small"].render("Start Simulation", True, primary_text)
         start_text_rect = start_surf.get_rect(center=start_rect.center)
         self.screen.blit(start_surf, start_text_rect)
 
-        pygame.draw.rect(self.screen, (24, 20, 19), back_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), back_rect.move(0, 4), border_radius=14)
         pygame.draw.rect(self.screen, back_fill, back_rect, border_radius=14)
         pygame.draw.rect(self.screen, back_border, back_rect, width=1, border_radius=14)
 
         back_surf = self.fonts["small"].render("Back to Scenarios", True, secondary_text)
         back_text_rect = back_surf.get_rect(center=back_rect.center)
         self.screen.blit(back_surf, back_text_rect)
-    
+        
     def get_scene_intro_click_target(self, mouse_pos):
         if self.start_intro_button_rect and self.start_intro_button_rect.collidepoint(mouse_pos):
             return "start_simulation"
@@ -1086,12 +1053,11 @@ class UI :
         x = shell_rect.x + 70
         y = shell_rect.y + 95
 
-        title_surf = self.fonts["hero"].render("Session Complete", True, (232, 236, 242))
+        title_surf = self.fonts["hero"].render("Session Complete", True, self.c("text"))
         self.screen.blit(title_surf, (x, y))
 
-        sub_surf = self.fonts["medium"].render(scene_title, True, (186, 176, 170))
+        sub_surf = self.fonts["medium"].render(scene_title, True, self.c("text_muted"))
         self.screen.blit(sub_surf, (x, y + 113))
-    
 
     def draw_results_content(self, shell_rect, scene_data, score, result):
         if score is None:
@@ -1100,14 +1066,14 @@ class UI :
         expected = []
         statuses = []
 
-        if scene_data : 
+        if scene_data:
             expected = scene_data["required_checks"]
-            
-        if isinstance(result, list) :
-            statuses = result 
-        
-        if not expected and statuses :
-            expected  = [f"STEP {i+1}" for i in range(len(statuses))]
+
+        if isinstance(result, list):
+            statuses = result
+
+        if not expected and statuses:
+            expected = [f"STEP {i+1}" for i in range(len(statuses))]
 
         completed = []
         missed = []
@@ -1123,11 +1089,11 @@ class UI :
         score_x = shell_rect.x + 70
         score_y = shell_rect.y + 245
 
-        score_label_surf = self.fonts["small"].render("Overall Score", True, (166, 154, 148))
+        score_label_surf = self.fonts["small"].render("Overall Score", True, self.c("text_subtle"))
         self.screen.blit(score_label_surf, (score_x, score_y))
 
         score_text = f"{int(round(score))}%"
-        score_surf = self.fonts["hero"].render(score_text, True, (232, 236, 242))
+        score_surf = self.fonts["hero"].render(score_text, True, self.c("text"))
         self.screen.blit(score_surf, (score_x, score_y + 28))
 
         detail_y = shell_rect.y + 500
@@ -1138,68 +1104,67 @@ class UI :
         completed_rect = pygame.Rect(shell_rect.x + 70, detail_y, card_w, card_h)
         missed_rect = pygame.Rect(shell_rect.x + 70 + card_w + gap, detail_y, card_w, card_h)
 
-        self.draw_results_list_card(completed_rect, "Completed", completed, (90, 200, 120))
+        self.draw_results_list_card(completed_rect, "Completed", completed, self.c("success"))
         self.draw_results_list_card(missed_rect, "Missed", missed, (210, 120, 110))
 
         self.draw_results_buttons(shell_rect)
-    
 
     def draw_score_card(self, rect, score):
         radius = 22
 
-        pygame.draw.rect(self.screen, (24, 20, 19), rect.move(0, 5), border_radius=radius)
-        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
-        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), rect.move(0, 5), border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface"), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("border"), rect, width=1, border_radius=radius)
 
-        label_surf = self.fonts["small"].render("Overall Score", True, (166, 154, 148))
+        label_surf = self.fonts["small"].render("Overall Score", True, self.c("text_subtle"))
         self.screen.blit(label_surf, (rect.x + 24, rect.y + 22))
 
         score_text = f"{int(round(score))}%"
-        score_surf = self.fonts["hero"].render(score_text, True, (232, 236, 242))
+        score_surf = self.fonts["hero"].render(score_text, True, self.c("text"))
         self.screen.blit(score_surf, (rect.x + 24, rect.y + 58))
     
 
     def draw_results_list_card(self, rect, title, items, accent_color):
         radius = 22
 
-        pygame.draw.rect(self.screen, (24, 20, 19), rect.move(0, 5), border_radius=radius)
-        pygame.draw.rect(self.screen, (34, 28, 26), rect, border_radius=radius)
-        pygame.draw.rect(self.screen, (70, 58, 54), rect, width=1, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), rect.move(0, 5), border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("surface"), rect, border_radius=radius)
+        pygame.draw.rect(self.screen, self.c("border"), rect, width=1, border_radius=radius)
 
-        title_surf = self.fonts["medium"].render(title, True, (232, 236, 242))
+        title_surf = self.fonts["medium"].render(title, True, self.c("text"))
         self.screen.blit(title_surf, (rect.x + 22, rect.y + 20))
 
         start_y = rect.y + 72
         row_gap = 32
 
         if not items:
-            empty_surf = self.fonts["small"].render("None", True, (156, 144, 139))
+            empty_surf = self.fonts["small"].render("None", True, self.c("text_faint"))
             self.screen.blit(empty_surf, (rect.x + 22, start_y))
             return
 
         for i, item in enumerate(items):
             row_y = start_y + i * row_gap
 
-            pygame.draw.circle(self.screen, (42, 34, 31), (rect.x + 28, row_y + 8), 8)
+            pygame.draw.circle(self.screen, self.c("chip"), (rect.x + 28, row_y + 8), 8)
             pygame.draw.circle(self.screen, accent_color, (rect.x + 28, row_y + 8), 4)
 
             label = self.better_pose_naming(item)
-            item_surf = self.fonts["small"].render(label, True, (214, 220, 228))
+            item_surf = self.fonts["small"].render(label, True, self.c("text_soft"))
             self.screen.blit(item_surf, (rect.x + 44, row_y))
     
     def draw_results_buttons(self, shell_rect):
         mouse_pos = pygame.mouse.get_pos()
         speed = 0.30
 
-        primary_fill = (58, 92, 160)
-        primary_hover = (74, 110, 184)
-        primary_text = (240, 243, 248)
+        primary_fill = self.c("accent")
+        primary_hover = self.c("accent_hover")
+        primary_text = self.c("text")
 
-        secondary_fill = (30, 24, 22)
-        secondary_hover_fill = (38, 31, 29)
-        secondary_border = (92, 76, 70)
-        secondary_hover_border = (120, 100, 94)
-        secondary_text = (220, 224, 232)
+        secondary_fill = self.c("shell")
+        secondary_hover_fill = self.c("surface_hover")
+        secondary_border = self.c("border_strong")
+        secondary_hover_border = self.c("border_hover")
+        secondary_text = self.c("text_soft")
 
         y = shell_rect.bottom - 92
         x = shell_rect.right - 430
@@ -1226,13 +1191,13 @@ class UI :
         back_fill = self.lerp_color(secondary_fill, secondary_hover_fill, self.results_back_hover_t)
         back_border = self.lerp_color(secondary_border, secondary_hover_border, self.results_back_hover_t)
 
-        pygame.draw.rect(self.screen, (24, 20, 19), retry_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), retry_rect.move(0, 4), border_radius=14)
         pygame.draw.rect(self.screen, retry_fill, retry_rect, border_radius=14)
 
         retry_surf = self.fonts["small"].render("Retry Scenario", True, primary_text)
         self.screen.blit(retry_surf, retry_surf.get_rect(center=retry_rect.center))
 
-        pygame.draw.rect(self.screen, (24, 20, 19), back_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), back_rect.move(0, 4), border_radius=14)
         pygame.draw.rect(self.screen, back_fill, back_rect, border_radius=14)
         pygame.draw.rect(self.screen, back_border, back_rect, width=1, border_radius=14)
 

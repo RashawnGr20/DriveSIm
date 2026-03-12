@@ -54,7 +54,6 @@ class SequenceScene :
         def evaluate(self, pose, pose_counter) :
 
             if self.curr_step >= len(self.expected_sequence) :
-                if self.curr_step >= len(self.expected_sequence) :
                     return {
                         "finished": True, 
                         "result": self.step_results, 

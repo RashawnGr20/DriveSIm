@@ -42,7 +42,7 @@ class SceneGen :
             "left_lane_change": {
                 "title": "Left Lane Change",
                 "scenario_type": "Sequence",
-                "description": "Check the required mirror and blind spot observations before lane movement.",
+                "description": "Check the required mirror and blind spot observations before lane movement. Order matters here.",
                 "required_checks": ["TOP MIRROR", "LEFT MIRROR", "LEFT BLINDSPOT"],
                "image_key": "select_scene_2"
             },
@@ -58,7 +58,7 @@ class SceneGen :
         
         self.transition_alpha = 0
         self.is_fading_in = False
-        self.fade_speed = 16
+        self.fade_speed = 17
 
     def handle_events(self) :
         for event in pygame.event.get()  :
