@@ -195,12 +195,18 @@ while running:
         prev_smoothed = smoothed_pos
 
         pose_counter = feedback.pose_counter
-        result = scene_manager.evaluation(pose_counter, pose)
+        outcome =  scene_manager.evaluation(pose_counter, pose)
 
-        if result is not None:
+        if outcome and outcome["finished"] : 
+            result = outcome["result"]
             score = metrics.sequence_score(result)
-            print(f"TOTAL SCORE {score}")
-            break
+
+            scene.last_score = score
+            scene.last_result = result 
+            scene.state = "results"
+            scene.start_fade_in()
+
+            continue 
 
     cv2.imshow("Camera Feed", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):

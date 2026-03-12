@@ -54,7 +54,12 @@ class SequenceScene :
         def evaluate(self, pose, pose_counter) :
 
             if self.curr_step >= len(self.expected_sequence) :
-                    return self.step_results
+                if self.curr_step >= len(self.expected_sequence) :
+                    return {
+                        "finished": True, 
+                        "result": self.step_results, 
+                        "reason": "completed"
+                    } 
             
             expected_pose = self.expected_sequence[self.curr_step]
        
@@ -81,7 +86,15 @@ class SequenceScene :
             self.last_pose = pose
 
             if self.curr_step >= len(self.expected_sequence) :
-                return self.step_results
+                if self.curr_step >= len(self.expected_sequence) :
+                    return {
+                        "finished": True, 
+                        "result": self.step_results, 
+                        "reason": "completed"
+                    } 
+                
+            return None 
+           
         
         def get_progress_data(self) :
 
@@ -93,6 +106,16 @@ class SequenceScene :
                 "current_index": self.curr_step
 
             }
+        
+        def get_outcome(self) :
+           if self.curr_step >= len(self.expected_sequence) :
+               return {
+                   "finished": True, 
+                   "result": self.step_results, 
+                   "reason": "completed"
+               } 
+           
+           return None 
 
     
 class coverageScene :
@@ -107,11 +130,14 @@ class coverageScene :
             self.last_pose = None
         
         def evaluate(self, pose, pose_counter) :
-
+            
 
             if self.checked_zones == self.required_zones :
-                return self.checked_zones 
-            
+                return {
+                   "finished": True, 
+                   "result": self.step_results, 
+                   "reason": "completed"
+               } 
             if self.last_pose and pose != self.last_pose:
                 self.step_lock = False 
         
@@ -124,7 +150,14 @@ class coverageScene :
             self.last_pose = pose
 
 
-            return self.checked_zones
+            if self.checked_zones == self.required_zones :
+                return {
+                   "finished": True, 
+                   "result": self.step_results, 
+                   "reason": "completed"
+               } 
+            
+            return None 
     
         def get_progress_data(self) :
             return {
@@ -134,6 +167,8 @@ class coverageScene :
                 "current_index": None
 
             }
+        
+    
 
 
 class Metrics :
