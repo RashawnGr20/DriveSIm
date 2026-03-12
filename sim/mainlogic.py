@@ -13,7 +13,7 @@ scene = SceneGen(1920, 1080, 60)
 ui = UI(scene.screen, scene.W, scene.H)
 scene.ui = ui
 scene.selected_scene = "left_lane_change"
-scene.state = "scene_intro"
+scene.state = "home"
 
 scene_manager = None
 metrics = None

@@ -958,7 +958,7 @@ class UI :
     
     def draw_scene_intro_details(self, shell_rect, scene_data):
         mouse_pos = pygame.mouse.get_pos()
-        speed = 0.12
+        speed = 0.30
 
         content_x = shell_rect.x + 45
         content_y = shell_rect.y + 520
