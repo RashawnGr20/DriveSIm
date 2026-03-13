@@ -32,11 +32,15 @@ class SceneGen :
             "about": "about", 
             "features": "features", 
             "scenarios": "scene_select", 
-            "login": "login", 
-            "signup": "signup" 
+            "login": "auth", 
+            "signup": "auth" 
 
         }
 
+        self.auth_mode = "login"
+        self.is_authenticated = False
+        self.is_guest = False 
+        self.pending_destination = False 
 
         self.scene_info = { 
             "left_lane_change": {
@@ -72,9 +76,31 @@ class SceneGen :
                 if self.state == "home" and self.ui :
                     target = self.ui.get_home_click_target(mouse_pos)
 
-                    if target in self.click_to_state :
+                    if target == "login" :
+                        self.auth_mode = "login"
+                        self.state = "auth"
+                        self.start_fade_in()
+                    
+                    elif target == "signup": 
+                        self.auth_mode = "signup"
+                        self.state = "auth"
+                    
+                    elif target in {"start_session", "select_scenario", "scenarios"} :
+                        destination  = self.click_to_state[target]
+
+                        if not self.is_authenticated : 
+                            self.pending_destination = destination
+                            self.auth_mode = "login"
+                            self.state = "auth"
+                        else  :
+                            self.state = destination
+                        
+                        self.start_fade_in()
+                    
+                    elif target in self.click_to_state : 
                         self.state = self.click_to_state[target]
                         self.start_fade_in()
+
                 elif self.state == "scene_select" and self.ui :
                     target = self.ui.get_scene_select_click_target(mouse_pos)
 
