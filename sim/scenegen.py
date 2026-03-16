@@ -84,11 +84,12 @@ class SceneGen :
                     elif target == "signup": 
                         self.auth_mode = "signup"
                         self.state = "auth"
+                        self.start_fade_in()
                     
                     elif target in {"start_session", "select_scenario", "scenarios"} :
                         destination  = self.click_to_state[target]
 
-                        if not self.is_authenticated : 
+                        if not self.is_authenticated and not self.is_guest: 
                             self.pending_destination = destination
                             self.auth_mode = "login"
                             self.state = "auth"
@@ -183,6 +184,13 @@ class SceneGen :
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True
+    
+    def update_auth(self) : 
+        self.ui.draw_auth(self.auth_mode)
+        self.draw_fade_overlay()
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True 
 
     
     def update(self, pitch=None, yaw=None, roll=None, pose=None, progress_data=None) :
@@ -191,6 +199,9 @@ class SceneGen :
         
         if self.state == "home": 
             return self.update_homepage()
+        
+        elif self.state == "auth" :
+            return self.update_auth()
         
         elif self.state == "scene_select" :
             return self.update_scene_select()
