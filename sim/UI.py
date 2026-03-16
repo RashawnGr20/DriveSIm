@@ -17,9 +17,12 @@ class UI :
         preview_path = os.path.join(base_dir, "Proto_images", "image_preview_2.png")
         select_scene_1 = os.path.join(base_dir, "Proto_images", "select_scene_01.png")
         select_scene_2 = os.path.join(base_dir, "Proto_images", "select_scene_02.png")
+        login_image  = os.path.join(base_dir, "Proto_images", "login_image.jpg") 
         self.home_preview = pygame.image.load(preview_path).convert()
         self.select_scene_1 = pygame.image.load(select_scene_1).convert()
         self.select_scene_2 = pygame.image.load(select_scene_2).convert()
+        self.login_image = pygame.image.load(login_image).convert()
+        
         
         self.W = screen_width
         self.H = screen_height
@@ -35,7 +38,7 @@ class UI :
     "shell": (244, 238, 230),
     "shell_shadow": (198, 184, 170),
 
-    "surface": (255, 252, 247),
+    "surface": (250, 247, 242),
     "surface_2": (246, 240, 232),
     "surface_3": (238, 230, 220),
     "surface_hover": (230, 222, 212),
@@ -154,7 +157,21 @@ class UI :
         self.retry_hover_t = 0.0
         self.results_back_hover_t = 0.0
 
-        
+        self.auth_login_tab_rect = None
+        self.auth_signup_tab_rect = None
+        self.auth_primary_button_rect = None
+        self.auth_guest_button_rect = None
+
+        self.auth_login_tab_hover_t = 0.0
+        self.auth_signup_tab_hover_t = 0.0
+        self.auth_primary_hover_t = 0.0
+        self.auth_guest_hover_t = 0.0
+        self.auth_toggle_t = 0.0 
+
+        self.auth_name_field_rect = None 
+        self.auth_email_field_rect = None 
+        self.auth_password_field_rect = None 
+
     def draw_background_components(self) :
     
       self.draw_background()
@@ -878,6 +895,12 @@ class UI :
 
         if self.scene_card_3_rect and self.scene_card_3_rect.collidepoint(mouse_pos):
             return "coming_soon"
+        
+        if self.login_rect and self.login_rect.collidepoint(mouse_pos):
+            return "login"
+
+        if self.signup_rect and self.signup_rect.collidepoint(mouse_pos):
+            return "signup"
 
         return None
     
@@ -1213,4 +1236,234 @@ class UI :
         if self.results_back_button_rect and self.results_back_button_rect.collidepoint(mouse_pos):
             return "back_to_scenarios"
 
+        return None
+    
+
+    def draw_auth(self, auth_mode, form_data, focused_field) :
+        self.draw_home_background()
+        shell_rect  = self.draw_home_shell()
+        self.draw_auth_left(shell_rect, auth_mode, form_data, focused_field)
+        self.draw_auth_right(shell_rect)
+    
+    def draw_auth_left(self, shell_rect, auth_mode, form_data, focused_field):
+        mouse_pos = pygame.mouse.get_pos()
+        left_x = shell_rect.x + 90
+        left_y = shell_rect.y + 110
+
+        panel_w = 520
+        panel_h = 760
+
+        panel_rect = pygame.Rect(left_x, left_y, panel_w, panel_h)
+
+
+        brand_surf = self.fonts["medium"].render("LookFirst", True, self.c("text"))
+        self.screen.blit(brand_surf, (panel_rect.x + 30, panel_rect.y + 10))
+
+        if auth_mode == "login":
+            heading = "Sign in to continue"
+            subtext = "Access saved sessions, reports, and scenario history."
+            primary_label = "Sign In"
+        else:
+            heading = "Create your account"
+            subtext = "Save progress, review results, and continue sessions later."
+            primary_label = "Create Account"
+
+        heading_surf = self.fonts["large"].render(heading, True, self.c("text"))
+        self.screen.blit(heading_surf, (panel_rect.x + 30, panel_rect.y + 95))
+
+        sub_surf = self.fonts["small"].render(subtext, True, self.c("text_faint"))
+        self.screen.blit(sub_surf, (panel_rect.x + 30, panel_rect.y + 165))
+
+        self.draw_auth_mode_toggle(panel_rect, auth_mode, mouse_pos)
+
+        
+        field_x = panel_rect.x + 30
+        field_w = panel_rect.w - 60
+        field_y = panel_rect.y + 270
+
+        if auth_mode == "signup":
+            self.auth_name_field_rect = self.draw_auth_field(field_x, field_y, field_w, 
+            "Full Name", "Enter your full name", 
+            value = form_data["full_name"], 
+            active=(focused_field == "full_name")
+            )
+            field_y += 95 
+            
+
+        self.auth_email_field_rect = self.draw_auth_field(
+            field_x, field_y, field_w,
+            "Email Address", "Enter your email",
+            value=form_data["email"],
+            active=(focused_field == "email")
+        )
+        field_y += 95
+
+        self.auth_password_field_rect = self.draw_auth_field(
+            field_x, field_y, field_w,
+            "Password", "Enter your password",
+            value=form_data["password"],
+            active=(focused_field == "password"),
+            password=True
+        )
+
+        speed = 0.30
+        primary_base = pygame.Rect(field_x, field_y, field_w, 52)
+        primary_hovered = primary_base.collidepoint(mouse_pos)
+        self.auth_primary_hover_t += ((1.0 if primary_hovered else 0.0) - self.auth_primary_hover_t) * speed
+
+        primary_lift = int(round(2 * self.auth_primary_hover_t))
+        primary_rect = primary_base.move(0, -primary_lift)
+        self.auth_primary_button_rect = primary_rect
+
+        primary_fill = self.lerp_color(self.c("accent"), self.c("accent_hover"), self.auth_primary_hover_t)
+
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), primary_rect.move(0, 4), border_radius=36)
+        pygame.draw.rect(self.screen, primary_fill, primary_rect, border_radius=36)
+
+        primary_surf = self.fonts["small"].render(primary_label, True, self.c("text"))
+        self.screen.blit(primary_surf, primary_surf.get_rect(center=primary_rect.center))
+
+        divider_y = field_y + 85
+        line_color = self.c("divider")
+        center_text = self.fonts["small"].render("or continue with", True, self.c("text_faint"))
+        center_rect = center_text.get_rect(center=(panel_rect.centerx, divider_y))
+
+        pygame.draw.line(self.screen, line_color, (field_x, divider_y), (center_rect.left - 14, divider_y), 1)
+        pygame.draw.line(self.screen, line_color, (center_rect.right + 14, divider_y), (field_x + field_w, divider_y), 1)
+        self.screen.blit(center_text, center_rect)
+
+        guest_base = pygame.Rect(field_x, divider_y + 34, field_w, 50)
+        guest_hovered = guest_base.collidepoint(mouse_pos)
+        self.auth_guest_hover_t += ((1.0 if guest_hovered else 0.0) - self.auth_guest_hover_t) * speed
+
+        guest_lift = int(round(2 * self.auth_guest_hover_t))
+        guest_rect = guest_base.move(0, -guest_lift)
+        self.auth_guest_button_rect = guest_rect
+
+        guest_fill = self.lerp_color(self.c("shell"), self.c("surface_hover"), self.auth_guest_hover_t)
+        guest_border = self.lerp_color(self.c("border_strong"), self.c("border_hover"), self.auth_guest_hover_t)
+
+        pygame.draw.rect(self.screen, self.c("surface_shadow"), guest_rect.move(0, 4), border_radius=14)
+        pygame.draw.rect(self.screen, guest_fill, guest_rect, border_radius=14)
+        pygame.draw.rect(self.screen, guest_border, guest_rect, width=1, border_radius=14)
+
+        guest_surf = self.fonts["small"].render("Continue as Guest", True, self.c("text_soft"))
+        self.screen.blit(guest_surf, guest_surf.get_rect(center=guest_rect.center))
+
+        switch_y = guest_rect.bottom + 34
+        if auth_mode == "login":
+            base_text = "Don't have an account?"
+            action_text = "Sign Up"
+        else:
+            base_text = "Already have an account?"
+            action_text = "Log In"
+
+        base_surf = self.fonts["small"].render(base_text, True, self.c("text_faint"))
+        action_surf = self.fonts["small"].render(action_text, True, self.c("accent"))
+
+        base_pos = (field_x, switch_y)
+        action_pos = (field_x + base_surf.get_width() + 8, switch_y)
+
+        self.screen.blit(base_surf, base_pos)
+        self.screen.blit(action_surf, action_pos)
+
+        self.auth_switch_text_rect = action_surf.get_rect(topleft=action_pos)
+        
+        
+
+    def draw_auth_mode_toggle(self, panel_rect, auth_mode, mouse_pos):
+        speed = 0.22
+
+        toggle_rect = pygame.Rect(panel_rect.x + 30, panel_rect.y + 210, 280, 46)
+        pygame.draw.rect(self.screen, self.c("surface_2"), toggle_rect, border_radius=14)
+        pygame.draw.rect(self.screen, self.c("border"), toggle_rect, width=1, border_radius=14)
+
+        half_w = toggle_rect.w // 2
+        login_base = pygame.Rect(toggle_rect.x + 4, toggle_rect.y + 4, half_w - 8, toggle_rect.h - 8)
+        signup_base = pygame.Rect(toggle_rect.x + half_w + 4, toggle_rect.y + 4, half_w - 8, toggle_rect.h - 8)
+
+        self.auth_login_tab_rect = login_base
+        self.auth_signup_tab_rect = signup_base
+
+        target_t = 0.0 if auth_mode == "login" else 1.0
+        self.auth_toggle_t += (target_t - self.auth_toggle_t) * speed
+
+        slider_x = int(login_base.x + (signup_base.x - login_base.x) * self.auth_toggle_t)
+        slider_rect = pygame.Rect(slider_x, login_base.y, login_base.w, login_base.h)
+
+        pygame.draw.rect(self.screen, self.c("surface_3"), slider_rect, border_radius=12)
+
+        login_text = self.c("text") if auth_mode == "login" else self.c("text_faint")
+        signup_text = self.c("text") if auth_mode == "signup" else self.c("text_faint")
+
+        login_surf = self.fonts["small"].render("Sign In", True, login_text)
+        signup_surf = self.fonts["small"].render("Sign Up", True, signup_text)
+
+        self.screen.blit(login_surf, login_surf.get_rect(center=login_base.center))
+        self.screen.blit(signup_surf, signup_surf.get_rect(center=signup_base.center))
+
+    def draw_auth_field(self, x, y, w, label, placeholder, value="", password=False):
+        label_surf = self.fonts["small"].render(label, True, self.c("text_subtle"))
+        self.screen.blit(label_surf, (x, y))
+
+        field_rect = pygame.Rect(x, y + 28, w, 50)
+        pygame.draw.rect(self.screen, self.c("surface_2"), field_rect, border_radius=12)
+        pygame.draw.rect(self.screen, self.c("border"), field_rect, width=1, border_radius=12)
+
+        placeholder_surf = self.fonts["small"].render(placeholder, True, self.c("text_disabled"))
+        self.screen.blit(placeholder_surf, (field_rect.x + 18, field_rect.y + 15))
+
+        if value : 
+            display_text = "*" * len(value) if password else value
+            text_surf = self.fonts["small"].render(display_text, True, self.c("text_soft"))
+        else : 
+            text_surf = self.fonts["small"].render(placeholder, True, self.c("text_disabled"))
+        
+        self.screen.blit(text_surf, (field_rect.x + 18, field_rect.y + 15))
+        return field_rect 
+    
+
+    def draw_auth_right(self, shell_rect):
+        right_w = 850
+        right_h = 1050
+        right_x = shell_rect.right - right_w - 8
+        right_y = shell_rect.y - 2 
+
+        panel_rect = pygame.Rect(right_x, right_y, right_w, right_h)
+
+
+        image_rect = pygame.Rect(panel_rect.x + 18, panel_rect.y + 18, panel_rect.w - 36, panel_rect.h - 36)
+
+        scaled_img = pygame.transform.smoothscale(self.login_image, (image_rect.w, image_rect.h))
+        image_surface = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        image_surface.blit(scaled_img, (0, 0))
+
+        mask = pygame.Surface((image_rect.w, image_rect.h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, image_rect.w, image_rect.h), border_radius=24)
+        image_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.screen.blit(image_surface, (image_rect.x, image_rect.y))
+
+        
+    
+
+    def get_auth_click_target(self, mouse_pos, auth_mode):
+        if self.auth_login_tab_rect and self.auth_login_tab_rect.collidepoint(mouse_pos):
+            return "auth_login_mode"
+
+        if self.auth_signup_tab_rect and self.auth_signup_tab_rect.collidepoint(mouse_pos):
+            return "auth_signup_mode"
+
+        if self.auth_primary_button_rect and self.auth_primary_button_rect.collidepoint(mouse_pos):
+            return "auth_primary"
+
+        if self.auth_guest_button_rect and self.auth_guest_button_rect.collidepoint(mouse_pos):
+            return "auth_guest"
+        
+        if self.auth_switch_text_rect and self.auth_switch_text_rect.collidepoint(mouse_pos):
+            if auth_mode == "login":
+                return "auth_switch_to_signup"
+            else:
+                return "auth_switch_to_login"
+        
         return None

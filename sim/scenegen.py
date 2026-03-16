@@ -64,6 +64,13 @@ class SceneGen :
         self.is_fading_in = False
         self.fade_speed = 17
 
+        self.auh_form = {
+            "full_name": "",
+            "email": "",
+            "password": "", 
+        }
+        self.auth_focus = None
+
     def handle_events(self) :
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
@@ -101,14 +108,69 @@ class SceneGen :
                     elif target in self.click_to_state : 
                         self.state = self.click_to_state[target]
                         self.start_fade_in()
+                
+                elif self.state == "auth" and self.ui :
+                    target  = self.ui.get_auth_click_target(mouse_pos, self.auth_mode)
+
+                    if target == "auth_mode_login" :
+                        self.auth_mode = "login"
+                    
+                    elif target == "auth_signup_mode" :
+                        self.auth_mode = "signup"
+                    
+                    elif target == "auth_switch_to_login" :
+                        self.auth_mode = "login"
+                    
+                    elif target == "auth_switch_to_signup" :
+                        self.auth_mode = "signup"
+                    
+                    elif target == "auth_guest" :
+                        self.is_guest = True 
+                        self.is_authenticated = False 
+
+                        if self.pending_destination  :
+                            self.state = self.pending_destination
+                            self.pending_destination = None 
+                        else :
+                            self.state = "home"
+                        
+                        self.start_fade_in()
+
+                    elif target == "auth_primary" :
+                        self.is_authenticated = True 
+                        self.is_guest = False 
+
+                        if self.pending_destination :
+                            self.state = self.pending_destination
+                            self.pending_destination = None 
+                        else : 
+                            self.state = "home"
+                        
+                        self.start_fade_in()
 
                 elif self.state == "scene_select" and self.ui :
                     target = self.ui.get_scene_select_click_target(mouse_pos)
+                    
+                    if not self.is_authenticated : 
+
+                        if target == "login" :
+                            self.auth_mode = "login"
+                            self.state = "auth"
+                            self.start_fade_in()
+                            continue 
+                    
+                        elif target == "signup": 
+                            self.auth_mode = "signup"
+                            self.state = "auth"
+                            self.start_fade_in()
+                            continue 
+                        
 
                     if target == "left_lane_change" :
                         self.selected_scene = "left_lane_change"
                         self.state = "scene_intro"
                         self.start_fade_in()
+
                     elif target == "four_way_left_turn":
                         self.selected_scene = "4Way_left_turn"
                         self.state = "scene_intro"
