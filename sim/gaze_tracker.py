@@ -36,8 +36,4 @@ class gaze :
             self.pose_counter = 1
 
         return event_data
-
-
-
-
     

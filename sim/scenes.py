@@ -185,33 +185,3 @@ class Metrics :
 
         correct = sum(1 for result in step_results if result == "correct")
         return (correct / len(self.expected_sequence)) * 100 
-
-            
-        
-        
-        
-        
-        
-
-
-            
-
-
-
-         
-
-
-
-        
-
-
-
-
-
-
-
-        
-
-
-
-
