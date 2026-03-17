@@ -1239,13 +1239,13 @@ class UI :
         return None
     
 
-    def draw_auth(self, auth_mode, form_data, focused_field) :
+    def draw_auth(self, auth_mode, form_data, focused_field, auth_error) :
         self.draw_home_background()
         shell_rect  = self.draw_home_shell()
-        self.draw_auth_left(shell_rect, auth_mode, form_data, focused_field)
+        self.draw_auth_left(shell_rect, auth_mode, form_data, focused_field, auth_error)
         self.draw_auth_right(shell_rect)
     
-    def draw_auth_left(self, shell_rect, auth_mode, form_data, focused_field):
+    def draw_auth_left(self, shell_rect, auth_mode, form_data, focused_field, auth_error):
         mouse_pos = pygame.mouse.get_pos()
         left_x = shell_rect.x + 90
         left_y = shell_rect.y + 110
@@ -1305,6 +1305,7 @@ class UI :
             active=(focused_field == "password"),
             password=True
         )
+        field_y += 105
 
         speed = 0.30
         primary_base = pygame.Rect(field_x, field_y, field_w, 52)
@@ -1323,7 +1324,16 @@ class UI :
         primary_surf = self.fonts["small"].render(primary_label, True, self.c("text"))
         self.screen.blit(primary_surf, primary_surf.get_rect(center=primary_rect.center))
 
+        error_y = primary_rect.bottom + 14
+
+        if auth_error : 
+            error_surf = self.fonts["small"].render(auth_error, True, self.c("danger"))
+            self.screen.blit(error_surf, (field_x, error_y))
+
         divider_y = field_y + 85
+
+        if auth_error : 
+            divider_y += 28
         line_color = self.c("divider")
         center_text = self.fonts["small"].render("or continue with", True, self.c("text_faint"))
         center_rect = center_text.get_rect(center=(panel_rect.centerx, divider_y))
@@ -1402,26 +1412,26 @@ class UI :
         self.screen.blit(login_surf, login_surf.get_rect(center=login_base.center))
         self.screen.blit(signup_surf, signup_surf.get_rect(center=signup_base.center))
 
-    def draw_auth_field(self, x, y, w, label, placeholder, value="", password=False):
+    def draw_auth_field(self, x, y, w, label, placeholder, value="", active=False, password=False):
         label_surf = self.fonts["small"].render(label, True, self.c("text_subtle"))
         self.screen.blit(label_surf, (x, y))
 
         field_rect = pygame.Rect(x, y + 28, w, 50)
-        pygame.draw.rect(self.screen, self.c("surface_2"), field_rect, border_radius=12)
-        pygame.draw.rect(self.screen, self.c("border"), field_rect, width=1, border_radius=12)
 
-        placeholder_surf = self.fonts["small"].render(placeholder, True, self.c("text_disabled"))
-        self.screen.blit(placeholder_surf, (field_rect.x + 18, field_rect.y + 15))
+        border_color = self.c("accent") if active else self.c("border")
+        fill_color = self.c("surface_2")
 
-        if value : 
+        pygame.draw.rect(self.screen, fill_color, field_rect, border_radius=12)
+        pygame.draw.rect(self.screen, border_color, field_rect, width=1, border_radius=12)
+
+        if value:
             display_text = "*" * len(value) if password else value
             text_surf = self.fonts["small"].render(display_text, True, self.c("text_soft"))
-        else : 
+        else:
             text_surf = self.fonts["small"].render(placeholder, True, self.c("text_disabled"))
-        
+
         self.screen.blit(text_surf, (field_rect.x + 18, field_rect.y + 15))
-        return field_rect 
-    
+        return field_rect
 
     def draw_auth_right(self, shell_rect):
         right_w = 850
@@ -1466,4 +1476,17 @@ class UI :
             else:
                 return "auth_switch_to_login"
         
+        return None
+
+
+    def get_auth_field_target(self, mouse_pos, auth_mode):
+        if auth_mode == "signup" and self.auth_name_field_rect and self.auth_name_field_rect.collidepoint(mouse_pos):
+            return "full_name"
+
+        if self.auth_email_field_rect and self.auth_email_field_rect.collidepoint(mouse_pos):
+            return "email"
+
+        if self.auth_password_field_rect and self.auth_password_field_rect.collidepoint(mouse_pos):
+            return "password"
+
         return None

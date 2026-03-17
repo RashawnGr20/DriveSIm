@@ -1,9 +1,13 @@
 import pygame
 import os
+from auth_client import AuthClient
+
+auth_client = AuthClient()
 
 class SceneGen :
     def __init__(self, W, H , fps,): 
         pygame.init()
+        pygame.key.set_repeat(400, 35)
         self.W, self.H = W, H 
         self.screen = pygame.display.set_mode((self.W, self.H))
         pygame.display.set_caption("Test")
@@ -64,18 +68,51 @@ class SceneGen :
         self.is_fading_in = False
         self.fade_speed = 17
 
-        self.auh_form = {
+        self.auth_form = {
             "full_name": "",
             "email": "",
             "password": "", 
         }
         self.auth_focus = None
 
+        self.auth_error = ""
+
+        
+
     def handle_events(self) :
         for event in pygame.event.get()  :
             if event.type == pygame.QUIT: 
                 pygame.quit()
                 return False 
+            
+
+            if event.type == pygame.KEYDOWN and self.state == "auth" :
+                if event.key == pygame.K_TAB :
+                    if self.auth_mode == "signup" :
+                        order  = ["full_name", "email", "password"]
+                    else : 
+                        order = ["email", "password"]
+                    
+                    if self.auth_focus not in order : 
+                        self.auth_focus = order[0]
+                    else : 
+                        idx = order.index(self.auth_focus)
+                        self.auth_focus = order[(idx + 1) % len(order)]
+                
+                elif event.key == pygame.K_BACKSPACE and self.auth_focus:
+                    self.auth_form[self.auth_focus] = self.auth_form[self.auth_focus][:-1]
+
+
+                elif event.key == pygame.K_RETURN:
+                    self.submit_auth()
+
+            elif event.type == pygame.TEXTINPUT and self.state == "auth" and self.auth_focus:
+                current = self.auth_form[self.auth_focus]
+
+                if len(current) < 64:
+                    self.auth_form[self.auth_focus] += event.text
+                    
+
         
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 :
                 mouse_pos = event.pos
@@ -110,19 +147,37 @@ class SceneGen :
                         self.start_fade_in()
                 
                 elif self.state == "auth" and self.ui :
+                    field_target = self.ui.get_auth_field_target(mouse_pos, self.auth_mode)
+
+                    if field_target : 
+                        self.auth_focus = field_target
+                        self.auth_error = ""
+                        continue 
+                    else : 
+                        self.auth_focus = None 
+
                     target  = self.ui.get_auth_click_target(mouse_pos, self.auth_mode)
 
-                    if target == "auth_mode_login" :
+                    if target == "auth_login_mode" :
                         self.auth_mode = "login"
+                        self.auth_error = ""
+                        if self.auth_focus == "full_name" :
+                            self.auth_focus = "email"
                     
                     elif target == "auth_signup_mode" :
                         self.auth_mode = "signup"
+                        self.auth_error = ""
                     
                     elif target == "auth_switch_to_login" :
                         self.auth_mode = "login"
+                        self.auth_error = ""
+                        if self.auth_focus == "full_name" :
+                            self.auth_focus = "email"
+                    
                     
                     elif target == "auth_switch_to_signup" :
                         self.auth_mode = "signup"
+                        self.auth_error = ""
                     
                     elif target == "auth_guest" :
                         self.is_guest = True 
@@ -137,16 +192,8 @@ class SceneGen :
                         self.start_fade_in()
 
                     elif target == "auth_primary" :
-                        self.is_authenticated = True 
-                        self.is_guest = False 
-
-                        if self.pending_destination :
-                            self.state = self.pending_destination
-                            self.pending_destination = None 
-                        else : 
-                            self.state = "home"
-                        
-                        self.start_fade_in()
+                        self.submit_auth()
+                 
 
                 elif self.state == "scene_select" and self.ui :
                     target = self.ui.get_scene_select_click_target(mouse_pos)
@@ -199,6 +246,68 @@ class SceneGen :
                         self.state = "scene_select"
                         self.start_fade_in()
         return True 
+    
+    def submit_auth(self)  :
+        self.auth_error = ""
+
+        email = self.auth_form["email"]
+        password = self.auth_form["password"]
+
+        if not email or not password : 
+            self.auth_error = "Please enter both email and password."
+            return 
+        
+        try :
+            if self.auth_mode == "login" : 
+                success = auth_client.login(email, password)
+        
+                if success : 
+                    self.is_authenticated = True 
+                    self.is_guest = False
+
+                    if self.pending_destination :
+                        self.state = self.pending_destination
+                        self.pending_destination = None 
+                    else : 
+                        self.state = "home"
+                        
+                    self.start_fade_in()
+                else: 
+                    self.auth_error = "Invalid email or password."
+            
+            else : 
+                full_name = self.auth_form["full_name"].strip()
+
+                if not full_name : 
+                    self.auth_error = "Please enter your full name."
+                    return 
+
+                success = auth_client.signup(email, password)
+                
+                if success:
+                    self.is_authenticated = True
+                    self.is_guest = False
+
+                    if self.pending_destination:
+                        self.state = self.pending_destination
+                        self.pending_destination = None
+                    else:
+                        self.state = "home"
+
+                    self.start_fade_in()
+                else:
+                    self.auth_error = "An account with that email may already exist."
+
+        except Exception as e:
+            message = str(e).lower()
+
+            if "invalid credentials" in message:
+                self.auth_error = "Invalid email or password."
+            elif "already" in message or "exists" in message or "registered" in message:
+                self.auth_error = "That email is already registered."
+            else:
+                self.auth_error = "Something went wrong. Please try again."
+            
 
     def start_fade_in(self) :
         self.transition_alpha = 220
@@ -248,7 +357,7 @@ class SceneGen :
         return True
     
     def update_auth(self) : 
-        self.ui.draw_auth(self.auth_mode)
+        self.ui.draw_auth(self.auth_mode, self.auth_form, self.auth_focus, self.auth_error)
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
