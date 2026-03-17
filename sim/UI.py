@@ -130,6 +130,7 @@ class UI :
         self.scenarios_rect = None
         self.login_rect = None
         self.signup_rect = None
+        self.brand_rect = None 
 
         self.about_hover_t = 0.0
         self.features_hover_t = 0.0
@@ -171,6 +172,7 @@ class UI :
         self.auth_name_field_rect = None 
         self.auth_email_field_rect = None 
         self.auth_password_field_rect = None 
+        
 
     def draw_background_components(self) :
     
@@ -397,10 +399,10 @@ class UI :
     
         return mapping.get(text, text.title())
     
-    def draw_homepage(self) :
+    def draw_homepage(self, username=None, is_authenticated=False, is_guest=False) :
         self.draw_home_background()
         shell_rect = self.draw_home_shell()
-        self.draw_home_nav(shell_rect)
+        self.draw_home_nav(shell_rect, username, is_authenticated, is_guest)
         self.draw_home_hero(shell_rect)
         self.draw_home_preview(shell_rect)
         self.draw_home_feature_pills(shell_rect)
@@ -623,7 +625,7 @@ class UI :
         scenario_text_rect = scenario_surf.get_rect(center=scenario_rect.center)
         self.screen.blit(scenario_surf, scenario_text_rect)
         
-    def draw_home_nav(self, shell_rect):
+    def draw_home_nav(self, shell_rect, username=None, is_authenticated=False, is_guest=False):
         nav_y = shell_rect.y + 28
         pad_x = 40
         mouse_pos = pygame.mouse.get_pos()
@@ -644,7 +646,9 @@ class UI :
         signup_text_hover = self.c("text")
 
         brand_surf = self.fonts["medium"].render("LookFirst", True, brand_color)
-        self.screen.blit(brand_surf, (shell_rect.x + pad_x, nav_y))
+        brand_rect = brand_surf.get_rect(topleft=(shell_rect.x + pad_x, nav_y))
+        self.brand_rect = brand_rect
+        self.screen.blit(brand_surf, brand_rect.topleft)
 
         links = ["About", "Features", "Scenarios"]
         link_spacing = 110
@@ -683,37 +687,74 @@ class UI :
                 underline_rect = pygame.Rect(rect.x, rect.bottom + 4, underline_w, 2)
                 pygame.draw.rect(self.screen, self.c("accent_alt"), underline_rect, border_radius=1)
 
-        signup_base = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
-        signup_hovered = signup_base.collidepoint(mouse_pos)
-        self.signup_hover_t += ((1.0 if signup_hovered else 0.0) - self.signup_hover_t) * speed
+        self.login_rect = None
+        self.signup_rect = None
+        self.profile_rect = None
 
-        signup_lift = int(round(1 * self.signup_hover_t))
-        signup_rect = signup_base.move(0, -signup_lift)
-        self.signup_rect = signup_rect
+        if is_authenticated and username:
+            profile_surf_base = self.fonts["medium"].render(username, True, login_base)
+            profile_rect = profile_surf_base.get_rect(topleft=(shell_rect.right - pad_x - profile_surf_base.get_width(), nav_y + 4))
+            profile_hovered = profile_rect.collidepoint(mouse_pos)
 
-        signup_fill_color = self.lerp_color(signup_fill, signup_hover_fill, self.signup_hover_t)
-        signup_border_color = self.lerp_color(signup_border, signup_hover_border, self.signup_hover_t)
-        signup_text_color = self.lerp_color(signup_text_base, signup_text_hover, self.signup_hover_t)
+            self.login_hover_t += ((1.0 if profile_hovered else 0.0) - self.login_hover_t) * speed
+            self.profile_rect = profile_rect
 
-        pygame.draw.rect(self.screen, signup_fill_color, signup_rect, border_radius=12)
-        pygame.draw.rect(self.screen, signup_border_color, signup_rect, width=1, border_radius=12)
+            profile_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
+            profile_surf = self.fonts["medium"].render(username, True, profile_color)
+            self.screen.blit(profile_surf, profile_rect.topleft)
 
-        signup_surf = self.fonts["small"].render("Sign Up", True, signup_text_color)
-        signup_text_rect = signup_surf.get_rect(center=signup_rect.center)
-        self.screen.blit(signup_surf, signup_text_rect)
+        elif is_guest:
+            guest_label = "Guest"
+            guest_surf_base = self.fonts["medium"].render(guest_label, True, login_base)
+            guest_rect = guest_surf_base.get_rect(topleft=(shell_rect.right - pad_x - guest_surf_base.get_width(), nav_y + 4))
+            guest_hovered = guest_rect.collidepoint(mouse_pos)
 
-        login_surf_base = self.fonts["small"].render("Log In", True, login_base)
-        login_rect = login_surf_base.get_rect(topleft=(signup_rect.x - 62, nav_y + 4))
-        login_hovered = login_rect.collidepoint(mouse_pos)
+            self.login_hover_t += ((1.0 if guest_hovered else 0.0) - self.login_hover_t) * speed
+            self.profile_rect = guest_rect
 
-        self.login_hover_t += ((1.0 if login_hovered else 0.0) - self.login_hover_t) * speed
-        self.login_rect = login_rect
+            guest_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
+            guest_surf = self.fonts["medium"].render(guest_label, True, guest_color)
+            self.screen.blit(guest_surf, guest_rect.topleft)
 
-        login_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
-        login_surf = self.fonts["small"].render("Log In", True, login_color)
-        self.screen.blit(login_surf, login_rect.topleft)
+        else:
+            signup_base = pygame.Rect(shell_rect.right - pad_x - 120, nav_y - 6, 120, 40)
+            signup_hovered = signup_base.collidepoint(mouse_pos)
+            self.signup_hover_t += ((1.0 if signup_hovered else 0.0) - self.signup_hover_t) * speed
+
+            signup_lift = int(round(1 * self.signup_hover_t))
+            signup_rect = signup_base.move(0, -signup_lift)
+            self.signup_rect = signup_rect
+
+            signup_fill_color = self.lerp_color(signup_fill, signup_hover_fill, self.signup_hover_t)
+            signup_border_color = self.lerp_color(signup_border, signup_hover_border, self.signup_hover_t)
+            signup_text_color = self.lerp_color(signup_text_base, signup_text_hover, self.signup_hover_t)
+
+            pygame.draw.rect(self.screen, signup_fill_color, signup_rect, border_radius=12)
+            pygame.draw.rect(self.screen, signup_border_color, signup_rect, width=1, border_radius=12)
+
+            signup_surf = self.fonts["small"].render("Sign Up", True, signup_text_color)
+            signup_text_rect = signup_surf.get_rect(center=signup_rect.center)
+            self.screen.blit(signup_surf, signup_text_rect)
+
+            login_surf_base = self.fonts["small"].render("Log In", True, login_base)
+            login_rect = login_surf_base.get_rect(topleft=(signup_rect.x - 62, nav_y + 4))
+            login_hovered = login_rect.collidepoint(mouse_pos)
+
+            self.login_hover_t += ((1.0 if login_hovered else 0.0) - self.login_hover_t) * speed
+            self.login_rect = login_rect
+
+            login_color = self.lerp_color(login_base, login_hover, self.login_hover_t)
+            login_surf = self.fonts["small"].render("Log In", True, login_color)
+            self.screen.blit(login_surf, login_rect.topleft)
+
 
     def get_home_click_target(self, mouse_pos) :
+
+        if self.brand_rect and self.brand_rect.collidepoint(mouse_pos):
+            return "brand_home"
+
+        if self.profile_rect and self.profile_rect.collidepoint(mouse_pos):
+            return "profile"
 
         if self.start_button_rect and self.start_button_rect.collidepoint(mouse_pos) :
             return "start_session"
@@ -739,12 +780,12 @@ class UI :
         return None
     
 
-    def draw_scene_select(self) :
+    def draw_scene_select(self, username=None, is_authenticated=False, is_guest=False) :
         self.draw_home_background()
         shell_rect = self.draw_home_shell()
         self.draw_scene_select_header(shell_rect)
         self.draw_scene_cards(shell_rect)
-        self.draw_home_nav(shell_rect)
+        self.draw_home_nav(shell_rect, username, is_authenticated, is_guest)
 
 
     def draw_scene_select_header(self, shell_rect):
@@ -887,6 +928,9 @@ class UI :
     
     
     def get_scene_select_click_target(self, mouse_pos):
+        if self.brand_rect and self.brand_rect.collidepoint(mouse_pos):
+            return "brand_home"
+        
         if self.scene_card_1_rect and self.scene_card_1_rect.collidepoint(mouse_pos):
             return "left_lane_change"
 
@@ -901,14 +945,16 @@ class UI :
 
         if self.signup_rect and self.signup_rect.collidepoint(mouse_pos):
             return "signup"
+        
+        
 
         return None
     
 
-    def draw_scene_intro(self, scene_data) :
+    def draw_scene_intro(self, scene_data, username=None, is_authenticated=False, is_guest=False) :
         self.draw_home_background()
         shell_rect = self.draw_home_shell()
-        self.draw_home_nav(shell_rect)
+        self.draw_home_nav(shell_rect, username, is_authenticated, is_guest)
 
         if not scene_data :
             return 
@@ -1055,15 +1101,18 @@ class UI :
 
         if self.back_intro_button_rect and self.back_intro_button_rect.collidepoint(mouse_pos):
             return "back_to_scenarios"
+        
+        if self.brand_rect and self.brand_rect.collidepoint(mouse_pos):
+            return "brand_home"
 
         return None
 
 
-    def draw_results(self, scene_data, score, result) :
+    def draw_results(self, scene_data, score, result, username=None, is_authenticated=False, is_guest=False) :
 
         self.draw_home_background()
         shell_rect = self.draw_home_shell()
-        self.draw_home_nav(shell_rect)
+        self.draw_home_nav(shell_rect, username, is_authenticated, is_guest)
 
         scene_title = "Session Results"
         if scene_data :
@@ -1235,6 +1284,9 @@ class UI :
 
         if self.results_back_button_rect and self.results_back_button_rect.collidepoint(mouse_pos):
             return "back_to_scenarios"
+
+        if self.brand_rect and self.brand_rect.collidepoint(mouse_pos):
+            return "brand_home"
 
         return None
     

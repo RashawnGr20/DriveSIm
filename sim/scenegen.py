@@ -44,7 +44,7 @@ class SceneGen :
         self.auth_mode = "login"
         self.is_authenticated = False
         self.is_guest = False 
-        self.pending_destination = False 
+        self.pending_destination = None  
 
         self.scene_info = { 
             "left_lane_change": {
@@ -77,7 +77,7 @@ class SceneGen :
 
         self.auth_error = ""
 
-        
+        self.username = None 
 
     def handle_events(self) :
         for event in pygame.event.get()  :
@@ -120,7 +120,14 @@ class SceneGen :
                 if self.state == "home" and self.ui :
                     target = self.ui.get_home_click_target(mouse_pos)
 
-                    if target == "login" :
+                    if target == "brand_home" : 
+                        self.state = "home"
+                        self.start_fade_in()
+
+                    elif target == "profile" : 
+                        print("Open profile later")
+
+                    elif target == "login" :
                         self.auth_mode = "login"
                         self.state = "auth"
                         self.start_fade_in()
@@ -129,6 +136,9 @@ class SceneGen :
                         self.auth_mode = "signup"
                         self.state = "auth"
                         self.start_fade_in()
+                    
+
+                    
                     
                     elif target in {"start_session", "select_scenario", "scenarios"} :
                         destination  = self.click_to_state[target]
@@ -182,6 +192,7 @@ class SceneGen :
                     elif target == "auth_guest" :
                         self.is_guest = True 
                         self.is_authenticated = False 
+                        self.username = "Guest"
 
                         if self.pending_destination  :
                             self.state = self.pending_destination
@@ -198,21 +209,7 @@ class SceneGen :
                 elif self.state == "scene_select" and self.ui :
                     target = self.ui.get_scene_select_click_target(mouse_pos)
                     
-                    if not self.is_authenticated : 
-
-                        if target == "login" :
-                            self.auth_mode = "login"
-                            self.state = "auth"
-                            self.start_fade_in()
-                            continue 
                     
-                        elif target == "signup": 
-                            self.auth_mode = "signup"
-                            self.state = "auth"
-                            self.start_fade_in()
-                            continue 
-                        
-
                     if target == "left_lane_change" :
                         self.selected_scene = "left_lane_change"
                         self.state = "scene_intro"
@@ -222,6 +219,11 @@ class SceneGen :
                         self.selected_scene = "4Way_left_turn"
                         self.state = "scene_intro"
                         self.start_fade_in()
+
+                    elif target == "brand_home" : 
+                        self.state = "home"
+                        self.start_fade_in()
+                    
 
                     elif target == "coming_soon":
                         print("More scenarios coming soon.")
@@ -234,6 +236,10 @@ class SceneGen :
                     elif target == "back_to_scenarios" :
                         self.state = "scene_select"
                         self.start_fade_in()
+                    
+                    elif target == "brand_home" : 
+                        self.state = "home"
+                        self.start_fade_in()
                 
                 elif self.state == "results" and self.ui :
                     target = self.ui.get_results_click_target(mouse_pos)
@@ -244,6 +250,10 @@ class SceneGen :
 
                     elif target == "back_to_scenarios" :
                         self.state = "scene_select"
+                        self.start_fade_in()
+                    
+                    elif target == "brand_home" : 
+                        self.state = "home"
                         self.start_fade_in()
         return True 
     
@@ -264,6 +274,7 @@ class SceneGen :
                 if success : 
                     self.is_authenticated = True 
                     self.is_guest = False
+                    self.username = email.split("@")[0]
 
                     if self.pending_destination :
                         self.state = self.pending_destination
@@ -287,6 +298,7 @@ class SceneGen :
                 if success:
                     self.is_authenticated = True
                     self.is_guest = False
+                    self.username = full_name
 
                     if self.pending_destination:
                         self.state = self.pending_destination
@@ -327,14 +339,14 @@ class SceneGen :
             self.is_fading_in = False
 
     def update_homepage(self) :
-        self.ui.draw_homepage()
+        self.ui.draw_homepage(self.username, self.is_authenticated, self.is_guest)
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
         return True 
 
     def update_scene_select(self) :
-        self.ui.draw_scene_select()
+        self.ui.draw_scene_select(self.username, self.is_authenticated, self.is_guest)
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
@@ -342,7 +354,7 @@ class SceneGen :
     
     def update_scene_intro(self):
         scene_data = self.scene_info.get(self.selected_scene)
-        self.ui.draw_scene_intro(scene_data)
+        self.ui.draw_scene_intro(scene_data, self.username, self.is_authenticated, self.is_guest)
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
@@ -350,7 +362,7 @@ class SceneGen :
 
     def update_results(self):
         scene_data = self.scene_info.get(self.selected_scene)
-        self.ui.draw_results(scene_data, self.last_score, self.last_result)
+        self.ui.draw_results(scene_data, self.last_score, self.last_result, self.username, self.is_authenticated, self.is_guest)
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
