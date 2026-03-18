@@ -89,6 +89,8 @@ class HeadTracker:
             left_iris = eye_data["left_eye"]["iris"]
             right_iris = eye_data["right_eye"]["iris"]
 
+            shrink_factor = 0.5
+
             xL_avg = sum(p.x for p in left_iris) / len(left_iris)
             yL_avg = sum(p.y for p in left_iris) / len(left_iris) 
             zL_avg = sum(p.z for p in left_iris) / len(left_iris)
@@ -96,9 +98,6 @@ class HeadTracker:
             xR_avg = sum(p.x for p in right_iris) / len(right_iris)
             yR_avg = sum(p.y for p in right_iris) / len(right_iris) 
             zR_avg = sum(p.z for p in right_iris) / len(right_iris)
-
-            final_x = (xL_avg + xR_avg) / 2
-            final_y = (yL_avg + yR_avg) / 2
 
             left_eye = eye_data["left_eye"]
             right_eye = eye_data["right_eye"]
@@ -115,16 +114,38 @@ class HeadTracker:
             right_eye_upper_bound = min(right_eye["top"].y, right_eye["bottom"].y)
             right_eye_lower_bound = max(right_eye["top"].y, right_eye["bottom"].y)
 
+            center_x_L = (left_eye_left_bound + left_eye_right_bound) / 2
+            center_y_L = (left_eye_upper_bound + left_eye_lower_bound) / 2
 
-            left_bound = (left_eye_left_bound + right_eye_left_bound) / 2
-            right_bound = (left_eye_right_bound + right_eye_right_bound) / 2
+            range_x_L = (left_eye_right_bound - left_eye_left_bound) * shrink_factor
+            range_y_L = (left_eye_lower_bound - left_eye_upper_bound) * shrink_factor
 
-            top_bound = (left_eye_upper_bound + right_eye_upper_bound) / 2
-            bottom_bound  = (left_eye_lower_bound + right_eye_lower_bound) / 2
+            left_eye_left_bound  = center_x_L - range_x_L / 2
+            left_eye_right_bound = center_x_L + range_x_L / 2
 
+            left_eye_upper_bound = center_y_L - range_y_L / 2
+            left_eye_lower_bound = center_y_L + range_y_L / 2
 
-            norm_x = (final_x - left_bound) / (right_bound - left_bound)
-            norm_y = (final_y - top_bound) / (bottom_bound - top_bound)
+            center_x_R = (right_eye_left_bound + right_eye_right_bound) / 2
+            center_y_R = (right_eye_upper_bound + right_eye_lower_bound) / 2
+
+            range_x_R = (right_eye_right_bound - right_eye_left_bound)* shrink_factor
+            range_y_R = (right_eye_lower_bound - right_eye_upper_bound)* shrink_factor
+
+            right_eye_left_bound  = center_x_R - range_x_R / 2
+            right_eye_right_bound = center_x_R + range_x_R / 2
+
+            right_eye_upper_bound = center_y_R - range_y_R / 2
+            right_eye_lower_bound = center_y_R + range_y_R / 2
+
+            norm_x_l = (xL_avg - left_eye_left_bound) / (left_eye_right_bound - left_eye_left_bound)
+            norm_y_l = (yL_avg - left_eye_upper_bound) / (left_eye_lower_bound - left_eye_upper_bound)
+
+            norm_x_r = (xR_avg - right_eye_left_bound) / (right_eye_right_bound - right_eye_left_bound)
+            norm_y_r = (yR_avg - right_eye_upper_bound) / (right_eye_lower_bound - right_eye_upper_bound)
+
+            norm_x = (norm_x_l + norm_x_r) / 2
+            norm_y = (norm_y_l + norm_y_r) / 2
 
             norm_x = max(0, min(1, norm_x))
             norm_y = max(0, min(1, norm_y))
@@ -132,7 +153,7 @@ class HeadTracker:
             offset_x = (norm_x - 0.5) * 2
             offset_y = (norm_y - 0.5) * 2
 
-            gain = 2.5
+            gain = 1.2
 
             offset_x *= gain
             offset_y *= gain
