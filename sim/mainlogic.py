@@ -131,6 +131,7 @@ while running:
 
         raw_pos = tracker.get_body_pos(face_landmarks)
         smoothed_pos = tracker.smoothed_points(raw_pos, prev_smoothed, 0.2)
+        offset_x, offset_y = tracker.gaze_vectors(face_landmarks)
 
         vectors = tracker.pitch_vectors(smoothed_pos)
         pitch = vectors["pitch_angle"]
@@ -182,7 +183,7 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
 

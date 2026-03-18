@@ -17,6 +17,8 @@ class HeadTracker:
             )
             self.mp_drawing =  mp.solutions.drawing_utils
 
+            self.prev_gaze = None 
+
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.face_mesh.process(rgb_frame) 
@@ -81,8 +83,76 @@ class HeadTracker:
 
                 
       def gaze_vectors(self) : 
-           
-           pass 
+                
+            eye_data = self.get_gaze_pos()
+
+            left_iris = eye_data["left_eye"]["iris"]
+            right_iris = eye_data["right_eye"]["iris"]
+
+            xL_avg = sum(p.x for p in left_iris) / len(left_iris)
+            yL_avg = sum(p.y for p in left_iris) / len(left_iris) 
+            zL_avg = sum(p.z for p in left_iris) / len(left_iris)
+
+            xR_avg = sum(p.x for p in right_iris) / len(right_iris)
+            yR_avg = sum(p.y for p in right_iris) / len(right_iris) 
+            zR_avg = sum(p.z for p in right_iris) / len(right_iris)
+
+            final_x = (xL_avg + xR_avg) / 2
+            final_y = (yL_avg + yR_avg) / 2
+
+            left_eye = eye_data["left_eye"]
+            right_eye = eye_data["right_eye"]
+
+            left_eye_left_bound = min(left_eye["outer"].x, left_eye["inner"].x)
+            left_eye_right_bound = max(left_eye["outer"].x, left_eye["inner"].x)
+
+            right_eye_left_bound = min(right_eye["outer"].x, right_eye["inner"].x)
+            right_eye_right_bound = max(right_eye["outer"].x, right_eye["inner"].x)
+
+            left_eye_upper_bound = min(left_eye["top"].y, left_eye["bottom"].y)
+            left_eye_lower_bound = max(left_eye["top"].y, left_eye["bottom"].y)
+
+            right_eye_upper_bound = min(right_eye["top"].y, right_eye["bottom"].y)
+            right_eye_lower_bound = max(right_eye["top"].y, right_eye["bottom"].y)
+
+
+            left_bound = (left_eye_left_bound + right_eye_left_bound) / 2
+            right_bound = (left_eye_right_bound + right_eye_right_bound) / 2
+
+            top_bound = (left_eye_upper_bound + right_eye_upper_bound) / 2
+            bottom_bound  = (left_eye_lower_bound + right_eye_lower_bound) / 2
+
+
+            norm_x = (final_x - left_bound) / (right_bound - left_bound)
+            norm_y = (final_y - top_bound) / (bottom_bound - top_bound)
+
+            norm_x = max(0, min(1, norm_x))
+            norm_y = max(0, min(1, norm_y))
+
+            offset_x = (norm_x - 0.5) * 2
+            offset_y = (norm_y - 0.5) * 2
+
+            if self.prev_gaze is None : 
+                  smoothed_x = offset_x
+                  smoothed_y = offset_y
+            else : 
+                  prev_x, prev_y = self.prev_gaze
+
+                  smoothed_x = self.smoothed_gaze(prev_x, offset_x)
+                  smoothed_y = self.smoothed_gaze(prev_y, offset_y)
+                  
+            self.prev_gaze = (smoothed_x, smoothed_y)
+
+      def smoothed_gaze(self, prev, offset, alpha=0.2) : 
+            if prev is None : 
+                  return offset 
+            
+            smoothed = prev + alpha *(offset - prev)
+
+            return smoothed
+
+            
+            
 
       def draw_landmarks(self, frame, face_landmarks) :
              self.mp_drawing.draw_landmarks(
