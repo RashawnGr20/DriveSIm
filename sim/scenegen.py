@@ -420,7 +420,7 @@ class SceneGen :
         self.ui.draw_background_components()
         viewport = self.ui.viewport_rect 
         
-        if self.camera_x == 0 and self.camera_y == 0:
+        if not self.camera_initialized:
             self.camera_x = (self.pano_width - viewport.w) // 2
             self.camera_y = (self.pano_height - viewport.h) // 2
             self.camera_initialized = True
@@ -430,6 +430,9 @@ class SceneGen :
 
         self.camera_x += (target_x - self.camera_x) * smoothing 
         self.camera_y += (target_y - self.camera_y) * smoothing
+
+        gaze_x = viewport.x + ((offset_x + 1) / 2) * viewport.w
+        gaze_y = viewport.y + ((offset_y + 1) / 2) * viewport.h
 
         gaze_x = max(viewport.x, min(viewport.x + viewport.w, gaze_x))
         gaze_y = max(viewport.y, min(viewport.y + viewport.h, gaze_y))
