@@ -82,7 +82,7 @@ class HeadTracker:
             }
 
                 
-      def gaze_vectors(self) : 
+      def gaze_vectors(self, face_landmarks) : 
                 
             eye_data = self.get_gaze_pos()
 
@@ -140,9 +140,11 @@ class HeadTracker:
 
                   smoothed_x = self.smoothed_gaze(prev_x, offset_x)
                   smoothed_y = self.smoothed_gaze(prev_y, offset_y)
-                  
+
             self.prev_gaze = (smoothed_x, smoothed_y)
 
+            return smoothed_x, smoothed_y
+      
       def smoothed_gaze(self, prev, offset, alpha=0.2) : 
             if prev is None : 
                   return offset 
