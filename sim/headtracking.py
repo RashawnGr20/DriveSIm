@@ -19,7 +19,7 @@ class HeadTracker:
 
             self.prev_gaze = None 
             self.gaze_baseline = None 
-            self.gaze_baseline_buffer = None 
+            self.gaze_baseline_buffer = []
             self.GAZE_BASELINE_FRAMES = 30
 
       def process_frame(self, frame) :
