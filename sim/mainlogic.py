@@ -30,6 +30,7 @@ baseline_buffer = []
 BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
+prev_gaze = (0.0, 0.0)
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -85,7 +86,7 @@ while running:
         baseline_buffer = []
         prev_rel = None
         prev_prev_rel = None
-
+        prev_gaze = (0.0, 0.0)
         simulation_initialized = True
 
     ret, frame = cap.read()
@@ -112,7 +113,7 @@ while running:
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
-
+        offset_x, offset_y = prev_gaze
         running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
@@ -133,7 +134,7 @@ while running:
         raw_pos = tracker.get_body_pos(face_landmarks)
         smoothed_pos = tracker.smoothed_points(raw_pos, prev_smoothed, 0.2)
         offset_x, offset_y = tracker.gaze_vectors(face_landmarks)
-
+        prev_gaze = (offset_x, offset_y)
         vectors = tracker.pitch_vectors(smoothed_pos)
         pitch = vectors["pitch_angle"]
         yaw = vectors["yaw_angle"]
@@ -184,7 +185,7 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, -offset_x, -offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
 
