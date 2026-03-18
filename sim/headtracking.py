@@ -128,9 +128,17 @@ class HeadTracker:
 
             norm_x = max(0, min(1, norm_x))
             norm_y = max(0, min(1, norm_y))
-
+            
             offset_x = (norm_x - 0.5) * 2
             offset_y = (norm_y - 0.5) * 2
+
+            gain = 2.5
+
+            offset_x *= gain
+            offset_y *= gain
+
+            offset_x = max(-1, min(1, offset_x))
+            offset_y = max(-1, min(1, offset_y))
 
             if self.prev_gaze is None : 
                   smoothed_x = offset_x
