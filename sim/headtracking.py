@@ -18,6 +18,9 @@ class HeadTracker:
             self.mp_drawing =  mp.solutions.drawing_utils
 
             self.prev_gaze = None 
+            self.gaze_baseline = None 
+            self.gaze_baseline_buffer = None 
+            self.GAZE_BASELINE_FRAMES = 30
 
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -149,11 +152,27 @@ class HeadTracker:
 
             norm_x = max(0, min(1, norm_x))
             norm_y = max(0, min(1, norm_y))
-            
-            offset_x = (norm_x - 0.5) * 2
-            offset_y = (norm_y - 0.5) * 2
 
-            gain = 1.2
+            if self.gaze_baseline is None : 
+                  self.gaze_baseline_buffer.append((norm_x, norm_y))
+
+                  if len(self.gaze_baseline_buffer) >= 20 : 
+                        baseline_x = sum(x for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
+                        baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
+                        self.gaze_baseline = (baseline_x, baseline_y)
+                        
+                  return 0.0, 0.0
+            
+            baseline_x, baseline_y = self.gaze_baseline
+            
+            offset_x = (norm_x - baseline_x) / 0.10
+            offset_y = (norm_y - baseline_y) / 0.08
+            
+            print("norm:", norm_x, norm_y)
+            print("baseline:", self.gaze_baseline)
+            print("offset:", offset_x, offset_y)
+
+            gain = 1.0
 
             offset_x *= gain
             offset_y *= gain
