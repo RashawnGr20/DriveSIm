@@ -21,6 +21,7 @@ cap = None
 tracker = None
 feedback = None
 
+
 prev_smoothed = None
 prev_angles = None
 prev_prev_angles = None
@@ -112,7 +113,7 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
 
@@ -183,10 +184,10 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, pose, -offset_x, -offset_y, progress_data)
         if not running:
             break
-        
+
         prev_prev_rel = prev_rel.copy() if prev_rel else None
         prev_rel = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
 

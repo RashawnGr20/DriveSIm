@@ -84,7 +84,7 @@ class HeadTracker:
                 
       def gaze_vectors(self, face_landmarks) : 
                 
-            eye_data = self.get_gaze_pos()
+            eye_data = self.get_gaze_pos(face_landmarks)
 
             left_iris = eye_data["left_eye"]["iris"]
             right_iris = eye_data["right_eye"]["iris"]
