@@ -186,7 +186,7 @@ while running:
         running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
-
+        
         prev_prev_rel = prev_rel.copy() if prev_rel else None
         prev_rel = {"pitch": rel_pitch, "yaw": rel_yaw, "roll": rel_roll}
 

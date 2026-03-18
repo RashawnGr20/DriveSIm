@@ -14,7 +14,7 @@ class Scene :
 
             '4Way_left_turn' : coverageScene(
                 15,
-                ['FORWARD', 'LEFT MIRROR', 'RIGHT MIRROR']
+                 ['FORWARD', 'LEFT MIRROR', 'RIGHT MIRROR']
             )
         }
 
