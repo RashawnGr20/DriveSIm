@@ -88,6 +88,8 @@ class UI :
     "scene_card_2": (162, 120, 84),
     "scene_card_3": (224, 176, 112),
 
+    "instruction_text": (0,0,0), 
+
 }
         
         self.fonts = {
@@ -1542,3 +1544,35 @@ class UI :
             return "password"
 
         return None
+    
+
+    def draw_calibration_overlay(self, progress=0.0, status_text="Calibration in progress"):
+        viewport = self.viewport_rect
+        cx = viewport.centerx
+        cy = viewport.centery
+
+        pygame.draw.circle(self.screen, (235, 240, 246), (cx, cy), 16, 2)
+        pygame.draw.circle(self.screen, self.colors["accent"], (cx, cy), 5)
+
+        title = self.fonts["medium"].render("Calibration", True, self.c("instruction_text"))
+        subtitle = self.fonts["medium"].render(status_text, True, self.c("instruction_text"))
+
+        title_rect = title.get_rect(center=(cx, viewport.bottom - 72))
+        subtitle_rect = subtitle.get_rect(center=(cx, viewport.bottom - 46))
+
+        self.screen.blit(title, title_rect)
+        self.screen.blit(subtitle, subtitle_rect)
+
+        bar_w = 260
+        bar_h = 10
+        bar_x = cx - bar_w // 2
+        bar_y = viewport.bottom - 24
+
+        track_rect = pygame.Rect(bar_x, bar_y, bar_w, bar_h)
+        fill_rect = pygame.Rect(bar_x, bar_y, int(bar_w * max(0.0, min(1.0, progress))), bar_h)
+
+        pygame.draw.rect(self.screen, self.c("surface_2"), track_rect, border_radius=8)
+        pygame.draw.rect(self.screen, self.c("border"), track_rect, width=1, border_radius=8)
+
+        if fill_rect.w > 0:
+            pygame.draw.rect(self.screen, self.c("accent"), fill_rect, border_radius=8)

@@ -59,7 +59,7 @@ simulation_initialized = False
 
 while running:
 
-    if scene.state != "simulation":
+    if scene.state not in {"simulation", "calibration"}:
         if simulation_initialized:
             if cap is not None:
                 cap.release()
@@ -70,7 +70,7 @@ while running:
         running = scene.update()
         continue
 
-    if scene.state == "simulation" and not simulation_initialized:
+    if scene.state in {"simulation", "calibration"} and not simulation_initialized:
         scene_manager = Scene(scene.selected_scene)
         metrics = Metrics(scene_manager.current_scene.expected_sequence)
 
@@ -148,59 +148,101 @@ while running:
         yaw = vectors["yaw_angle"]
         roll = vectors["roll_angle"]
 
-        if baseline_angles is None:
-            baseline_buffer.append((pitch, yaw, roll))
+        if scene.state == "calibration" : 
+            if baseline_angles is None:
+                baseline_buffer.append((pitch, yaw, roll))
 
-            if len(baseline_buffer) >= 5:
-                recent = baseline_buffer[-5:]
-                spread_yaw = max(y for _, y, _ in recent) - min(y for _, y, _ in recent)
-                if spread_yaw > 4:
-                    baseline_buffer.clear()
+                if len(baseline_buffer) >= 5:
+                    recent = baseline_buffer[-5:]
+                    spread_yaw = max(y for _, y, _ in recent) - min(y for _, y, _ in recent)
+                    if spread_yaw > 4:
+                        baseline_buffer.clear()
+                        prev_smoothed = smoothed_pos
+                        continue
+                
+                
+                head_progress = min(1.0, len(baseline_buffer) / BASELINE_FRAMES)
+                calibration_progress_data = {
+                    "progress": 0.6 * head_progress, 
+                    "status_text": "Hold still and face forward"
+                }
+
+                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, progress_data)
+                if not running : 
+                    break 
+
+
+                if len(baseline_buffer) < BASELINE_FRAMES:
+                    
                     prev_smoothed = smoothed_pos
                     continue
 
-            if len(baseline_buffer) < BASELINE_FRAMES:
+                avg_pitch = sum(p for p, _, _ in baseline_buffer) / BASELINE_FRAMES
+                avg_yaw = sum(y for _, y, _ in baseline_buffer) / BASELINE_FRAMES
+                avg_roll = sum(r for _, _, r in baseline_buffer) / BASELINE_FRAMES
+
+                baseline_angles = {
+                    "pitch": avg_pitch,
+                    "yaw": avg_yaw,
+                    "roll": avg_roll
+                }
+
+                tracker.reset_gaze()
+                gaze_calibrated = False 
+                prev_gaze = (0.0, 0.0)
+                gaze_warmup_count = 0
+
+                prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
+                prev_prev_angles = None
+                prev_rel = {"pitch": 0, "yaw": 0, "roll": 0}
+                prev_prev_rel = None
                 prev_smoothed = smoothed_pos
+
                 continue
 
-            avg_pitch = sum(p for p, _, _ in baseline_buffer) / BASELINE_FRAMES
-            avg_yaw = sum(y for _, y, _ in baseline_buffer) / BASELINE_FRAMES
-            avg_roll = sum(r for _, _, r in baseline_buffer) / BASELINE_FRAMES
+            if not gaze_calibrated : 
 
-            baseline_angles = {
-                "pitch": avg_pitch,
-                "yaw": avg_yaw,
-                "roll": avg_roll
-            }
+                if gaze_warmup_count < gaze_warmup_frames : 
+                    gaze_warmup_count += 1
+                    
+                    
+                    gaze_progress = min(1.0, gaze_warmup_count / gaze_warmup_frames)
+                    progress_data = {
+                        "progress": 0.6 + 0.4 * gaze_progress, 
+                        "status_text": "Look directly at the center dot"
+                    } 
+                    
+                    running = scene.update(0,0,0, pose, 0.0, 0.0, progress_data)
 
-            tracker.reset_gaze()
-            gaze_calibrated = False 
-            prev_gaze = (0.0, 0.0)
-            gaze_warmup_count = 0
+                    if not running :
+                        break
 
-            prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
-            prev_prev_angles = None
-            prev_rel = {"pitch": 0, "yaw": 0, "roll": 0}
-            prev_prev_rel = None
-            prev_smoothed = smoothed_pos
+                    prev_smoothed = smoothed_pos
+                    continue 
+                    
+                    
 
-            continue
+                norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
+                gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
+                
+                calibration_progress_data = {
+                    "progress": 1.0 if gaze_calibrated else 0.95,
+                    "status_text": "Calibration complete" if gaze_calibrated else "Look directly at the center point"
+                }
+                
+                running = scene.update(0,0,0, pose, 0.0, 0.0, progress_data)
 
-        if not gaze_calibrated : 
+                if not running : 
+                    break 
+                
+                prev_gaze = (0.0, 0.0)
+                prev_smoothed = smoothed_pos
 
-            if gaze_warmup_count < gaze_warmup_frames : 
-                gaze_warmup_count += 1
+                if gaze_calibrated : 
+                    scene.state = "simulation"
+                    scene.start_fade_in()
 
                 continue 
-
-            norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
-            gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
-
-            offset_x, offset_y = 0.0, 0.0 
-            prev_gaze = (0.0, 0.0)
-            prev_smoothed = smoothed_pos
-
-            continue 
 
     
         print("CURRENT BASELINE:", tracker.gaze_baseline)

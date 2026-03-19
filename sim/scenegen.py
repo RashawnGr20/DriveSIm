@@ -34,6 +34,7 @@ class SceneGen :
             "start_session": "scene_select", 
             "select_scenario": "scene_select", 
             "about": "about", 
+            "calibration": "calibration", 
             "features": "features", 
             "scenarios": "scene_select", 
             "login": "auth", 
@@ -231,7 +232,7 @@ class SceneGen :
                     target = self.ui.get_scene_intro_click_target(mouse_pos)
 
                     if target == "start_simulation" :
-                        self.state = "simulation"
+                        self.state = "calibration"
                         self.start_fade_in()
                     elif target == "back_to_scenarios" :
                         self.state = "scene_select"
@@ -392,6 +393,11 @@ class SceneGen :
         elif self.state == "scene_intro" :
             return self.update_scene_intro()
         
+        elif self.state == "calibration":
+            if pitch is None or yaw is None or roll is None or pose is None:
+                return True
+            return self.update_calibration(pitch, yaw, roll, pose, offset_x, offset_y, progress_data)
+        
         elif self.state == "simulation" :
             if pitch is None or yaw is None or roll is None or pose is None : 
                 return True 
@@ -460,4 +466,59 @@ class SceneGen :
         self.clock.tick(self.fps)
         return True 
 
-    
+    def update_calibration(self, pitch, yaw, roll, pose, offset_x, offset_y, progress_data=None):
+        minYaw = -70
+        maxYaw = 70
+        minPitch = -20
+        maxPitch = 20
+        sensX = 1.6
+        sensY = 1.4
+        smoothing = 0.18
+
+        pitch = max(minPitch, min(pitch, maxPitch)) * sensY
+        yaw = max(minYaw, min(yaw, maxYaw)) * sensX
+        normx = (yaw - minYaw) / (maxYaw - minYaw)
+        normy = (pitch - minPitch) / (maxPitch - minPitch)
+
+        self.ui.draw_background_components()
+        viewport = self.ui.viewport_rect
+
+        if not self.camera_initialized:
+            self.camera_x = (self.pano_width - viewport.w) // 2
+            self.camera_y = (self.pano_height - viewport.h) // 2
+            self.camera_initialized = True
+
+        target_x = normx * (self.pano_width - viewport.w)
+        target_y = normy * (self.pano_height - viewport.h)
+
+        self.camera_x += (target_x - self.camera_x) * smoothing
+        self.camera_y += (target_y - self.camera_y) * smoothing
+
+        x = max(0, min((self.pano_width - viewport.w), self.camera_x))
+        y = max(0, min((self.pano_height - viewport.h), self.camera_y))
+
+        viewport_surface = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
+        viewport_surface.blit(self.pano, (0, 0), (x, y, viewport.w, viewport.h))
+
+        mask = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, viewport.w, viewport.h), border_radius=10)
+        viewport_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        self.screen.blit(viewport_surface, (viewport.x, viewport.y))
+
+        overlay = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
+        overlay.fill((255, 255, 255, 38))   
+        self.screen.blit(overlay, (viewport.x, viewport.y))
+
+        progress = 0.0
+        status_text = "Hold still and face forward"
+        if progress_data:
+            progress = progress_data.get("progress", 0.0)
+            status_text = progress_data.get("status_text", status_text)
+
+        self.ui.draw_calibration_overlay(progress, status_text)
+
+        self.draw_fade_overlay()
+        pygame.display.flip()
+        self.clock.tick(self.fps)
+        return True
