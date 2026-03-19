@@ -108,7 +108,7 @@ class HeadTracker:
             offset_x = max(-1, min(1, offset_x))
             offset_y = max(-1, min(1, offset_y))
 
-            #offset_x = -offset_x
+            offset_x = -offset_x
             #offset_y = -offset_y
 
             print("raw offset:", offset_x, offset_y)
