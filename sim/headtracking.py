@@ -84,16 +84,70 @@ class HeadTracker:
                   }
             }
 
+      def reset_gaze(self) :
+            self.prev_gaze = None
+            self.gaze_baseline = None
+            self.gaze_baseline_buffer = []
                 
-      def gaze_vectors(self, face_landmarks) : 
-                
+      def gaze_vectors(self, face_landmarks, norm_x, norm_y) :  
+            norm_x, norm_y = self.normalized_gaze(face_landmarks)
+            
+            if self.gaze_baseline is None :
+                  return 0.0, 0.0
+            
+            baseline_x, baseline_y = self.gaze_baseline
+
+            offset_x = (norm_x - baseline_x) / 0.10
+            offset_y = (norm_y - baseline_y) / 0.08
+
+            gain = 1.0
+            offset_x *= gain
+            offset_y *= gain
+
+            offset_x = max(-1, min(1, offset_x))
+            offset_y = max(-1, min(1, offset_y))
+
+            offset_x = -offset_x
+            offset_y = -offset_y
+
+            if self.prev_gaze is None : 
+                  smoothed_x = offset_x
+                  smoothed_y = offset_y
+            else : 
+                  prev_x, prev_y = self.prev_gaze
+
+                  smoothed_x = self.smoothed_gaze(prev_x, offset_x)
+                  smoothed_y = self.smoothed_gaze(prev_y, offset_y)
+
+            self.prev_gaze = (smoothed_x, smoothed_y)
+
+            return smoothed_x, smoothed_y
+      
+
+
+      def update_gaze_baseline(self, norm_x, norm_y) : 
+            self.gaze_baseline_buffer.append((norm_x, norm_y))
+
+            if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES : 
+                  return False 
+
+                  
+            baseline_x = sum(x for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
+            baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
+            self.gaze_baseline = (baseline_x, baseline_y)
+            self.gaze_baseline_buffer.clear()
+            return True 
+
+
+      def normalized_gaze(self, face_landmarks) : 
+
             eye_data = self.get_gaze_pos(face_landmarks)
 
             left_iris = eye_data["left_eye"]["iris"]
             right_iris = eye_data["right_eye"]["iris"]
 
             shrink_factor = 0.5
-
+            eps = 1e-6
             xL_avg = sum(p.x for p in left_iris) / len(left_iris)
             yL_avg = sum(p.y for p in left_iris) / len(left_iris) 
             zL_avg = sum(p.z for p in left_iris) / len(left_iris)
@@ -141,11 +195,11 @@ class HeadTracker:
             right_eye_upper_bound = center_y_R - range_y_R / 2
             right_eye_lower_bound = center_y_R + range_y_R / 2
 
-            norm_x_l = (xL_avg - left_eye_left_bound) / (left_eye_right_bound - left_eye_left_bound)
-            norm_y_l = (yL_avg - left_eye_upper_bound) / (left_eye_lower_bound - left_eye_upper_bound)
+            norm_x_l = (xL_avg - left_eye_left_bound) / max(eps, (left_eye_right_bound - left_eye_left_bound))
+            norm_y_l = (yL_avg - left_eye_upper_bound) / max(eps, (left_eye_lower_bound - left_eye_upper_bound))
 
-            norm_x_r = (xR_avg - right_eye_left_bound) / (right_eye_right_bound - right_eye_left_bound)
-            norm_y_r = (yR_avg - right_eye_upper_bound) / (right_eye_lower_bound - right_eye_upper_bound)
+            norm_x_r = (xR_avg - right_eye_left_bound) / max(eps, (right_eye_right_bound - right_eye_left_bound))
+            norm_y_r = (yR_avg - right_eye_upper_bound) / max(eps, (right_eye_lower_bound - right_eye_upper_bound))
 
             norm_x = (norm_x_l + norm_x_r) / 2
             norm_y = (norm_y_l + norm_y_r) / 2
@@ -153,46 +207,8 @@ class HeadTracker:
             norm_x = max(0, min(1, norm_x))
             norm_y = max(0, min(1, norm_y))
 
-            if self.gaze_baseline is None : 
-                  self.gaze_baseline_buffer.append((norm_x, norm_y))
+            return norm_x, norm_y
 
-                  if len(self.gaze_baseline_buffer) >= 20 : 
-                        baseline_x = sum(x for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
-                        baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
-                        self.gaze_baseline = (baseline_x, baseline_y)
-                        
-                  return 0.0, 0.0
-            
-            baseline_x, baseline_y = self.gaze_baseline
-            
-            offset_x = (norm_x - baseline_x) / 0.10
-            offset_y = (norm_y - baseline_y) / 0.08
-            
-            print("norm:", norm_x, norm_y)
-            print("baseline:", self.gaze_baseline)
-            print("offset:", offset_x, offset_y)
-
-            gain = 1.0
-
-            offset_x *= gain
-            offset_y *= gain
-
-            offset_x = max(-1, min(1, offset_x))
-            offset_y = max(-1, min(1, offset_y))
-
-            if self.prev_gaze is None : 
-                  smoothed_x = offset_x
-                  smoothed_y = offset_y
-            else : 
-                  prev_x, prev_y = self.prev_gaze
-
-                  smoothed_x = self.smoothed_gaze(prev_x, offset_x)
-                  smoothed_y = self.smoothed_gaze(prev_y, offset_y)
-
-            self.prev_gaze = (smoothed_x, smoothed_y)
-
-            return smoothed_x, smoothed_y
-      
       def smoothed_gaze(self, prev, offset, alpha=0.2) : 
             if prev is None : 
                   return offset 

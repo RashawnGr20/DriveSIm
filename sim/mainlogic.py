@@ -31,6 +31,7 @@ BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
 prev_gaze = (0.0, 0.0)
+gaze_calibrated = False 
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -78,6 +79,7 @@ while running:
 
         tracker = HeadTracker()
         feedback = feedBackEngine()
+        tracker.reset_gaze()
 
         prev_smoothed = None
         prev_angles = None
@@ -88,6 +90,8 @@ while running:
         prev_prev_rel = None
         prev_gaze = (0.0, 0.0)
         simulation_initialized = True
+        gaze_calibrated = False 
+        
 
     ret, frame = cap.read()
     if not ret:
@@ -114,6 +118,7 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
         offset_x, offset_y = prev_gaze
+
         running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
@@ -133,8 +138,7 @@ while running:
 
         raw_pos = tracker.get_body_pos(face_landmarks)
         smoothed_pos = tracker.smoothed_points(raw_pos, prev_smoothed, 0.2)
-        offset_x, offset_y = tracker.gaze_vectors(face_landmarks)
-        prev_gaze = (offset_x, offset_y)
+
         vectors = tracker.pitch_vectors(smoothed_pos)
         pitch = vectors["pitch_angle"]
         yaw = vectors["yaw_angle"]
@@ -150,6 +154,10 @@ while running:
                     baseline_buffer.clear()
                     prev_smoothed = smoothed_pos
                     continue
+            
+            if not gaze_calibrated : 
+                norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
+                gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
 
             if len(baseline_buffer) < BASELINE_FRAMES:
                 prev_smoothed = smoothed_pos
@@ -170,7 +178,16 @@ while running:
             prev_rel = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_rel = None
             prev_smoothed = smoothed_pos
+            
+            
+
             continue
+
+        if gaze_calibrated : 
+            offset_x, offset_y = tracker.gaze_vectors(face_landmarks)
+            prev_gaze = (offset_x, offset_y)
+        else : 
+            offset_x, offset_y = 0.0, 0.0 
 
         rel_pitch = angle_diff_deg(pitch, baseline_angles["pitch"])
         rel_yaw = angle_diff_deg(yaw, baseline_angles["yaw"])
