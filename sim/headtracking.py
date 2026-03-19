@@ -20,7 +20,7 @@ class HeadTracker:
             self.prev_gaze = None 
             self.gaze_baseline = None 
             self.gaze_baseline_buffer = []
-            self.GAZE_BASELINE_FRAMES = 30
+            self.GAZE_BASELINE_FRAMES = 50
 
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
