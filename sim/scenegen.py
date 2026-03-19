@@ -507,7 +507,7 @@ class SceneGen :
         self.screen.blit(viewport_surface, (viewport.x, viewport.y))
 
         overlay = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
-        overlay.fill((255, 255, 255, 38))   
+        overlay.fill((18, 14, 13, 90))   
         self.screen.blit(overlay, (viewport.x, viewport.y))
 
         progress = 0.0
