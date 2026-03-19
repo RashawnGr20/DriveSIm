@@ -154,10 +154,6 @@ while running:
                     baseline_buffer.clear()
                     prev_smoothed = smoothed_pos
                     continue
-            
-            if not gaze_calibrated : 
-                norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
-                gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
 
             if len(baseline_buffer) < BASELINE_FRAMES:
                 prev_smoothed = smoothed_pos
@@ -173,23 +169,32 @@ while running:
                 "roll": avg_roll
             }
 
+            tracker.reset_gaze()
+            gaze_calibrated = False 
+
             prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_angles = None
             prev_rel = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_rel = None
             prev_smoothed = smoothed_pos
-            
-            
 
             continue
 
-        if gaze_calibrated : 
-            print("CURRENT BASELINE:", tracker.gaze_baseline)
+        if not gaze_calibrated : 
             norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
-            offset_x, offset_y = tracker.gaze_vectors(norm_x, norm_y)
-            prev_gaze = (offset_x, offset_y)
-        else : 
+            gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
+
             offset_x, offset_y = 0.0, 0.0 
+            prev_gaze = (0.0, 0.0)
+            prev_smoothed = smoothed_pos
+
+            continue 
+
+    
+        print("CURRENT BASELINE:", tracker.gaze_baseline)
+        norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
+        offset_x, offset_y = tracker.gaze_vectors(norm_x, norm_y)
+        prev_gaze = (offset_x, offset_y)
 
         rel_pitch = angle_diff_deg(pitch, baseline_angles["pitch"])
         rel_yaw = angle_diff_deg(yaw, baseline_angles["yaw"])
