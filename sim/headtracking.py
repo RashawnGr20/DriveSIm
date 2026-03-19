@@ -48,16 +48,16 @@ class HeadTracker:
             
             left_eye  = {
                  "iris": [face_landmarks.landmark[474],face_landmarks.landmark[475],face_landmarks.landmark[476],face_landmarks.landmark[477]],
-                  "outer": face_landmarks.landmark[33],
-                  "inner": face_landmarks.landmark[133], 
+                  "outer": face_landmarks.landmark[362],
+                  "inner": face_landmarks.landmark[263], 
                   "top": face_landmarks.landmark[159],
                   "bottom": face_landmarks.landmark[145]
             }
 
             right_eye = {
                   "iris": [face_landmarks.landmark[469],face_landmarks.landmark[470],face_landmarks.landmark[471],face_landmarks.landmark[472]], 
-                  "outer": face_landmarks.landmark[362], 
-                  "inner": face_landmarks.landmark[263], 
+                  "outer": face_landmarks.landmark[33], 
+                  "inner": face_landmarks.landmark[133], 
                   "top": face_landmarks.landmark[386], 
                   "bottom": face_landmarks.landmark[374]
             }
