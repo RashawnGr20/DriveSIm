@@ -96,6 +96,8 @@ class HeadTracker:
             
             baseline_x, baseline_y = self.gaze_baseline
 
+            print("delta:", norm_x - baseline_x, norm_y - baseline_y)
+
             offset_x = (norm_x - baseline_x) / 0.10
             offset_y = (norm_y - baseline_y) / 0.08
 
@@ -109,6 +111,8 @@ class HeadTracker:
             offset_x = -offset_x
             offset_y = -offset_y
 
+            print("raw offset:", offset_x, offset_y)
+
             if self.prev_gaze is None : 
                   smoothed_x = offset_x
                   smoothed_y = offset_y
@@ -120,6 +124,8 @@ class HeadTracker:
 
             self.prev_gaze = (smoothed_x, smoothed_y)
 
+            print("smoothed offset:", smoothed_x, smoothed_y)
+
             return smoothed_x, smoothed_y
       
 
@@ -127,13 +133,17 @@ class HeadTracker:
       def update_gaze_baseline(self, norm_x, norm_y) : 
             self.gaze_baseline_buffer.append((norm_x, norm_y))
 
-            if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES : 
+            if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES :
+                  print("baseline sample:", norm_x, norm_y)
+                  print("baseline buffer size:", len(self.gaze_baseline_buffer)) 
                   return False 
 
                   
             baseline_x = sum(x for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
             baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
+            
             self.gaze_baseline = (baseline_x, baseline_y)
+            print("FINAL BASELINE:", self.gaze_baseline)
             self.gaze_baseline_buffer.clear()
             return True 
 
@@ -205,6 +215,16 @@ class HeadTracker:
 
             norm_x = max(0, min(1, norm_x))
             norm_y = max(0, min(1, norm_y))
+
+            print("xL_avg, yL_avg:", xL_avg, yL_avg)
+            print("xR_avg, yR_avg:", xR_avg, yR_avg)
+
+            print("L bounds:", left_eye_left_bound, left_eye_right_bound, left_eye_upper_bound, left_eye_lower_bound)
+            print("R bounds:", right_eye_left_bound, right_eye_right_bound, right_eye_upper_bound, right_eye_lower_bound)
+
+            print("norm L:", norm_x_l, norm_y_l)
+            print("norm R:", norm_x_r, norm_y_r)
+            print("norm avg:", norm_x, norm_y)
 
             return norm_x, norm_y
 

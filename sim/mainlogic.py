@@ -203,6 +203,9 @@ while running:
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         progress_data = scene_manager.get_progress_data()
 
+        print("final render offsets:", offset_x, offset_y)
+        print("gaze_calibrated:", gaze_calibrated)
+
         running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
         if not running:
             break
