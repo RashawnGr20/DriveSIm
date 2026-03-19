@@ -44,43 +44,53 @@ class HeadTracker:
             "Cheek": point3D(cheek.x, cheek.y, cheek.z)
         }
 
-      def get_gaze_pos(self, face_landmarks) : 
-            
-            left_eye  = {
-                 "iris": [face_landmarks.landmark[474],face_landmarks.landmark[475],face_landmarks.landmark[476],face_landmarks.landmark[477]],
-                  "outer": face_landmarks.landmark[362],
-                  "inner": face_landmarks.landmark[263], 
+      def get_gaze_pos(self, face_landmarks):
+
+            left_eye = {
+                  "iris": [
+                        face_landmarks.landmark[469],
+                        face_landmarks.landmark[470],
+                        face_landmarks.landmark[471],
+                        face_landmarks.landmark[472]
+                  ],
+                  "outer": face_landmarks.landmark[33],
+                  "inner": face_landmarks.landmark[133],
                   "top": face_landmarks.landmark[159],
                   "bottom": face_landmarks.landmark[145]
             }
 
             right_eye = {
-                  "iris": [face_landmarks.landmark[469],face_landmarks.landmark[470],face_landmarks.landmark[471],face_landmarks.landmark[472]], 
-                  "outer": face_landmarks.landmark[33], 
-                  "inner": face_landmarks.landmark[133], 
-                  "top": face_landmarks.landmark[386], 
+                  "iris": [
+                        face_landmarks.landmark[474],
+                        face_landmarks.landmark[475],
+                        face_landmarks.landmark[476],
+                        face_landmarks.landmark[477]
+                  ],
+                  "outer": face_landmarks.landmark[362],
+                  "inner": face_landmarks.landmark[263],
+                  "top": face_landmarks.landmark[386],
                   "bottom": face_landmarks.landmark[374]
             }
 
             return {
-            "left_eye":{
-                  "iris": [point3D(face_landmarks.landmark[i].x, face_landmarks.landmark[i].y, face_landmarks.landmark[i].z )
-                           for i in [474, 475, 476, 477]
-                           ],
-                  "outer": point3D(left_eye["outer"].x, left_eye["outer"].y, left_eye["outer"].z),
-                  "inner": point3D(left_eye["inner"].x,left_eye["inner"].y,left_eye["inner"].z), 
-                  "top": point3D(left_eye["top"].x,left_eye["top"].y,left_eye["top"].z), 
-                  "bottom": point3D(left_eye["bottom"].x,left_eye["bottom"].y,left_eye["bottom"].z), 
-            },
+                  "left_eye": {
+                        "iris": [
+                              point3D(p.x, p.y, p.z) for p in left_eye["iris"]
+                        ],
+                        "outer": point3D(left_eye["outer"].x, left_eye["outer"].y, left_eye["outer"].z),
+                        "inner": point3D(left_eye["inner"].x, left_eye["inner"].y, left_eye["inner"].z),
+                        "top": point3D(left_eye["top"].x, left_eye["top"].y, left_eye["top"].z),
+                        "bottom": point3D(left_eye["bottom"].x, left_eye["bottom"].y, left_eye["bottom"].z),
+                  },
 
-            "right_eye": {
-                  "iris": [point3D(face_landmarks.landmark[i].x, face_landmarks.landmark[i].y, face_landmarks.landmark[i].z )
-                           for i in [469, 470, 471, 472]
-                           ],
-                  "outer": point3D(right_eye["outer"].x, right_eye["outer"].y, right_eye["outer"].z),
-                  "inner": point3D(right_eye["inner"].x,right_eye["inner"].y,right_eye["inner"].z), 
-                  "top": point3D(right_eye["top"].x,right_eye["top"].y,right_eye["top"].z), 
-                  "bottom": point3D(right_eye["bottom"].x,right_eye["bottom"].y,right_eye["bottom"].z), 
+                  "right_eye": {
+                        "iris": [
+                              point3D(p.x, p.y, p.z) for p in right_eye["iris"]
+                        ],
+                        "outer": point3D(right_eye["outer"].x, right_eye["outer"].y, right_eye["outer"].z),
+                        "inner": point3D(right_eye["inner"].x, right_eye["inner"].y, right_eye["inner"].z),
+                        "top": point3D(right_eye["top"].x, right_eye["top"].y, right_eye["top"].z),
+                        "bottom": point3D(right_eye["bottom"].x, right_eye["bottom"].y, right_eye["bottom"].z),
                   }
             }
 
