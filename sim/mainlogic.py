@@ -207,12 +207,12 @@ while running:
                     
                     
                     gaze_progress = min(1.0, gaze_warmup_count / gaze_warmup_frames)
-                    gaze_progress_data = {
+                    calibration_progress_data = {
                         "progress": 0.6 + 0.4 * gaze_progress, 
                         "status_text": "Look directly at the center dot"
                     } 
                     
-                    running = scene.update(0,0,0, pose, 0.0, 0.0, gaze_progress_data)
+                    running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data)
 
                     if not running :
                         break
@@ -230,7 +230,7 @@ while running:
                     "status_text": "Calibration complete" if gaze_calibrated else "Look directly at the center point"
                 }
                 
-                running = scene.update(0,0,0, pose, 0.0, 0.0, calibration_progress_data)
+                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data)
 
                 if not running : 
                     break 
