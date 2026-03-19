@@ -453,7 +453,7 @@ class SceneGen :
         self.ui.draw_overlay(pose, progress_data)
 
         
-        
+        print("render offsets:", offset_x, offset_y)
        
         self.draw_fade_overlay()
         pygame.display.flip()
