@@ -98,8 +98,8 @@ class HeadTracker:
 
             print("delta:", norm_x - baseline_x, norm_y - baseline_y)
 
-            offset_x = (norm_x - baseline_x) / 0.10
-            offset_y = (norm_y - baseline_y) / 0.08
+            offset_x = (norm_x - baseline_x) / 0.07
+            offset_y = (norm_y - baseline_y) / 0.06
 
             gain = 1.0
             offset_x *= gain
