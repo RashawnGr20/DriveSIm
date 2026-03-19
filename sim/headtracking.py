@@ -155,7 +155,7 @@ class HeadTracker:
             left_iris = eye_data["left_eye"]["iris"]
             right_iris = eye_data["right_eye"]["iris"]
 
-            shrink_factor = 0.5
+            shrink_factor = 1
             eps = 1e-6
             xL_avg = sum(p.x for p in left_iris) / len(left_iris)
             yL_avg = sum(p.y for p in left_iris) / len(left_iris) 
