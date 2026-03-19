@@ -32,6 +32,8 @@ prev_rel = None
 prev_prev_rel = None
 prev_gaze = (0.0, 0.0)
 gaze_calibrated = False 
+gaze_warmup_frames = 30
+gaze_warmup_count = 0
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -91,6 +93,8 @@ while running:
         prev_gaze = (0.0, 0.0)
         simulation_initialized = True
         gaze_calibrated = False 
+        gaze_warmup_frames = 30
+        gaze_warmup_count = 0           
         
 
     ret, frame = cap.read()
@@ -171,6 +175,8 @@ while running:
 
             tracker.reset_gaze()
             gaze_calibrated = False 
+            prev_gaze = (0.0, 0.0)
+            gaze_warmup_count = 0
 
             prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
             prev_prev_angles = None
@@ -181,6 +187,12 @@ while running:
             continue
 
         if not gaze_calibrated : 
+
+            if gaze_warmup_count < gaze_warmup_frames : 
+                gaze_warmup_count += 1
+
+                continue 
+
             norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
             gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
 
