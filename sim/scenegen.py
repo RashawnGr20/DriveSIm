@@ -395,7 +395,7 @@ class SceneGen :
         elif self.state == "simulation" :
             if pitch is None or yaw is None or roll is None or pose is None : 
                 return True 
-            return self.update_simulation(pitch, yaw, roll, pose, offset_x, offset_x, progress_data)
+            return self.update_simulation(pitch, yaw, roll, pose, offset_x, offset_y, progress_data)
         elif self.state == "results" :
             return self.update_results()
         
