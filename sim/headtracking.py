@@ -89,8 +89,7 @@ class HeadTracker:
             self.gaze_baseline = None
             self.gaze_baseline_buffer = []
                 
-      def gaze_vectors(self, face_landmarks, norm_x, norm_y) :  
-            norm_x, norm_y = self.normalized_gaze(face_landmarks)
+      def gaze_vectors(self, norm_x, norm_y) :  
             
             if self.gaze_baseline is None :
                   return 0.0, 0.0

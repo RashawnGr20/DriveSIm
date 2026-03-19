@@ -184,7 +184,8 @@ while running:
             continue
 
         if gaze_calibrated : 
-            offset_x, offset_y = tracker.gaze_vectors(face_landmarks)
+            norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
+            offset_x, offset_y = tracker.gaze_vectors(norm_x, norm_y)
             prev_gaze = (offset_x, offset_y)
         else : 
             offset_x, offset_y = 0.0, 0.0 
