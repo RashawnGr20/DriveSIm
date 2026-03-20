@@ -136,7 +136,10 @@ class HeadTracker:
 
             print("smoothed offset:", smoothed_x, smoothed_y)
 
-            return smoothed_x, smoothed_y
+            deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.05)
+            deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.05)
+
+            return deadzoned_x, deadzoned_y
       
 
 
@@ -238,7 +241,7 @@ class HeadTracker:
 
             return norm_x, norm_y
 
-      def smoothed_gaze(self, prev, offset, alpha=0.2) : 
+      def smoothed_gaze(self, prev, offset, alpha=0.12) : 
             if prev is None : 
                   return offset 
             
@@ -246,8 +249,11 @@ class HeadTracker:
 
             return smoothed
 
-            
-            
+      def apply_gaze_deadzone(self, offset, threshold):
+            distance = max(0, abs(offset) - threshold)
+            sign = 1 if offset >= 0 else -1
+            return sign * distance      
+                        
 
       def draw_landmarks(self, frame, face_landmarks) :
              self.mp_drawing.draw_landmarks(
