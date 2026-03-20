@@ -154,7 +154,7 @@ class HeadTracker:
 
             print("smoothed offset:", smoothed_x, smoothed_y)
 
-            deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.05)
+            deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.025)
             deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.07)
 
             return deadzoned_x, deadzoned_y
