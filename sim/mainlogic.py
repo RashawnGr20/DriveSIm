@@ -223,7 +223,7 @@ while running:
                     
                 eye_data = tracker.get_gaze_pos(face_landmarks)
                 norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
-                gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y)
+                gaze_calibrated = tracker.update_gaze_baseline(norm_x, norm_y, eye_data)
                 
                 calibration_progress_data = {
                     "progress": 1.0 if gaze_calibrated else 0.95,
