@@ -174,17 +174,23 @@ class HeadTracker:
             return point3D(center_x, center_y, 0.0)
 
       def compute_eye_axes(self, eye_data) : 
-            inner = eye_data["inner"]
-            outer = eye_data["outer"]
+            p1 = eye_data["inner"]
+            p2 = eye_data["outer"]
 
-            vx = outer.x - inner.x
-            vy = outer.y - inner.y 
+            if p1.x <= p2.x : 
+                  left_corner = p1
+                  right_corner = p2
+            else : 
+                  left_corner = p2
+                  right_corner = p1
 
+            vx = right_corner.x - left_corner.x
+            vy = right_corner.y - left_corner.y
+            
             length = math.sqrt(vx**2 + vy**2)
             eps = 1e-6
 
             eye_x_unit = (vx / max(length, eps), vy / max(length, eps))
-
             eye_y_unit = (-eye_x_unit[1], eye_x_unit[0])
 
             return eye_x_unit, eye_y_unit
