@@ -160,86 +160,87 @@ class HeadTracker:
             self.gaze_baseline_buffer.clear()
             return True 
 
+      def compute_iris_center(self, iris_points) :
+            x = sum(p.x for p in iris_points) / len(iris_points)
+            y = sum(p.y for p in iris_points) / len(iris_points) 
+            return point3D(x, y, 0.0)
+      
+
+      def copmute_eye_center(self, eye_data) : 
+            inner = eye_data["inner"]
+            outer = eye_data["outer"]
+
+            center_x = (inner.x + outer.x) / 2
+            center_y = (inner.y + outer.y) / 2
+
+            return point3D(center_x, center_y, 0.0)
+
+      def compute_eye_axes(self, eye_data) : 
+            inner = eye_data["inner"]
+            outer = eye_data["outer"]
+
+            vx = outer.x - inner.x
+            vy = outer.y - inner.y 
+
+            length = math.sqrt(vx**2 + vy**2)
+            eps = 1e-6
+
+            eye_x_unit = (vx / max(length, eps), vy / max(length, eps))
+
+            eye_y_unit = (-eye_x_unit[0], eye_x_unit[1])
+
+            return eye_x_unit, eye_y_unit
+
+      def project_eye_to_frame(self, iris_center, eye_center, eye_x_unit, eye_y_unit) : 
+            dx = iris_center.x - eye_center.x
+            dy = iris_center.y - eye_center.y
+
+            local_x = dx * eye_x_unit[0] + dy * eye_x_unit[1]
+            local_y = dx * eye_y_unit[0] + dy * eye_y_unit[1]
+
+            return local_x, local_y
+
+      def compute_eye_scale(self, eye_data) : 
+            inner = eye_data["inner"]
+            outer = eye_data["outer"]
+            top = eye_data["top"]
+            bottom = eye_data["bottom"]
+
+            eye_width = math.sqrt((outer.x - inner.x)**2 + (outer.y - inner.y)**2)
+            eye_height = math.sqrt((bottom.x - top.x)**2 + (bottom.y - top.y)**2)
+
+            eps = 1e-6
+            return max(eye_width, eps), max(eye_height, eps)
+
+
+
+      def compute_eye_gaze(self, eye_data) : 
+            iris_center = self.compute_iris_center(eye_data["iris"])
+            eye_center = self.copmute_eye_center(eye_data)
+            eye_x_unit, eye_y_unit = self.compute_eye_axes(eye_data)
+
+            local_x, local_y = self.project_eye_to_frame(iris_center, eye_center, eye_x_unit, eye_y_unit)
+
+            eye_width, eye_height = self.compute_eye_scale(eye_data)
+
+            norm_x = local_x / (eye_width / 2)
+            norm_y = local_y / (eye_height / 2)
+            
+            return norm_x, norm_y
 
       def normalized_gaze(self, face_landmarks) : 
+            eye_data  = self.get_gaze_pos(face_landmarks)
 
-            eye_data = self.get_gaze_pos(face_landmarks)
+            left_x, left_y = self.compute_eye_gaze(eye_data["left_eye"]) 
+            right_x, right_y = self.compute_eye_gaze(eye_data["right_eye"])
 
-            left_iris = eye_data["left_eye"]["iris"]
-            right_iris = eye_data["right_eye"]["iris"]
+            norm_x = (left_x + right_x) / 2
+            norm_y = (left_y + right_y) / 2
 
-            shrink_factor = 1
-            eps = 1e-6
-            xL_avg = sum(p.x for p in left_iris) / len(left_iris)
-            yL_avg = sum(p.y for p in left_iris) / len(left_iris) 
-            zL_avg = sum(p.z for p in left_iris) / len(left_iris)
-
-            xR_avg = sum(p.x for p in right_iris) / len(right_iris)
-            yR_avg = sum(p.y for p in right_iris) / len(right_iris) 
-            zR_avg = sum(p.z for p in right_iris) / len(right_iris)
-
-            left_eye = eye_data["left_eye"]
-            right_eye = eye_data["right_eye"]
-
-            left_eye_left_bound = min(left_eye["outer"].x, left_eye["inner"].x)
-            left_eye_right_bound = max(left_eye["outer"].x, left_eye["inner"].x)
-
-            right_eye_left_bound = min(right_eye["outer"].x, right_eye["inner"].x)
-            right_eye_right_bound = max(right_eye["outer"].x, right_eye["inner"].x)
-
-            left_eye_upper_bound = min(left_eye["top"].y, left_eye["bottom"].y)
-            left_eye_lower_bound = max(left_eye["top"].y, left_eye["bottom"].y)
-
-            right_eye_upper_bound = min(right_eye["top"].y, right_eye["bottom"].y)
-            right_eye_lower_bound = max(right_eye["top"].y, right_eye["bottom"].y)
-
-            center_x_L = (left_eye_left_bound + left_eye_right_bound) / 2
-            center_y_L = (left_eye_upper_bound + left_eye_lower_bound) / 2
-
-            range_x_L = (left_eye_right_bound - left_eye_left_bound) * shrink_factor
-            range_y_L = (left_eye_lower_bound - left_eye_upper_bound) * shrink_factor
-
-            left_eye_left_bound  = center_x_L - range_x_L / 2
-            left_eye_right_bound = center_x_L + range_x_L / 2
-
-            left_eye_upper_bound = center_y_L - range_y_L / 2
-            left_eye_lower_bound = center_y_L + range_y_L / 2
-
-            center_x_R = (right_eye_left_bound + right_eye_right_bound) / 2
-            center_y_R = (right_eye_upper_bound + right_eye_lower_bound) / 2
-
-            range_x_R = (right_eye_right_bound - right_eye_left_bound)* shrink_factor
-            range_y_R = (right_eye_lower_bound - right_eye_upper_bound)* shrink_factor
-
-            right_eye_left_bound  = center_x_R - range_x_R / 2
-            right_eye_right_bound = center_x_R + range_x_R / 2
-
-            right_eye_upper_bound = center_y_R - range_y_R / 2
-            right_eye_lower_bound = center_y_R + range_y_R / 2
-
-            norm_x_l = (xL_avg - left_eye_left_bound) / max(eps, (left_eye_right_bound - left_eye_left_bound))
-            norm_y_l = (yL_avg - left_eye_upper_bound) / max(eps, (left_eye_lower_bound - left_eye_upper_bound))
-
-            norm_x_r = (xR_avg - right_eye_left_bound) / max(eps, (right_eye_right_bound - right_eye_left_bound))
-            norm_y_r = (yR_avg - right_eye_upper_bound) / max(eps, (right_eye_lower_bound - right_eye_upper_bound))
-
-            norm_x = (norm_x_l + norm_x_r) / 2
-            norm_y = (norm_y_l + norm_y_r) / 2
-
-            norm_x = max(0, min(1, norm_x))
-            norm_y = max(0, min(1, norm_y))
-
-            print("xL_avg, yL_avg:", xL_avg, yL_avg)
-            print("xR_avg, yR_avg:", xR_avg, yR_avg)
-
-            print("L bounds:", left_eye_left_bound, left_eye_right_bound, left_eye_upper_bound, left_eye_lower_bound)
-            print("R bounds:", right_eye_left_bound, right_eye_right_bound, right_eye_upper_bound, right_eye_lower_bound)
-
-            print("norm L:", norm_x_l, norm_y_l)
-            print("norm R:", norm_x_r, norm_y_r)
-            print("norm avg:", norm_x, norm_y)
-
-            return norm_x, norm_y
+            print("left local gaze:", left_x, left_y)
+            print("right local gaze:", right_x, right_y)
+            print("avg local gaze:", norm_x, norm_y)
+            
 
       def smoothed_gaze(self, prev, offset, alpha=0.12) : 
             if prev is None : 
