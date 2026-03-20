@@ -185,6 +185,8 @@ class HeadTracker:
 
             print("FINAL BASELINE:", self.gaze_baseline)
             self.gaze_baseline_buffer.clear()
+            self.eye_heigth_buffer["left"].clear()
+            self.eye_heigth_buffer["right"].clear()
             return True 
       
       def compute_eye_height(self, eye_data) :
@@ -274,7 +276,7 @@ class HeadTracker:
             eye_width, live_eye_height = self.compute_eye_scale(eye_data)
 
             ref_eye_height = self.eye_heigth_ref[eye_name]
-            effective_eye_height = ref_eye_height if ref_eye_height is None else live_eye_height
+            effective_eye_height = ref_eye_height if ref_eye_height is not None else live_eye_height
 
             norm_x = local_x / (eye_width / 2)
             norm_y = local_y / (effective_eye_height / 2)
