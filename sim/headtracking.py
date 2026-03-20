@@ -22,6 +22,15 @@ class HeadTracker:
             self.gaze_baseline_buffer = []
             self.GAZE_BASELINE_FRAMES = 50
 
+            self.eye_heigth_ref = {
+                  "left": None, 
+                  "right": None,
+            }
+            self.eye_heigth_buffer = {
+                  "left": [],
+                  "right": [],
+            }
+
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.face_mesh.process(rgb_frame) 
@@ -98,6 +107,14 @@ class HeadTracker:
             self.prev_gaze = None
             self.gaze_baseline = None
             self.gaze_baseline_buffer = []
+            self.eye_heigth_ref = {
+                  "left": None, 
+                  "right": None,
+            }
+            self.eye_heigth_buffer = {
+                  "left": [],
+                  "right": [],
+            }
                 
       def gaze_vectors(self, norm_x, norm_y) :  
             
@@ -144,8 +161,14 @@ class HeadTracker:
       
 
 
-      def update_gaze_baseline(self, norm_x, norm_y) : 
+      def update_gaze_baseline(self, norm_x, norm_y, eye_data) : 
             self.gaze_baseline_buffer.append((norm_x, norm_y))
+
+            left_height = self.compute_eye_height(eye_data["left_eye"])
+            right_height = self.compute_eye_height(eye_data["right_eye"])
+
+            self.eye_heigth_buffer["left"].append(left_height)
+            self.eye_heigth_buffer["right"].append(right_height)
 
             if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES :
                   print("baseline sample:", norm_x, norm_y)
@@ -157,9 +180,18 @@ class HeadTracker:
             baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
             
             self.gaze_baseline = (baseline_x, baseline_y)
+            self.eye_heigth_ref["left"] = sum(self.eye_heigth_buffer["left"]) / len(self.eye_heigth_buffer["left"])
+            self.eye_heigth_ref["right"] = sum(self.eye_heigth_buffer["right"]) / len(self.eye_heigth_buffer["right"])
+
             print("FINAL BASELINE:", self.gaze_baseline)
             self.gaze_baseline_buffer.clear()
             return True 
+      
+      def compute_eye_height(self, eye_data) :
+            top = eye_data["top"]
+            bottom = eye_data["bottom"]
+
+            return math.sqrt((bottom.x - top.x) **2 + (bottom.y - top.y) ** 2)
 
       def compute_iris_center(self, iris_points) :
             x = sum(p.x for p in iris_points) / len(iris_points)
@@ -232,25 +264,28 @@ class HeadTracker:
 
 
 
-      def compute_eye_gaze(self, eye_data) : 
+      def compute_eye_gaze(self, eye_data, eye_name) : 
             iris_center = self.compute_iris_center(eye_data["iris"])
             eye_center = self.compute_eye_center(eye_data)
             eye_x_unit, eye_y_unit = self.compute_eye_axes(eye_data)
 
             local_x, local_y = self.project_to_eye_frame(iris_center, eye_center, eye_x_unit, eye_y_unit)
 
-            eye_width, eye_height = self.compute_eye_scale(eye_data)
+            eye_width, live_eye_height = self.compute_eye_scale(eye_data)
+
+            ref_eye_height = self.eye_heigth_ref[eye_name]
+            effective_eye_height = ref_eye_height if ref_eye_height is None else live_eye_height
 
             norm_x = local_x / (eye_width / 2)
-            norm_y = local_y / (eye_height / 2)
+            norm_y = local_y / (effective_eye_height / 2)
             
             return norm_x, norm_y
 
       def normalized_gaze(self, face_landmarks) : 
             eye_data  = self.get_gaze_pos(face_landmarks)
 
-            left_x, left_y = self.compute_eye_gaze(eye_data["left_eye"]) 
-            right_x, right_y = self.compute_eye_gaze(eye_data["right_eye"])
+            left_x, left_y = self.compute_eye_gaze(eye_data["left_eye"], "left") 
+            right_x, right_y = self.compute_eye_gaze(eye_data["right_eye"], "right")
 
             norm_x = (left_x + right_x) / 2
             norm_y = (left_y + right_y) / 2
