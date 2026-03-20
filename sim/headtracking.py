@@ -109,7 +109,7 @@ class HeadTracker:
             print("delta:", norm_x - baseline_x, norm_y - baseline_y)
 
             offset_x = (norm_x - baseline_x) / 0.065
-            offset_y = (norm_y - baseline_y) / 0.045
+            offset_y = (norm_y - baseline_y) / 0.055
 
             gain = 1.0
             offset_x *= gain
@@ -137,7 +137,7 @@ class HeadTracker:
             print("smoothed offset:", smoothed_x, smoothed_y)
 
             deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.05)
-            deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.05)
+            deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.07)
 
             return deadzoned_x, deadzoned_y
       
