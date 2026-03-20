@@ -166,7 +166,7 @@ class HeadTracker:
             return point3D(x, y, 0.0)
       
 
-      def copmute_eye_center(self, eye_data) : 
+      def compute_eye_center(self, eye_data) : 
             inner = eye_data["inner"]
             outer = eye_data["outer"]
 
@@ -187,11 +187,11 @@ class HeadTracker:
 
             eye_x_unit = (vx / max(length, eps), vy / max(length, eps))
 
-            eye_y_unit = (-eye_x_unit[0], eye_x_unit[1])
+            eye_y_unit = (-eye_x_unit[1], eye_x_unit[0])
 
             return eye_x_unit, eye_y_unit
 
-      def project_eye_to_frame(self, iris_center, eye_center, eye_x_unit, eye_y_unit) : 
+      def project_to_eye_frame(self, iris_center, eye_center, eye_x_unit, eye_y_unit) : 
             dx = iris_center.x - eye_center.x
             dy = iris_center.y - eye_center.y
 
@@ -216,10 +216,10 @@ class HeadTracker:
 
       def compute_eye_gaze(self, eye_data) : 
             iris_center = self.compute_iris_center(eye_data["iris"])
-            eye_center = self.copmute_eye_center(eye_data)
+            eye_center = self.compute_eye_center(eye_data)
             eye_x_unit, eye_y_unit = self.compute_eye_axes(eye_data)
 
-            local_x, local_y = self.project_eye_to_frame(iris_center, eye_center, eye_x_unit, eye_y_unit)
+            local_x, local_y = self.project_to_eye_frame(iris_center, eye_center, eye_x_unit, eye_y_unit)
 
             eye_width, eye_height = self.compute_eye_scale(eye_data)
 
@@ -240,6 +240,8 @@ class HeadTracker:
             print("left local gaze:", left_x, left_y)
             print("right local gaze:", right_x, right_y)
             print("avg local gaze:", norm_x, norm_y)
+
+            return norm_x, norm_y
             
 
       def smoothed_gaze(self, prev, offset, alpha=0.12) : 
