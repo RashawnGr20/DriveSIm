@@ -17,19 +17,23 @@ class HeadTracker:
             )
             self.mp_drawing =  mp.solutions.drawing_utils
 
+            self.gaze_center_x = None 
+            self.gaze_left_x = None 
+            self.gaze_right_x = None 
+            
+            self.gaze_center_buffer = []
+            self.gaze_left_buffer = []
+            self.gaze_right_buffer = []
+            
+            self.gaze_left_range = None 
+            self.gaze_right_range = None 
+            
+            self.GAZE_BASELINE_FRAMES = 50
             self.prev_gaze = None 
             self.gaze_baseline = None 
             self.gaze_baseline_buffer = []
-            self.GAZE_BASELINE_FRAMES = 50
-
-            self.eye_heigth_ref = {
-                  "left": None, 
-                  "right": None,
-            }
-            self.eye_heigth_buffer = {
-                  "left": [],
-                  "right": [],
-            }
+            self.eye_height_ref = {"left": None, "right": None}
+            self.eye_height_buffer = {"left": [], "right": []}
 
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -107,6 +111,18 @@ class HeadTracker:
             self.prev_gaze = None
             self.gaze_baseline = None
             self.gaze_baseline_buffer = []
+            
+            self.gaze_center_x = None 
+            self.gaze_left_x = None 
+            self.gaze_right_x = None 
+            
+            self.gaze_center_buffer = []
+            self.gaze_left_buffer = []
+            self.gaze_right_buffer = []
+            
+            self.gaze_left_range = None 
+            self.gaze_right_range = None 
+
             self.eye_heigth_ref = {
                   "left": None, 
                   "right": None,
@@ -115,6 +131,55 @@ class HeadTracker:
                   "left": [],
                   "right": [],
             }
+            
+      def collect_horizontal_sample(self, buffer_name, norm_x) : 
+            if buffer_name == "center" :
+                  self.gaze_center_buffer.append(norm_x)
+                  return len(self.gaze_center_buffer) >= self.GAZE_BASELINE_FRAMES
+
+            if buffer_name == "left" :
+                  self.gaze_left_buffer.append(norm_x)
+                  return len(self.gaze_left_buffer) >= self.GAZE_BASELINE_FRAMES
+            
+            if buffer_name == "right" :
+                  self.gaze_right_buffer.append(norm_x)
+                  return len(self.gaze_right_buffer) >= self.GAZE_BASELINE_FRAMES
+            
+            return False 
+      
+      def finalize_horizontal_calibration(self) : 
+            if not self.gaze_center_buffer or not self.gaze_left_buffer or not self.gaze_right_buffer : 
+                  return False 
+            
+            self.gaze_center_x = sum(self.gaze_center_buffer) / len(self.gaze_center_buffer)
+            self.gaze_left_x = sum(self.gaze_left_buffer) / len(self.gaze_left_buffer)
+            self.gaze_right_x = sum(self.gaze_right_buffer) / len(self.gaze_right_buffer)
+            
+            self.gaze_left_range = self.gaze_left_x - self.gaze_center_x
+            self.gaze_right_range = self.gaze_right_x - self.gaze_center_x
+            
+            self.gaze_left_range *= 1.25
+            self.gaze_right_range *= 1.25
+            
+            
+            min_range = 1e-4
+            if abs(self.gaze_left_range) < min_range or abs(self.gaze_right_range) < min_range : 
+                  return False 
+            
+            self.gaze_baseline = (self.gaze_center_x, 0.0)
+            self.gaze_center_buffer.clear()
+            self.gaze_left_buffer.clear()
+            self.gaze_right_buffer.clear()
+            
+            print("HORIZONTAL CALIBRATION")
+            print("center_x:", self.gaze_center_x)
+            print("left_x:", self.gaze_left_x)
+            print("right_x:", self.gaze_right_x)
+            print("left_range:", self.gaze_left_range)
+            print("right_range:", self.gaze_right_range)
+
+            return True
+            
                 
       def gaze_vectors(self, norm_x, norm_y) :  
             
@@ -125,7 +190,22 @@ class HeadTracker:
 
             print("delta:", norm_x - baseline_x, norm_y - baseline_y)
 
-            offset_x = (norm_x - baseline_x) / 0.065
+            delta_x = norm_x - self.gaze_center_x
+            
+            if delta_x >= 0 : 
+                  if self.gaze_left_range is None or abs(self.gaze_left_range) < 1e-6: 
+                        offset_x = 0.0
+                  else : 
+                        offset_x = delta_x / self.gaze_left_range
+            
+            else : 
+                  if self.gaze_right_range is None or abs(self.gaze_right_range) < 1e-6 : 
+                        offset_x = 0.0
+                  
+                  else : 
+                        offset_x = delta_x / abs(self.gaze_right_range)
+                        
+                        
             offset_y = (norm_y - baseline_y) / 0.055
 
             gain = 1.0
@@ -156,6 +236,13 @@ class HeadTracker:
 
             deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.025)
             deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.07)
+            
+            print("norm_x:", norm_x)
+            print("center_x:", self.gaze_center_x)
+            print("delta_x:", delta_x)
+            print("left_range:", self.gaze_left_range)
+            print("right_range:", self.gaze_right_range)
+            print("mapped_x_before_clamp:", offset_x)
 
             return deadzoned_x, deadzoned_y
       
@@ -299,7 +386,7 @@ class HeadTracker:
             return norm_x, norm_y
             
 
-      def smoothed_gaze(self, prev, offset, alpha=0.12) : 
+      def smoothed_gaze(self, prev, offset, alpha=0.2) : 
             if prev is None : 
                   return offset 
             

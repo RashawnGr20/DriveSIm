@@ -341,7 +341,7 @@ class UI :
             1
         )
 
-        if not progress_data:
+        if not progress_data or "expected" not in progress_data:
             empty_surf = self.fonts["small"].render("No scene data", True, self.c("text_disabled"))
             self.screen.blit(empty_surf, (rect.x + 20, rect.y + 118))
             return
@@ -1546,26 +1546,30 @@ class UI :
         return None
     
 
-    def draw_calibration_overlay(self, progress=0.0, status_text="Calibration in progress"):
+    def draw_calibration_overlay(self, progress=0.0, status_text="Calibration in progress", target_position="center"):
+        
         viewport = self.viewport_rect
-        cx = viewport.centerx
-        cy = viewport.centery
+
+        if target_position == "left":
+            cx = viewport.x + int(viewport.w * 0.10)
+            cy = viewport.centery
+        elif target_position == "right":
+            cx = viewport.x + int(viewport.w * 0.90)
+            cy = viewport.centery
+        else:
+            cx = viewport.centerx
+            cy = viewport.centery
 
         pygame.draw.circle(self.screen, (235, 240, 246), (cx, cy), 16, 2)
         pygame.draw.circle(self.screen, (255, 0, 0), (cx, cy), 5)
 
-        title = self.fonts["medium"].render("Calibration", True, self.c("instruction_text"))
         subtitle = self.fonts["medium"].render(status_text, True, self.c("instruction_text"))
-
-        #title_rect = title.get_rect(center=(cx, viewport.bottom - 72))
-        subtitle_rect = subtitle.get_rect(center=(cx, viewport.bottom + 29))
-
-        #self.screen.blit(title, title_rect)
+        subtitle_rect = subtitle.get_rect(center=(viewport.centerx, viewport.bottom + 29))
         self.screen.blit(subtitle, subtitle_rect)
 
         bar_w = 330
         bar_h = 26
-        bar_x = cx - bar_w // 2
+        bar_x = viewport.centerx - bar_w // 2
         bar_y = viewport.bottom + 60
 
         track_rect = pygame.Rect(bar_x, bar_y, bar_w, bar_h)

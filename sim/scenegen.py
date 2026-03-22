@@ -377,7 +377,7 @@ class SceneGen :
         return True 
 
     
-    def update(self, pitch=None, yaw=None, roll=None, pose=None, offset_x=None, offset_y=None, progress_data=None) :
+    def update(self, pitch=None, yaw=None, roll=None, pose=None, offset_x=None, offset_y=None, progress_data=None, target_position="center") :
         if not self.handle_events() :
             return False
         
@@ -396,7 +396,7 @@ class SceneGen :
         elif self.state == "calibration":
             if pitch is None or yaw is None or roll is None or pose is None:
                 return True
-            return self.update_calibration(pitch, yaw, roll, pose, offset_x, offset_y, progress_data)
+            return self.update_calibration(pitch, yaw, roll, pose, offset_x, offset_y, progress_data, target_position)
         
         elif self.state == "simulation" :
             if pitch is None or yaw is None or roll is None or pose is None : 
@@ -466,7 +466,7 @@ class SceneGen :
         self.clock.tick(self.fps)
         return True 
 
-    def update_calibration(self, pitch, yaw, roll, pose, offset_x, offset_y, progress_data=None):
+    def update_calibration(self, pitch, yaw, roll, pose, offset_x, offset_y, progress_data=None, target_position="center"):
         minYaw = -70
         maxYaw = 70
         minPitch = -20
@@ -516,7 +516,7 @@ class SceneGen :
             progress = progress_data.get("progress", 0.0)
             status_text = progress_data.get("status_text", status_text)
 
-        self.ui.draw_calibration_overlay(progress, status_text)
+        self.ui.draw_calibration_overlay(progress, status_text, target_position)
 
         self.draw_fade_overlay()
         pygame.display.flip()
