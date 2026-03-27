@@ -1556,6 +1556,12 @@ class UI :
         elif target_position == "right":
             cx = viewport.x + int(viewport.w * 0.90)
             cy = viewport.centery
+        elif target_position == "up" : 
+            cx = viewport.centerx
+            cy = viewport.y + int(viewport.h * 0.10)   
+        elif target_position == "down" : 
+            cx = viewport.centerx 
+            cy = viewport.y + int(viewport.h * 0.90)    
         else:
             cx = viewport.centerx
             cy = viewport.centery
