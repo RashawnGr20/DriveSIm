@@ -142,6 +142,7 @@ class HeadTracker:
             self.gaze_up_range = None 
             self.gaze_down_range = None 
             
+            self.calibrator_reset = False 
 
             self.eye_height_ref = {
                   "left": None, 
@@ -199,7 +200,7 @@ class HeadTracker:
             
             if self.gaze_up_range * self.gaze_down_range >= 0 :
                   print("CALIBRATION REJECTED: VERTICAL ANCHORS DID NOT STRADDLE CENTER")
-                  return False 
+                  self.calibrator_reset = True  
             
             self.gaze_left_range *= 1.25
             self.gaze_right_range *= 1.25
@@ -211,12 +212,23 @@ class HeadTracker:
             min_range_x = 0.03
             if abs(self.gaze_left_range) < min_range_x or abs(self.gaze_right_range) < min_range_x:
                   print("CALIBRATION REJECTED: HORIZONTAL RANGE WAS TOO SMALL")
-                  return False 
+                  self.calibrator_reset = True 
             
             min_range_y = 0.0325
             if  abs(self.gaze_up_range) < min_range_y or abs(self.gaze_down_range) < min_range_y: 
                   print("CALIBRATION REJECTED: VERTICAL RANGE WAS TOO SMALL")
-                  return False  
+                  self.calibrator_reset = True   
+                  
+
+            if self.calibrator_reset :
+                  self.gaze_center_buffer.clear()
+                  self.gaze_left_buffer.clear()
+                  self.gaze_right_buffer.clear()
+                  self.gaze_up_buffer.clear()
+                  self.gaze_down_buffer.clear()
+                  self.eye_height_buffer["right"].clear()
+                  self.eye_height_buffer["left"].clear()
+                  return False       
             
             x_ratio = max(abs(self.gaze_left_range), abs(self.gaze_right_range)) / min(abs(self.gaze_left_range), abs(self.gaze_right_range))
             y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
@@ -311,7 +323,7 @@ class HeadTracker:
             offset_y = max(-1, min(1, offset_y))
 
             offset_x = -offset_x
-            offset_y = -offset_y
+            #offset_y = -offset_y
 
 
             print("raw offset:", offset_x, offset_y)
