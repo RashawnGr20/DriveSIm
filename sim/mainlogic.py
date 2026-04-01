@@ -225,8 +225,13 @@ while running:
                     
                 norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
                 
+                eye_data = tracker.get_gaze_pos(face_landmarks)
+                left_height = tracker.compute_eye_height(eye_data["left_eye"])
+                right_height = tracker.compute_eye_height(eye_data["right_eye"])
+                
+                
                 if gaze_phase == "center" : 
-                    done = tracker.collect_gaze_sample("center", norm_x, norm_y)
+                    done = tracker.collect_gaze_sample("center", norm_x, norm_y, left_height, right_height)
                     print("CENTER COUNT", len(tracker.gaze_center_buffer))
                 
                     calibration_progress_data = {
@@ -240,7 +245,7 @@ while running:
                 
                 
                 elif gaze_phase == "left" : 
-                    done = tracker.collect_gaze_sample("left", norm_x, norm_y)
+                    done = tracker.collect_gaze_sample("left", norm_x, norm_y, left_height, right_height)
                     print("LEFT COUNT", len(tracker.gaze_left_buffer))
                     calibration_progress_data = {
                         "progress": 0.76,
@@ -252,7 +257,7 @@ while running:
                         print("LEFT COMPLETE -> RIGHT")
                 
                 elif gaze_phase == "right" : 
-                    done = tracker.collect_gaze_sample("right", norm_x, norm_y)
+                    done = tracker.collect_gaze_sample("right", norm_x, norm_y, left_height, right_height)
                     print("RIGHT COUNT", len(tracker.gaze_right_buffer))
                     calibration_progress_data = {
                         "progress": 0.84,
@@ -264,7 +269,7 @@ while running:
                         print("RIGHT COMPLETE -> UP")
                         
                 elif gaze_phase == "up" : 
-                    done = tracker.collect_gaze_sample("up", norm_x, norm_y)
+                    done = tracker.collect_gaze_sample("up", norm_x, norm_y, left_height, right_height)
                     print("UP COUNT", len(tracker.gaze_up_buffer))
                     calibration_progress_data = {
                         "progress": 0.92, 
@@ -276,7 +281,7 @@ while running:
                         print("UP COMPLETE -> DOWN")
                         
                 elif gaze_phase == "down" : 
-                    done = tracker.collect_gaze_sample("down", norm_x, norm_y)
+                    done = tracker.collect_gaze_sample("down", norm_x, norm_y, left_height, right_height)
                     print("DOWN COUNT", len(tracker.gaze_down_buffer))
                     calibration_progress_data = {
                         "progress": 0.98, 
@@ -301,7 +306,7 @@ while running:
                 print("GAZE PHASE:", gaze_phase)
                 continue 
 
-    
+                
         print("CURRENT BASELINE:", tracker.gaze_baseline)
         norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
         offset_x, offset_y = tracker.gaze_vectors(norm_x, norm_y)

@@ -143,18 +143,20 @@ class HeadTracker:
             self.gaze_down_range = None 
             
 
-            self.eye_heigth_ref = {
+            self.eye_height_ref = {
                   "left": None, 
                   "right": None,
             }
-            self.eye_heigth_buffer = {
+            self.eye_height_buffer = {
                   "left": [],
                   "right": [],
             }
             
-      def collect_gaze_sample(self, buffer_name, norm_x, norm_y) : 
+      def collect_gaze_sample(self, buffer_name, norm_x, norm_y, left_height, right_height) : 
             if buffer_name == "center" :
                   self.gaze_center_buffer.append((norm_x, norm_y))
+                  self.eye_height_buffer["left"].append(left_height)
+                  self.eye_height_buffer["right"].append(right_height)
                   return len(self.gaze_center_buffer) >= self.GAZE_BASELINE_FRAMES
 
             if buffer_name == "left" :
@@ -190,17 +192,39 @@ class HeadTracker:
             self.gaze_left_range = self.gaze_left_x - self.gaze_center_x
             self.gaze_right_range = self.gaze_right_x - self.gaze_center_x
             self.gaze_up_range = self.gaze_up_y - self.gaze_center_y
-            self.gaze_down_range = self.gaze_down_y - self.gaze_center_y
+            self.gaze_down_range = self.gaze_down_y - self.
+            
+            if self.gaze_up_range * self.gaze_down_range >= 0 :
+                  print("CALIBRATION REJECTED: VERTICAL ANCHORS DID NOT STRADDLE CENTER")
+                  return False 
             
             self.gaze_left_range *= 1.25
             self.gaze_right_range *= 1.25
             self.gaze_down_range *= 1.25
             self.gaze_up_range *= 1.25
             
+            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
+            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
             
-            min_range = 1e-4
-            if abs(self.gaze_left_range) < min_range or abs(self.gaze_right_range) < min_range or abs(self.gaze_up_range) < min_range or abs(self.gaze_down_range) < min_range: 
+            min_range_x = 0.03
+            if abs(self.gaze_left_range) < min_range_x or abs(self.gaze_right_range) < min_range_x:
+                  print("CALIBRATION REJECTED: HORIZONTAL RANGE WAS TOO SMALL")
+                  return False 
+            
+            min_range_y = 0.0325
+            if  abs(self.gaze_up_range) < min_range_y or abs(self.gaze_down_range) < min_range_y: 
+                  print("CALIBRATION REJECTED: VERTICAL RANGE WAS TOO SMALL")
                   return False  
+            
+            x_ratio = max(abs(self.gaze_left_range), abs(self.gaze_right_range)) / min(abs(self.gaze_left_range), abs(self.gaze_right_range))
+            y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
+            
+            if x_ratio > 2.5 : 
+                  return False 
+            
+            if y_ratio > 1.5 :
+                  return False 
+            
             
             self.gaze_baseline = (self.gaze_center_x, self.gaze_center_y)
             self.gaze_center_buffer.clear()
@@ -208,7 +232,11 @@ class HeadTracker:
             self.gaze_right_buffer.clear()
             self.gaze_up_buffer.clear()
             self.gaze_down_buffer.clear()
+            self.eye_height_buffer["right"].clear()
+            self.eye_height_buffer["left"].clear()
             
+            print("x_ratio", x_ratio)
+            print("y_ratio", y_ratio)
             print("center_x:", self.gaze_center_x)
             print("center_y:", self.gaze_center_y)
             print("left_x:", self.gaze_left_x)
@@ -325,8 +353,8 @@ class HeadTracker:
             left_height = self.compute_eye_height(eye_data["left_eye"])
             right_height = self.compute_eye_height(eye_data["right_eye"])
 
-            self.eye_heigth_buffer["left"].append(left_height)
-            self.eye_heigth_buffer["right"].append(right_height)
+            self.eye_height_buffer["left"].append(left_height)
+            self.eye_height_buffer["right"].append(right_height)
 
             if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES :
                   print("baseline sample:", norm_x, norm_y)
@@ -338,13 +366,13 @@ class HeadTracker:
             baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
             
             self.gaze_baseline = (baseline_x, baseline_y)
-            self.eye_heigth_ref["left"] = sum(self.eye_heigth_buffer["left"]) / len(self.eye_heigth_buffer["left"])
-            self.eye_heigth_ref["right"] = sum(self.eye_heigth_buffer["right"]) / len(self.eye_heigth_buffer["right"])
+            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
+            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
 
             print("FINAL BASELINE:", self.gaze_baseline)
             self.gaze_baseline_buffer.clear()
-            self.eye_heigth_buffer["left"].clear()
-            self.eye_heigth_buffer["right"].clear()
+            self.eye_height_buffer["left"].clear()
+            self.eye_height_buffer["right"].clear()
             return True 
       
       def compute_eye_height(self, eye_data) :
@@ -433,13 +461,28 @@ class HeadTracker:
 
             eye_width, live_eye_height = self.compute_eye_scale(eye_data)
 
-            ref_eye_height = self.eye_heigth_ref[eye_name]
+            ref_eye_height = self.eye_height_ref[eye_name]
             effective_eye_height = ref_eye_height if ref_eye_height is not None else live_eye_height
-
+            
             norm_x = local_x / (eye_width / 2)
             norm_y = local_y / (effective_eye_height / 2)
             
-            return norm_x, norm_y
+            if ref_eye_height is None  or ref_eye_height <1e-6: 
+                  eye_openess_delta = 0.0 
+            else :
+                  eye_openess_delta = (live_eye_height - ref_eye_height) / ref_eye_height
+                  
+            k = 0.5
+            vertical_blend = norm_y + k * eye_openess_delta
+            
+            print("eye:", eye_name)
+            print("local_y:", local_y)
+            print("norm_y:", norm_y)
+            print("live_eye_height:", live_eye_height)
+            print("ref_eye_height:", ref_eye_height)
+            print("openness_delta:", eye_openess_delta)
+            
+            return norm_x, vertical_blend
 
       def normalized_gaze(self, face_landmarks) : 
             eye_data  = self.get_gaze_pos(face_landmarks)

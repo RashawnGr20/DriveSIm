@@ -15,7 +15,7 @@ class SceneGen :
         self.fps = fps 
         self.font = pygame.font.SysFont(None, 36)
         base_directory = os.path.dirname(__file__)
-        image_path = os.path.join(base_directory, "Proto_images", "download (1).png")
+        image_path = os.path.join(base_directory, "Proto_images", "download (1).jpg")
         self.pano = pygame.image.load(image_path).convert()
         self.pano_width = self.pano.get_width()
         self.pano_height = self.pano.get_height()
@@ -377,7 +377,7 @@ class SceneGen :
         return True 
 
     
-    def update(self, pitch=None, yaw=None, roll=None, pose=None, offset_x=None, offset_y=None, progress_data=None, target_position="center") :
+    def update(self, pitch=None, yaw=None, roll=None, pose=None, offset_x=None, offset_y=None, progress_data=None, target_position=None) :
         if not self.handle_events() :
             return False
         
