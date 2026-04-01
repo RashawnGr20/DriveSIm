@@ -194,6 +194,9 @@ class HeadTracker:
             self.gaze_up_range = self.gaze_up_y - self.gaze_center_y
             self.gaze_down_range = self.gaze_down_y - self.gaze_center_y
             
+            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
+            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
+            
             if self.gaze_up_range * self.gaze_down_range >= 0 :
                   print("CALIBRATION REJECTED: VERTICAL ANCHORS DID NOT STRADDLE CENTER")
                   return False 
@@ -203,8 +206,7 @@ class HeadTracker:
             self.gaze_down_range *= 1.25
             self.gaze_up_range *= 1.25
             
-            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
-            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
+            
             
             min_range_x = 0.03
             if abs(self.gaze_left_range) < min_range_x or abs(self.gaze_right_range) < min_range_x:
