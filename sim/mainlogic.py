@@ -294,6 +294,9 @@ while running:
                         if gaze_calibrated : 
                             scene.state = "simulation"
                             scene.start_fade_in()
+
+                        if not gaze_calibrated : 
+                            gaze_phase == "center" 
                 
                 running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, gaze_phase)
 
