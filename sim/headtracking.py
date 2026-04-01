@@ -192,7 +192,7 @@ class HeadTracker:
             self.gaze_left_range = self.gaze_left_x - self.gaze_center_x
             self.gaze_right_range = self.gaze_right_x - self.gaze_center_x
             self.gaze_up_range = self.gaze_up_y - self.gaze_center_y
-            self.gaze_down_range = self.gaze_down_y - self.
+            self.gaze_down_range = self.gaze_down_y - self.gaze_center_y
             
             if self.gaze_up_range * self.gaze_down_range >= 0 :
                   print("CALIBRATION REJECTED: VERTICAL ANCHORS DID NOT STRADDLE CENTER")
