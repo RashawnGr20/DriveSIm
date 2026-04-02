@@ -142,8 +142,6 @@ class HeadTracker:
             self.gaze_up_range = None 
             self.gaze_down_range = None 
             
-            self.calibrator_reset = False 
-
             self.eye_height_ref = {
                   "left": None, 
                   "right": None,
@@ -182,6 +180,9 @@ class HeadTracker:
             if not self.gaze_center_buffer or not self.gaze_left_buffer or not self.gaze_right_buffer or not self.gaze_up_buffer or not self.gaze_down_buffer: 
                   return False 
             
+            failed = False 
+            failure_reason = None 
+            
             self.gaze_center_x = sum(x for x,y in self.gaze_center_buffer) / len(self.gaze_center_buffer)
             self.gaze_center_y = sum(y for x,y in self.gaze_center_buffer) / len(self.gaze_center_buffer)
             
@@ -199,9 +200,9 @@ class HeadTracker:
             self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
             
             if self.gaze_up_range * self.gaze_down_range >= 0 :
-                  print("CALIBRATION REJECTED: VERTICAL ANCHORS DID NOT STRADDLE CENTER")
-                  self.calibrator_reset = True  
-            
+                  falied = True 
+                  failure_reason = "VERTICAL ANCHORS DID NOT STRADDLE CENTER"
+
             self.gaze_left_range *= 1.25
             self.gaze_right_range *= 1.25
             self.gaze_down_range *= 1.25
@@ -211,16 +212,17 @@ class HeadTracker:
             
             min_range_x = 0.03
             if abs(self.gaze_left_range) < min_range_x or abs(self.gaze_right_range) < min_range_x:
-                  print("CALIBRATION REJECTED: HORIZONTAL RANGE WAS TOO SMALL")
-                  self.calibrator_reset = True 
+                  failed = True 
+                  failure_reason = "HORIZONTAL RANGE WAS TOO SMALL"
             
             min_range_y = 0.0325
             if  abs(self.gaze_up_range) < min_range_y or abs(self.gaze_down_range) < min_range_y: 
-                  print("CALIBRATION REJECTED: VERTICAL RANGE WAS TOO SMALL")
-                  self.calibrator_reset = True   
+                  failed = True 
+                  failure_reason = "VERTICAL RANGE WAS TOO SMALL"
                   
 
-            if self.calibrator_reset :
+            if failed :
+                  print("CALIBRATION REJECTED:", failure_reason)
                   self.gaze_center_buffer.clear()
                   self.gaze_left_buffer.clear()
                   self.gaze_right_buffer.clear()
