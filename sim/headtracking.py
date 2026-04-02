@@ -491,7 +491,9 @@ class HeadTracker:
                   eye_openess_delta = (live_eye_height - ref_eye_height) / ref_eye_height
                   
             k = 0.35
-            vertical_blend = norm_y - k * eye_openess_delta
+            s = 2.0 
+            compresed_openess = math.tanh(s * eye_openess_delta)
+            vertical_blend = norm_y - k * compresed_openess
             
             print("eye:", eye_name)
             print("local_y:", local_y)
