@@ -488,7 +488,7 @@ class HeadTracker:
             else :
                   eye_openess_delta = (live_eye_height - ref_eye_height) / ref_eye_height
                   
-            k = 0.5
+            k = 0.35
             vertical_blend = norm_y - k * eye_openess_delta
             
             print("eye:", eye_name)
