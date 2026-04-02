@@ -221,6 +221,18 @@ class HeadTracker:
                   failure_reason = "VERTICAL RANGE WAS TOO SMALL"
                   
 
+            x_ratio = max(abs(self.gaze_left_range), abs(self.gaze_right_range)) / min(abs(self.gaze_left_range), abs(self.gaze_right_range))
+            y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
+            
+            if x_ratio > 2.5 : 
+                  falied = True 
+                  failure_reason = "HORIZONTAL RATIO TOO LARGE" 
+            
+            if y_ratio > 1.5 :
+                  falied = True 
+                  failure_reason = "VERTICAL RATIO TOO LARGE"  
+
+            
             if failed :
                   print("CALIBRATION REJECTED:", failure_reason)
                   self.gaze_center_buffer.clear()
@@ -230,17 +242,7 @@ class HeadTracker:
                   self.gaze_down_buffer.clear()
                   self.eye_height_buffer["right"].clear()
                   self.eye_height_buffer["left"].clear()
-                  return False       
-            
-            x_ratio = max(abs(self.gaze_left_range), abs(self.gaze_right_range)) / min(abs(self.gaze_left_range), abs(self.gaze_right_range))
-            y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
-            
-            if x_ratio > 2.5 : 
                   return False 
-            
-            if y_ratio > 1.5 :
-                  return False 
-            
             
             self.gaze_baseline = (self.gaze_center_x, self.gaze_center_y)
             self.gaze_center_buffer.clear()
