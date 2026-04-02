@@ -297,11 +297,11 @@ while running:
 
                         else : 
                             print("CALIBRATION FAILED RESETTING PHASE") 
-                            gaze_phase = "center" 
+                            gaze_phase = "center"
                             gaze_warmup_count = 0
                             prev_gaze = (0.0, 0.0)
                             prev_smoothed = smoothed_pos
-                            
+                            scene.start_fade_in()
                     
                 
                 running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, gaze_phase)
