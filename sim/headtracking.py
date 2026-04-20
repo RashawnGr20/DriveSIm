@@ -151,13 +151,20 @@ class HeadTracker:
                   "right": [],
             }
             
-      def collect_gaze_sample(self, buffer_name, norm_x, norm_y, left_height, right_height) : 
-            if buffer_name == "center" :
-                  self.gaze_center_buffer.append((norm_x, norm_y))
+
+      def collect_gaze_ref(self, buffer_name, left_height, right_height): 
+            if buffer_name == "center_ref" : 
                   self.eye_height_buffer["left"].append(left_height)
                   self.eye_height_buffer["right"].append(right_height)
+                  return len(self.eye_height_buffer["left"]) >= self.GAZE_BASELINE_FRAMES
+            
+            
+      def collect_gaze_sample(self, buffer_name, norm_x, norm_y) : 
+            
+            if buffer_name == "center" :
+                  self.gaze_center_buffer.append((norm_x, norm_y))
                   return len(self.gaze_center_buffer) >= self.GAZE_BASELINE_FRAMES
-
+            
             if buffer_name == "left" :
                   self.gaze_left_buffer.append(norm_x)
                   return len(self.gaze_left_buffer) >= self.GAZE_BASELINE_FRAMES
@@ -200,7 +207,7 @@ class HeadTracker:
             self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
             
             if self.gaze_up_range * self.gaze_down_range >= 0 :
-                  falied = True 
+                  failed = True 
                   failure_reason = "VERTICAL ANCHORS DID NOT STRADDLE CENTER"
 
             self.gaze_left_range *= 1.25
@@ -225,11 +232,11 @@ class HeadTracker:
             y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
             
             if x_ratio > 2.5 : 
-                  falied = True 
+                  failed = True 
                   failure_reason = "HORIZONTAL RATIO TOO LARGE" 
             
             if y_ratio > 1.5 :
-                  falied = True 
+                  failed = True 
                   failure_reason = "VERTICAL RATIO TOO LARGE"  
 
             

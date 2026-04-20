@@ -34,7 +34,7 @@ prev_gaze = (0.0, 0.0)
 gaze_calibrated = False 
 gaze_warmup_frames = 30
 gaze_warmup_count = 0
-gaze_phase = "center"
+gaze_phase = "center_ref"
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -96,7 +96,7 @@ while running:
         gaze_calibrated = False 
         gaze_warmup_frames = 30
         gaze_warmup_count = 0  
-        gaze_phase = "center"         
+        gaze_phase = "center_ref"         
         
 
     ret, frame = cap.read()
@@ -230,8 +230,22 @@ while running:
                 right_height = tracker.compute_eye_height(eye_data["right_eye"])
                 
                 
+                if gaze_phase == "center_ref" : 
+                    done = tracker.collect_gaze_sample("center_ref", left_height, right_height )
+                    print("CENTER_REF COUNT", len(tracker.eye_height_buffer))
+                
+                    calibration_progress_data = {
+                        "progress": 0.68,
+                        "status_text": "Look directly at the center point"
+                    }
+                
+                    if done : 
+                        gaze_phase = "center"
+                        print("CENTER REFERENCE COMPLETE -> CENTER")
+                
+                
                 if gaze_phase == "center" : 
-                    done = tracker.collect_gaze_sample("center", norm_x, norm_y, left_height, right_height)
+                    done = tracker.collect_gaze_sample("center", norm_x, norm_y)
                     print("CENTER COUNT", len(tracker.gaze_center_buffer))
                 
                     calibration_progress_data = {
