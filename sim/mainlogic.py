@@ -232,7 +232,7 @@ while running:
                 
                 if gaze_phase == "center_ref" : 
                     done = tracker.collect_gaze_sample("center_ref", left_height, right_height )
-                    print("CENTER_REF COUNT", len(tracker.eye_height_buffer))
+                    print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
                 
                     calibration_progress_data = {
                         "progress": 0.68,
@@ -311,7 +311,7 @@ while running:
 
                         else : 
                             print("CALIBRATION FAILED RESETTING PHASE") 
-                            gaze_phase = "center"
+                            gaze_phase = "center_ref"
                             gaze_warmup_count = 0
                             prev_gaze = (0.0, 0.0)
                             prev_smoothed = smoothed_pos
