@@ -196,8 +196,8 @@ class HeadTracker:
             eps = 1e-6
             
             for name, point in self.calibration_points.items():
-                  gx, gy = point["items"]
-                  sx, sy = point["items"]
+                  gx, gy = point["gaze"]
+                  sx, sy = point["screen"]
                   
                   dx = norm_x - gx
                   dy = norm_y - gy
@@ -262,15 +262,7 @@ class HeadTracker:
             deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.02)
             
             print("norm_x:", norm_x)
-            print("center_x:", self.gaze_center_x)
-            print("delta_x:", delta_x)
-            print("left_range:", self.gaze_left_range)
-            print("right_range:", self.gaze_right_range)
             print("norm_y:", norm_y)
-            print("delta_y:", delta_y)
-            print("up_range:", self.gaze_up_range)
-            print("down_range:", self.gaze_down_range)
-            print("center_y:", self.gaze_center_y)
             print("mapped_y_after_clamp:", offset_y)
             
 
