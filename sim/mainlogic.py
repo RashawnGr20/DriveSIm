@@ -235,6 +235,8 @@ while running:
                 if gaze_phase == "center_ref" : 
                     done = tracker.collect_gaze_ref("center_ref", left_height, right_height )
                     print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
+                    
+                    display_target = "center"
                 
                     calibration_progress_data = {
                         "progress": 0.68,
@@ -253,19 +255,35 @@ while running:
                     target_pos = current_target["screen_pos"]
                     done = tracker.collect_target_sample(target_name, norm_x, norm_y)
                     
+                    display_target = target_name
+                    
+                    target_progress = current_target_index / len(tracker.calibration_targets)
+                    
+                    calibration_progress_data = {
+                        "progress": 0.68 + 0.32 * target_progress,
+                        "status_text": f"look directly at the {target_name.replace("_", '')} point"
+                    }
+                    
+                    
                     if done : 
                         current_target_index += 1
                     
                     if current_target_index >= len(tracker.calibration_targets) : 
                         gaze_calibrated = tracker.finalize_target_calibration()
-                        
-                
                     
+                        if gaze_calibrated : 
+                            scene.state = "simulation"
+                            scene.start_fade_in()
+                        else:
+                            print("CALIBRATION FAILED RESETTING PHASE")
+                            gaze_phase = "center_ref"
+                            current_target_index = 0
+                            tracker.reset_gaze()
+                            gaze_warmup_count = 0
+                            prev_gaze = (0.0, 0.0)
+                            prev_smoothed = smoothed_pos
                 
-                
-                    
-                
-                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, gaze_phase)
+                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, display_target)
 
                 if not running : 
                     break 
