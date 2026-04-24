@@ -35,6 +35,7 @@ gaze_calibrated = False
 gaze_warmup_frames = 30
 gaze_warmup_count = 0
 gaze_phase = "center_ref"
+current_target_index = 0  
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -96,7 +97,8 @@ while running:
         gaze_calibrated = False 
         gaze_warmup_frames = 30
         gaze_warmup_count = 0  
-        gaze_phase = "center_ref"         
+        gaze_phase = "center_ref"  
+        current_target_index = 0        
         
 
     ret, frame = cap.read()
@@ -242,83 +244,25 @@ while running:
                     if done : 
                         gaze_ref_calibrated = tracker.finalize_center_ref()
                         if gaze_ref_calibrated :
-                            gaze_phase = "center"
-                            print("CENTER REFERENCE COMPLETE -> CENTER")
-                
-                
-                if gaze_phase == "center" : 
-                    done = tracker.collect_gaze_sample("center", norm_x, norm_y)
-                    print("CENTER COUNT", len(tracker.gaze_center_buffer))
-                
-                    calibration_progress_data = {
-                        "progress": 0.68,
-                        "status_text": "Look directly at the center point"
-                    }
-                
-                    if done : 
-                        gaze_phase = "left"
-                        print("CENTER COMPLETE -> LEFT")
-                
-                
-                elif gaze_phase == "left" : 
-                    done = tracker.collect_gaze_sample("left", norm_x, norm_y)
-                    print("LEFT COUNT", len(tracker.gaze_left_buffer))
-                    calibration_progress_data = {
-                        "progress": 0.76,
-                        "status_text": "Look directly at left dot" 
-                    }
-                
-                    if done : 
-                        gaze_phase = "right" 
-                        print("LEFT COMPLETE -> RIGHT")
-                
-                elif gaze_phase == "right" : 
-                    done = tracker.collect_gaze_sample("right", norm_x, norm_y)
-                    print("RIGHT COUNT", len(tracker.gaze_right_buffer))
-                    calibration_progress_data = {
-                        "progress": 0.84,
-                        "status_text": "look at the right dot"
-                    }
+                            gaze_phase = "target_calibration"
+                            current_target_index = 0
                     
-                    if done :
-                        gaze_phase = "up"
-                        print("RIGHT COMPLETE -> UP")
-                        
-                elif gaze_phase == "up" : 
-                    done = tracker.collect_gaze_sample("up", norm_x, norm_y)
-                    print("UP COUNT", len(tracker.gaze_up_buffer))
-                    calibration_progress_data = {
-                        "progress": 0.92, 
-                        "status_text": "look directly at the upper dot"
-                    }
+                elif gaze_phase == "target_calibration" : 
+                    current_target = tracker.calibration_targets[current_target_index]
+                    target_name = current_target["name"]
+                    target_pos = current_target["screen_pos"]
+                    done = tracker.collect_target_sample(target_name, norm_x, norm_y)
                     
-                    if done :
-                        gaze_phase = "down"
-                        print("UP COMPLETE -> DOWN")
-                        
-                elif gaze_phase == "down" : 
-                    done = tracker.collect_gaze_sample("down", norm_x, norm_y)
-                    print("DOWN COUNT", len(tracker.gaze_down_buffer))
-                    calibration_progress_data = {
-                        "progress": 0.98, 
-                        "status_text": "Look directly at the lower dot"
-                    }
-
                     if done : 
-                        print("DOWN COMPLETE -> FINALIZE")
-                        gaze_calibrated = tracker.finalize_calibration()
-                        if gaze_calibrated :
-                            scene.state = "simulation"
-                            scene.start_fade_in()
-
-                        else : 
-                            print("CALIBRATION FAILED RESETTING PHASE") 
-                            gaze_phase = "center_ref"
-                            tracker.reset_gaze()
-                            gaze_warmup_count = 0
-                            prev_gaze = (0.0, 0.0)
-                            prev_smoothed = smoothed_pos
-                            scene.start_fade_in()
+                        current_target_index += 1
+                    
+                    if current_target_index >= len(tracker.calibration_targets) : 
+                        gaze_calibrated = tracker.finalize_target_calibration()
+                        
+                
+                    
+                
+                
                     
                 
                 running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, gaze_phase)
