@@ -18,15 +18,15 @@ class HeadTracker:
             self.mp_drawing =  mp.solutions.drawing_utils
             
             self.calibration_targets = [
-                  {"name": "top_left",      "screen_pos": (0.2, 0.2)},
-                  {"name": "top_center",    "screen_pos": (0.5, 0.2)},
-                  {"name": "top_right",     "screen_pos": (0.8, 0.2)},
-                  {"name": "mid_left",      "screen_pos": (0.2, 0.5)},
+                  {"name": "top_left",      "screen_pos": (0.1, 0.1)},
+                  {"name": "top_center",    "screen_pos": (0.5, 0.1)},
+                  {"name": "top_right",     "screen_pos": (0.9, 0.1)},
+                  {"name": "mid_left",      "screen_pos": (0.1, 0.5)},
                   {"name": "center",        "screen_pos": (0.5, 0.5)},
-                  {"name": "mid_right",     "screen_pos": (0.8, 0.5)},
-                  {"name": "bottom_left",   "screen_pos": (0.2, 0.8)},
-                  {"name": "bottom_center", "screen_pos": (0.5, 0.8)},
-                  {"name": "bottom_right",  "screen_pos": (0.8, 0.8)},
+                  {"name": "mid_right",     "screen_pos": (0.9, 0.5)},
+                  {"name": "bottom_left",   "screen_pos": (0.1, 0.9)},
+                  {"name": "bottom_center", "screen_pos": (0.5, 0.9)},
+                  {"name": "bottom_right",  "screen_pos": (0.9, 0.9)},
             ]
             
             self.calibration_samples = {
@@ -203,7 +203,7 @@ class HeadTracker:
                   dy = norm_y - gy
                   distance = math.sqrt(dx**2 + dy**2)
                   
-                  weight = 1.0 / (distance + eps)
+                  weight = 1.0 / ((distance + eps)**2)
                   
                   weighted_screen_x += weight * sx 
                   weighted_screen_y += weight * sy 
@@ -234,7 +234,7 @@ class HeadTracker:
             shaped_y = sign_y *((1-b_y)*abs(y) + b_y*abs(y)**p_y)
             offset_y = shaped_y 
            
-            offset_y*= 0.6
+           #offset_y*= 0.6
             
             offset_x = max(-1, min(1, offset_x))
             offset_y = max(-1, min(1, offset_y))
@@ -430,7 +430,7 @@ class HeadTracker:
             return norm_x, norm_y
             
 
-      def smoothed_gaze(self, prev, offset, alpha=0.12) : 
+      def smoothed_gaze(self, prev, offset, alpha=0.2) : 
             if prev is None : 
                   return offset 
             

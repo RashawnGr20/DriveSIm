@@ -187,15 +187,15 @@ class UI :
     
     def get_calibration_target_pos(self, target_position):
         target_map = {
-            "top_left": (0.2, 0.2),
-            "top_center": (0.5, 0.2),
-            "top_right": (0.8, 0.2),
-            "mid_left": (0.2, 0.5),
+            "top_left": (0.1, 0.1),
+            "top_center": (0.5, 0.1),
+            "top_right": (0.9, 0.1),
+            "mid_left": (0.1, 0.5),
             "center": (0.5, 0.5),
-            "mid_right": (0.8, 0.5),
-            "bottom_left": (0.2, 0.8),
-            "bottom_center": (0.5, 0.8),
-            "bottom_right": (0.8, 0.8),
+            "mid_right": (0.9, 0.5),
+            "bottom_left": (0.1, 0.9),
+            "bottom_center": (0.5, 0.9),
+            "bottom_right": (0.9, 0.9),
         }
 
         return target_map.get(target_position, (0.5, 0.5))
@@ -1562,6 +1562,7 @@ class UI :
     
 
     def draw_calibration_overlay(self, progress, status_text, target_position="center"):
+        
         viewport = self.viewport_rect
 
         rx, ry = self.get_calibration_target_pos(target_position)
