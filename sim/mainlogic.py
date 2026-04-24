@@ -262,12 +262,12 @@ while running:
                         current_target_index += 1
                     
                     
-                    completed_targets = min(current_target_index. len(tracker.calibration_targets))
+                    completed_targets = min(current_target_index, len(tracker.calibration_targets))
                     target_progress = completed_targets / len(tracker.calibration_targets)
                     
                     calibration_progress_data = {
                         "progress": 0.68 + 0.32 * target_progress,
-                        "status_text": f"look directly at the {target_name.replace('_', '')} point"
+                        "status_text": f"look directly at the {target_name.replace('_', ' ')} point"
                     }
                     
                     
