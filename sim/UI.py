@@ -184,6 +184,21 @@ class UI :
     
     def c(self, key) :
         return self.colors[key]
+    
+    def get_calibration_target_pos(self, target_position):
+        target_map = {
+            "top_left": (0.2, 0.2),
+            "top_center": (0.5, 0.2),
+            "top_right": (0.8, 0.2),
+            "mid_left": (0.2, 0.5),
+            "center": (0.5, 0.5),
+            "mid_right": (0.8, 0.5),
+            "bottom_left": (0.2, 0.8),
+            "bottom_center": (0.5, 0.8),
+            "bottom_right": (0.8, 0.8),
+        }
+
+        return target_map.get(target_position, (0.5, 0.5))
   
     def draw_background(self):
         self.screen.fill(self.c("background"))
@@ -1546,43 +1561,31 @@ class UI :
         return None
     
 
-    def draw_calibration_overlay(self, progress=0.0, status_text="Calibration in progress", target_position="center"):
-        
+    def draw_calibration_overlay(self, progress, status_text, target_position="center"):
         viewport = self.viewport_rect
 
-        if target_position == "left":
-            cx = viewport.x + int(viewport.w * 0.10)
-            cy = viewport.centery
-        elif target_position == "right":
-            cx = viewport.x + int(viewport.w * 0.90)
-            cy = viewport.centery
-        elif target_position == "up" : 
-            cx = viewport.centerx
-            cy = viewport.y + int(viewport.h * 0.10)   
-        elif target_position == "down" : 
-            cx = viewport.centerx 
-            cy = viewport.y + int(viewport.h * 0.90)    
-        else:
-            cx = viewport.centerx
-            cy = viewport.centery
+        rx, ry = self.get_calibration_target_pos(target_position)
 
-        pygame.draw.circle(self.screen, (235, 240, 246), (cx, cy), 16, 2)
-        pygame.draw.circle(self.screen, (255, 0, 0), (cx, cy), 5)
+        cx = viewport.x + int(viewport.w * rx)
+        cy = viewport.y + int(viewport.h * ry)
 
-        subtitle = self.fonts["medium"].render(status_text, True, self.c("instruction_text"))
-        subtitle_rect = subtitle.get_rect(center=(viewport.centerx, viewport.bottom + 29))
-        self.screen.blit(subtitle, subtitle_rect)
-
-        bar_w = 330
-        bar_h = 26
-        bar_x = viewport.centerx - bar_w // 2
-        bar_y = viewport.bottom + 60
+        bar_w = 420
+        bar_h = 10
+        bar_x = self.W // 2 - bar_w // 2
+        bar_y = viewport.bottom + 38
 
         track_rect = pygame.Rect(bar_x, bar_y, bar_w, bar_h)
         fill_rect = pygame.Rect(bar_x, bar_y, int(bar_w * max(0.0, min(1.0, progress))), bar_h)
 
-        pygame.draw.rect(self.screen, self.c("surface_2"), track_rect, border_radius=8)
-        pygame.draw.rect(self.screen, self.c("border"), track_rect, width=1, border_radius=8)
+        pygame.draw.rect(self.screen, self.c("indicator_bg"), track_rect, border_radius=bar_h // 2)
+        pygame.draw.rect(self.screen, self.c("accent"), fill_rect, border_radius=bar_h // 2)
 
-        if fill_rect.w > 0:
-            pygame.draw.rect(self.screen, self.c("accent"), fill_rect, border_radius=8)
+        status_surf = self.fonts["medium"].render(status_text, True, self.c("instruction_text"))
+        status_rect = status_surf.get_rect(center=(self.W // 2, bar_y - 24))
+        self.screen.blit(status_surf, status_rect)
+
+        outer_r = 18
+        inner_r = 8
+
+        pygame.draw.circle(self.screen, self.c("surface"), (cx, cy), outer_r)
+        pygame.draw.circle(self.screen, self.c("accent"), (cx, cy), inner_r)
