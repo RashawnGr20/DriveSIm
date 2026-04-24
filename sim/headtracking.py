@@ -183,6 +183,19 @@ class HeadTracker:
             
             return False 
       
+      def finalize_center_ref(self) : 
+            
+            if not self.eye_height_buffer["left"] or not self.eye_height_buffer["right"] : 
+                  return False 
+            
+            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
+            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
+            
+      
+            self.eye_height_buffer["right"].clear()
+            self.eye_height_buffer["left"].clear()
+            return True 
+      
       def finalize_calibration(self) : 
             if not self.gaze_center_buffer or not self.gaze_left_buffer or not self.gaze_right_buffer or not self.gaze_up_buffer or not self.gaze_down_buffer: 
                   return False 
@@ -203,8 +216,7 @@ class HeadTracker:
             self.gaze_up_range = self.gaze_up_y - self.gaze_center_y
             self.gaze_down_range = self.gaze_down_y - self.gaze_center_y
             
-            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
-            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
+            
             
             if self.gaze_up_range * self.gaze_down_range >= 0 :
                   failed = True 
@@ -214,7 +226,6 @@ class HeadTracker:
             self.gaze_right_range *= 1.25
             self.gaze_down_range *= 1.25
             self.gaze_up_range *= 1.25
-            
             
             
             min_range_x = 0.03
@@ -235,7 +246,7 @@ class HeadTracker:
                   failed = True 
                   failure_reason = "HORIZONTAL RATIO TOO LARGE" 
             
-            if y_ratio > 1.5 :
+            if y_ratio > 1.7 :
                   failed = True 
                   failure_reason = "VERTICAL RATIO TOO LARGE"  
 
@@ -257,8 +268,7 @@ class HeadTracker:
             self.gaze_right_buffer.clear()
             self.gaze_up_buffer.clear()
             self.gaze_down_buffer.clear()
-            self.eye_height_buffer["right"].clear()
-            self.eye_height_buffer["left"].clear()
+            
             
             print("x_ratio", x_ratio)
             print("y_ratio", y_ratio)
@@ -330,6 +340,24 @@ class HeadTracker:
             offset_x *= gain
             offset_y *= gain
 
+            p_x = 0.8
+            b_x = 0.2
+            
+            p_y = 0.85
+            b_y = 0.1
+            
+            x = offset_x
+            sign_x = 1 if x>=0 else -1 
+            shaped_x = sign_x * ((1-b_x)*abs(x) + b_x*abs(x)**p_x)
+            offset_x = shaped_x
+            
+            y = offset_y
+            sign_y = 1 if y>=0 else -1 
+            shaped_y = sign_y *((1-b_y)*abs(y) + b_y*abs(y)**p_y)
+            offset_y = shaped_y 
+           
+            offset_y*= 0.6
+            
             offset_x = max(-1, min(1, offset_x))
             offset_y = max(-1, min(1, offset_y))
 
@@ -497,7 +525,7 @@ class HeadTracker:
             else :
                   eye_openess_delta = (live_eye_height - ref_eye_height) / ref_eye_height
                   
-            k = 0.35
+            k = 0.30
             s = 2.0 
             compresed_openess = math.tanh(s * eye_openess_delta)
             vertical_blend = norm_y - k * compresed_openess
