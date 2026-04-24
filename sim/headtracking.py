@@ -264,6 +264,11 @@ class HeadTracker:
             print("norm_x:", norm_x)
             print("norm_y:", norm_y)
             print("mapped_y_after_clamp:", offset_y)
+            print("weighted_x:", screen_x)
+            print("weighted_y:", screen_y)
+            print("final_x:", offset_x)
+            print("final_y:", offset_y)
+            
             
 
             return deadzoned_x, deadzoned_y
