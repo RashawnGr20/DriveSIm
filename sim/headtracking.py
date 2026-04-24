@@ -37,6 +37,15 @@ class HeadTracker:
             
             self.samples_per_target = 50
             
+            self.GAZE_BASELINE_FRAMES = 50
+            
+            self.prev_gaze = None 
+            self.gaze_baseline = None 
+            self.gaze_baseline_buffer = []
+            
+            self.eye_height_ref = {"left": None, "right": None}
+            self.eye_height_buffer = {"left": [], "right": []}
+            
             
             
       def process_frame(self, frame) :
@@ -119,6 +128,14 @@ class HeadTracker:
             
             self.calibration_points = {}
             
+            self.prev_gaze = None 
+            self.gaze_baseline = None 
+            self.gaze_baseline_buffer = []
+            
+            self.eye_height_ref = {"left": None, "right": None}
+            self.eye_height_buffer = {"left": [], "right": []}
+            
+            
 
       def collect_gaze_ref(self, buffer_name, left_height, right_height): 
             if buffer_name == "center_ref" : 
@@ -170,57 +187,36 @@ class HeadTracker:
                 
       def gaze_vectors(self, norm_x, norm_y) :  
             
-            if self.gaze_center_x is None or self.gaze_center_y is None :
-                  return 0.0, 0.0
+            if not self.calibration_points or len(self.calibration_points) < len(self.calibration_targets) : 
+                  return 0.0,0.0
             
-            baseline_x, baseline_y = self.gaze_baseline
-
-            print("delta:", norm_x - baseline_x, norm_y - baseline_y)
-
-            delta_x = norm_x - self.gaze_center_x
-            delta_y = norm_y - self.gaze_center_y
-            up_range = self.gaze_up_range
-            down_range = self.gaze_down_range
-                        
-            if delta_x >= 0 : 
-                  if self.gaze_left_range is None or abs(self.gaze_left_range) < 1e-6: 
-                        offset_x = 0.0
-                  else : 
-                        offset_x = delta_x / self.gaze_left_range
+            weighted_screen_x = 0.0
+            weighted_screen_y = 0.0 
+            total_weight = 0.0 
+            eps = 1e-6
             
-            else : 
-                  if self.gaze_right_range is None or abs(self.gaze_right_range) < 1e-6 : 
-                        offset_x = 0.0
+            for name, point in self.calibration_points.items():
+                  gx, gy = point["items"]
+                  sx, sy = point["items"]
                   
-                  else : 
-                        offset_x = delta_x / abs(self.gaze_right_range)
-                        
-                        
-            if up_range is None or down_range is None : 
-                  offset_y = 0.0 
-            
-            elif up_range < 0 and down_range > 0 : 
-
-                  if delta_y <= 0 :
-                        offset_y = delta_y / abs(up_range)
+                  dx = norm_x - gx
+                  dy = norm_y - gy
+                  distance = math.sqrt(dx**2 + dy**2)
                   
-                  else : 
-                        offset_y = delta_y / down_range
-            
-            elif up_range > 0 and down_range < 0 : 
+                  weight = 1.0 / (distance + eps)
                   
-                  if delta_y >= 0 : 
-                        offset_y = delta_y / up_range
+                  weighted_screen_x += weight * sx 
+                  weighted_screen_y += weight * sy 
+                  total_weight += weight 
                   
-                  else : 
-                        offset_y = delta_y / abs(down_range)
+            if total_weight <= 0 :
+                  return 0.0,0.0 
             
-            else : 
-                  offset_y = 0.0
-
-            gain = 1.0
-            offset_x *= gain
-            offset_y *= gain
+            screen_x = weighted_screen_x / total_weight
+            screen_y = weighted_screen_y / total_weight
+            
+            offset_x = 2.0 * screen_x - 1.0 
+            offset_y = 2.0 * screen_y - 1.0
 
             p_x = 0.8
             b_x = 0.2
