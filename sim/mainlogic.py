@@ -257,16 +257,19 @@ while running:
                     
                     display_target = target_name
                     
-                    target_progress = current_target_index / len(tracker.calibration_targets)
+                    
+                    if done : 
+                        current_target_index += 1
+                    
+                    
+                    completed_targets = min(current_target_index. len(tracker.calibration_targets))
+                    target_progress = completed_targets / len(tracker.calibration_targets)
                     
                     calibration_progress_data = {
                         "progress": 0.68 + 0.32 * target_progress,
                         "status_text": f"look directly at the {target_name.replace('_', '')} point"
                     }
                     
-                    
-                    if done : 
-                        current_target_index += 1
                     
                     if current_target_index >= len(tracker.calibration_targets) : 
                         gaze_calibrated = tracker.finalize_target_calibration()
