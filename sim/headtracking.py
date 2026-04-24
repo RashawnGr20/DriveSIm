@@ -17,35 +17,28 @@ class HeadTracker:
             )
             self.mp_drawing =  mp.solutions.drawing_utils
             
-            self.gaze_center_x = None 
-            self.gaze_center_y = None
+            self.calibration_targets = [
+                  {"name": "top_left",      "screen_pos": (0.2, 0.2)},
+                  {"name": "top_center",    "screen_pos": (0.5, 0.2)},
+                  {"name": "top_right",     "screen_pos": (0.8, 0.2)},
+                  {"name": "mid_left",      "screen_pos": (0.2, 0.5)},
+                  {"name": "center",        "screen_pos": (0.5, 0.5)},
+                  {"name": "mid_right",     "screen_pos": (0.8, 0.5)},
+                  {"name": "bottom_left",   "screen_pos": (0.2, 0.8)},
+                  {"name": "bottom_center", "screen_pos": (0.5, 0.8)},
+                  {"name": "bottom_right",  "screen_pos": (0.8, 0.8)},
+            ]
             
-            self.gaze_up_y = None 
-            self.gaze_down_y = None 
-            self.gaze_left_x = None 
-            self.gaze_right_x = None 
+            self.calibration_samples = {
+                  target["name"]: [] for target in self.calibration_targets
+            }
             
-            self.gaze_center_buffer = []
-            self.gaze_left_buffer = []
-            self.gaze_right_buffer = []
-            self.gaze_up_buffer = []
-            self.gaze_down_buffer = []
+            self.calibration_points = {}
             
-            self.gaze_left_range = None 
-            self.gaze_right_range = None 
-            self.gaze_up_range = None 
-            self.gaze_down_range = None 
+            self.samples_per_target = 50
             
-            self.gaze_left_range = None 
-            self.gaze_right_range = None 
             
-            self.GAZE_BASELINE_FRAMES = 50
-            self.prev_gaze = None 
-            self.gaze_baseline = None 
-            self.gaze_baseline_buffer = []
-            self.eye_height_ref = {"left": None, "right": None}
-            self.eye_height_buffer = {"left": [], "right": []}
-
+            
       def process_frame(self, frame) :
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.face_mesh.process(rgb_frame) 
@@ -119,37 +112,12 @@ class HeadTracker:
             }
 
       def reset_gaze(self) :
-            self.prev_gaze = None
-            self.gaze_baseline = None
-            self.gaze_baseline_buffer = []
             
-            self.gaze_center_x = None 
-            self.gaze_center_y = None
-            
-            self.gaze_up_y = None 
-            self.gaze_down_y = None 
-            self.gaze_left_x = None 
-            self.gaze_right_x = None 
-            
-            self.gaze_center_buffer = []
-            self.gaze_left_buffer = []
-            self.gaze_right_buffer = []
-            self.gaze_up_buffer = []
-            self.gaze_down_buffer = []
-            
-            self.gaze_left_range = None 
-            self.gaze_right_range = None 
-            self.gaze_up_range = None 
-            self.gaze_down_range = None 
-            
-            self.eye_height_ref = {
-                  "left": None, 
-                  "right": None,
+            self.calibration_samples = {
+                  target["name"]: [] for target in self.calibration_targets
             }
-            self.eye_height_buffer = {
-                  "left": [],
-                  "right": [],
-            }
+            
+            self.calibration_points = {}
             
 
       def collect_gaze_ref(self, buffer_name, left_height, right_height): 
@@ -159,29 +127,12 @@ class HeadTracker:
                   return len(self.eye_height_buffer["left"]) >= self.GAZE_BASELINE_FRAMES
             
             
-      def collect_gaze_sample(self, buffer_name, norm_x, norm_y) : 
+      def collect_target_sample(self, target_name, normx, normy) :
+            if target_name not in self.calibration_samples  :
+                  return False 
             
-            if buffer_name == "center" :
-                  self.gaze_center_buffer.append((norm_x, norm_y))
-                  return len(self.gaze_center_buffer) >= self.GAZE_BASELINE_FRAMES
-            
-            if buffer_name == "left" :
-                  self.gaze_left_buffer.append(norm_x)
-                  return len(self.gaze_left_buffer) >= self.GAZE_BASELINE_FRAMES
-            
-            if buffer_name == "right" :
-                  self.gaze_right_buffer.append(norm_x)
-                  return len(self.gaze_right_buffer) >= self.GAZE_BASELINE_FRAMES
-            
-            if buffer_name == "up" : 
-                  self.gaze_up_buffer.append(norm_y)
-                  return len(self.gaze_up_buffer) >= self.GAZE_BASELINE_FRAMES
-            
-            if buffer_name == "down" : 
-                  self.gaze_down_buffer.append(norm_y)
-                  return len(self.gaze_down_buffer) >= self.GAZE_BASELINE_FRAMES
-            
-            return False 
+            self.calibration_samples[target_name].append((normx, normy))
+            return len(self.calibration_samples[target_name]) >= self.samples_per_target
       
       def finalize_center_ref(self) : 
             
@@ -196,95 +147,26 @@ class HeadTracker:
             self.eye_height_buffer["left"].clear()
             return True 
       
-      def finalize_calibration(self) : 
-            if not self.gaze_center_buffer or not self.gaze_left_buffer or not self.gaze_right_buffer or not self.gaze_up_buffer or not self.gaze_down_buffer: 
-                  return False 
+      def finalize_target_calibration(self): 
+            self.calibration_points = {}
             
-            failed = False 
-            failure_reason = None 
-            
-            self.gaze_center_x = sum(x for x,y in self.gaze_center_buffer) / len(self.gaze_center_buffer)
-            self.gaze_center_y = sum(y for x,y in self.gaze_center_buffer) / len(self.gaze_center_buffer)
-            
-            self.gaze_left_x = sum(self.gaze_left_buffer) / len(self.gaze_left_buffer)
-            self.gaze_right_x = sum(self.gaze_right_buffer) / len(self.gaze_right_buffer)
-            self.gaze_up_y = sum(self.gaze_up_buffer) / len(self.gaze_up_buffer)
-            self.gaze_down_y = sum(self.gaze_down_buffer) / len(self.gaze_down_buffer)
-            
-            self.gaze_left_range = self.gaze_left_x - self.gaze_center_x
-            self.gaze_right_range = self.gaze_right_x - self.gaze_center_x
-            self.gaze_up_range = self.gaze_up_y - self.gaze_center_y
-            self.gaze_down_range = self.gaze_down_y - self.gaze_center_y
-            
-            
-            
-            if self.gaze_up_range * self.gaze_down_range >= 0 :
-                  failed = True 
-                  failure_reason = "VERTICAL ANCHORS DID NOT STRADDLE CENTER"
-
-            self.gaze_left_range *= 1.25
-            self.gaze_right_range *= 1.25
-            self.gaze_down_range *= 1.25
-            self.gaze_up_range *= 1.25
-            
-            
-            min_range_x = 0.03
-            if abs(self.gaze_left_range) < min_range_x or abs(self.gaze_right_range) < min_range_x:
-                  failed = True 
-                  failure_reason = "HORIZONTAL RANGE WAS TOO SMALL"
-            
-            min_range_y = 0.0325
-            if  abs(self.gaze_up_range) < min_range_y or abs(self.gaze_down_range) < min_range_y: 
-                  failed = True 
-                  failure_reason = "VERTICAL RANGE WAS TOO SMALL"
+            for target in self.calibration_targets : 
+                  name = target["name"]
+                  screen_pos = target["screen_pos"]
+                  samples = self.calibration_samples[name]
                   
+                  if not samples :
+                        return False 
+                  
+                  avg_x = sum(x for x,y in samples) / len(samples)
+                  avg_y = sum(y for x,y in samples) / len(samples)
 
-            x_ratio = max(abs(self.gaze_left_range), abs(self.gaze_right_range)) / min(abs(self.gaze_left_range), abs(self.gaze_right_range))
-            y_ratio = max(abs(self.gaze_up_range), abs(self.gaze_down_range)) / min(abs(self.gaze_up_range), abs(self.gaze_down_range))
-            
-            if x_ratio > 2.5 : 
-                  failed = True 
-                  failure_reason = "HORIZONTAL RATIO TOO LARGE" 
-            
-            if y_ratio > 1.7 :
-                  failed = True 
-                  failure_reason = "VERTICAL RATIO TOO LARGE"  
-
-            
-            if failed :
-                  print("CALIBRATION REJECTED:", failure_reason)
-                  self.gaze_center_buffer.clear()
-                  self.gaze_left_buffer.clear()
-                  self.gaze_right_buffer.clear()
-                  self.gaze_up_buffer.clear()
-                  self.gaze_down_buffer.clear()
-                  self.eye_height_buffer["right"].clear()
-                  self.eye_height_buffer["left"].clear()
-                  return False 
-            
-            self.gaze_baseline = (self.gaze_center_x, self.gaze_center_y)
-            self.gaze_center_buffer.clear()
-            self.gaze_left_buffer.clear()
-            self.gaze_right_buffer.clear()
-            self.gaze_up_buffer.clear()
-            self.gaze_down_buffer.clear()
-            
-            
-            print("x_ratio", x_ratio)
-            print("y_ratio", y_ratio)
-            print("center_x:", self.gaze_center_x)
-            print("center_y:", self.gaze_center_y)
-            print("left_x:", self.gaze_left_x)
-            print("right_x:", self.gaze_right_x)
-            print("up_y:", self.gaze_up_y)
-            print("down_y:", self.gaze_down_y)
-            print("left_range:", self.gaze_left_range)
-            print("right_range:", self.gaze_right_range)
-            print("up_range:", self.gaze_up_range)
-            print("down_range:", self.gaze_down_range)
-
-            return True
-            
+                  self.calibration_points[name] = {
+                        "gaze": (avg_x, avg_y),
+                        "screen": screen_pos, 
+                  }
+                  
+            return True 
                 
       def gaze_vectors(self, norm_x, norm_y) :  
             
