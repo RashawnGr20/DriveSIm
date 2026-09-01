@@ -240,8 +240,7 @@ while running:
                 left_height = tracker.compute_eye_height(eye_data["left_eye"])
                 right_height = tracker.compute_eye_height(eye_data["right_eye"])
 
-                # Default so the render call below always has a target, even if
-                # gaze_phase somehow isn't one of the handled values.
+                
                 display_target = "center"
 
                 if gaze_phase == "center_ref" :
