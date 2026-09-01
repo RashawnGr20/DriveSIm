@@ -11,7 +11,7 @@ class PerCheckNote(BaseModel) :
 
 
 class CoachingReportSchema(BaseModel) :
-    """Structured-output target passed to with_structured_output."""
+
 
     summary: str
     strengths: List[str]

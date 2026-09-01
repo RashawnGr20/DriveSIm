@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from backend.auth.dependencies import get_current_user
 from backend.database.connection import get_db
 from backend.database.models import Session as SessionModel
+from backend.rate_limit import limiter
 
 from .schemas import CoachingReportResponse
 from .service import get_or_create_coaching_report
@@ -12,7 +13,8 @@ router = APIRouter(prefix="/coaching", tags=["coaching"])
 
 
 @router.get("/{session_id}/report")
-def get_coaching_report(session_id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)) :
+@limiter.limit("10/hour")
+def get_coaching_report(request: Request, session_id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)) :
 
     session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
 

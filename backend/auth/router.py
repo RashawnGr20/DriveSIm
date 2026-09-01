@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from .schemas import LoginRequest
@@ -9,11 +9,13 @@ from .schemas import TokenResponse
 from .security import hash_password
 from .security import verify_password
 from .tokens import create_access_token
+from backend.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/signup", response_model=TokenResponse)
-def signup(data: SignupRequest, db: Session = Depends(get_db)) :
+@limiter.limit("3/minute")
+def signup(request: Request, data: SignupRequest, db: Session = Depends(get_db)) :
 
     existing = db.query(User).filter(User.email == data.email).first()
 
@@ -49,7 +51,8 @@ def signup(data: SignupRequest, db: Session = Depends(get_db)) :
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(data: LoginRequest, db: Session = Depends(get_db)) :
+@limiter.limit("5/minute")
+def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)) :
 
     user = db.query(User).filter(User.email == data.email).first()
 

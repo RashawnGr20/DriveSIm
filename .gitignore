@@ -6,4 +6,7 @@ backend_env/
 venv/
 .env
 *.pyc
-__pycache__/  
+__pycache__/
+
+# Per-machine sim backend URL (see sim/api_config.json.example)
+sim/api_config.json  

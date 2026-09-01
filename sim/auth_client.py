@@ -1,6 +1,7 @@
 import requests
 
-BASE_URL = "http://127.0.0.1:8000"
+from config import BASE_URL
+
 TIMEOUT = 10
 
 UNREACHABLE_MSG = "Couldn't reach the server. Is the backend running?"
