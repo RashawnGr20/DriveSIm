@@ -7,13 +7,16 @@ _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "api_config.json")
 
 def _load_base_url():
     try:
-        with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
-            value = json.load(f).get("api_url")
+        with open(_CONFIG_PATH, "r", encoding="utf-8-sig") as f:
+            text = f.read().strip()
+        if not text:
+            return _DEFAULT_BASE_URL
+        value = json.loads(text).get("api_url")
         if value:
-            return str(value).rstrip("/")
+            return str(value).strip().rstrip("/")
     except FileNotFoundError:
         pass
-    except (ValueError, OSError) as e:
+    except (ValueError, OSError, AttributeError) as e:
         print(f"config: ignoring bad {_CONFIG_PATH}: {e}")
     return _DEFAULT_BASE_URL
 
