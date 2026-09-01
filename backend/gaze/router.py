@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.database.connection import get_db
-from auth.dependencies import get_current_user
+from backend.auth.dependencies import get_current_user
 from .schemas import GazeBatchCreate
 from backend.database.models import GazeEvent
 from backend.database.models import Session as SessionModel
@@ -32,7 +32,7 @@ def log_gaze_events(data: GazeBatchCreate, current_user= Depends(get_current_use
 
     for event in data.events:
        events.append({
-        "session_id": event.session_id,
+        "session_id": data.session_id,
         "pose": event.pose,
         "yaw": event.yaw,
         "pitch": event.pitch,

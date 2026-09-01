@@ -1,13 +1,13 @@
 from pydantic import BaseModel
-from typing import List 
+from typing import List
 
-def GazeCreate(BaseModel) : 
-    pose: str 
+class GazeCreate(BaseModel) :
+    pose: str
     yaw: float
-    pitch: float 
-    duration: float 
+    pitch: float
+    duration: float
 
 
-def GazeBatchCreate(BaseModel) : 
+class GazeBatchCreate(BaseModel) :
     session_id: int
     events : List[GazeCreate]

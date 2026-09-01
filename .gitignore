@@ -2,6 +2,7 @@
 drivesim_env/
 derivesim_env/
 backend_env/
+.claude/settings.local.json
 venv/
 .env
 *.pyc

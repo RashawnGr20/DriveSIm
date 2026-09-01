@@ -1,12 +1,16 @@
+import time
+
 import pygame
 import cv2
 import mediapipe as mp
 
 from headtracking import HeadTracker
 from feedback import feedBackEngine
-from scenegen import SceneGen
+from scenegen import SceneGen, auth_client
 from scenes import Scene, Metrics
 from UI import UI
+from api_client import ApiClient
+from session_recorder import SessionRecorder
 
 
 scene = SceneGen(1920, 1080, 60)
@@ -14,6 +18,10 @@ ui = UI(scene.screen, scene.W, scene.H)
 scene.ui = ui
 scene.selected_scene = "left_lane_change"
 scene.state = "home"
+
+api_client = ApiClient(auth_client)
+backend_session_id = None
+recorder = None
 
 scene_manager = None
 metrics = None
@@ -93,10 +101,12 @@ while running:
         prev_prev_rel = None
         prev_gaze = (0.0, 0.0)
         simulation_initialized = True
-        gaze_calibrated = False 
+        gaze_calibrated = False
         gaze_warmup_frames = 30
-        gaze_warmup_count = 0  
-        gaze_phase = "center"         
+        gaze_warmup_count = 0
+        gaze_phase = "center"
+        backend_session_id = None
+        recorder = None
         
 
     ret, frame = cap.read()
@@ -122,6 +132,8 @@ while running:
         final_roll = apply_deadzone(final_roll, DEADZONE_ROLL)
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
+        if recorder is not None:
+            recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
         offset_x, offset_y = prev_gaze
 
@@ -291,11 +303,20 @@ while running:
                     if done : 
                         print("DOWN COMPLETE -> FINALIZE")
                         gaze_calibrated = tracker.finalize_calibration()
-                        if gaze_calibrated : 
+                        if gaze_calibrated :
                             scene.state = "simulation"
                             scene.start_fade_in()
 
-                        else : 
+                            if scene.is_authenticated:
+                                scene_data = scene.scene_info[scene.selected_scene]
+                                backend_session_id = api_client.create_session(
+                                    scene.selected_scene,
+                                    scene_data["scenario_type"].lower(),
+                                    scene_data["required_checks"]
+                                )
+                                recorder = SessionRecorder(api_client, backend_session_id)
+
+                        else :
                             print("CALIBRATION FAILED RESETTING PHASE") 
                             gaze_phase = "center"
                             gaze_warmup_count = 0
@@ -332,6 +353,8 @@ while running:
         final_roll = apply_deadzone(final_roll, DEADZONE_ROLL)
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
+        if recorder is not None:
+            recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
 
         print("final render offsets:", offset_x, offset_y)
@@ -352,16 +375,22 @@ while running:
         pose_counter = feedback.pose_counter
         outcome =  scene_manager.evaluation(pose_counter, pose)
 
-        if outcome and outcome["finished"] : 
+        if outcome and outcome["finished"] :
             result = outcome["result"]
             score = metrics.sequence_score(result)
 
+            if recorder is not None:
+                recorder.finalize(final_yaw, final_pitch, time.time())
+                api_client.complete_session(backend_session_id, score, result)
+                backend_session_id = None
+                recorder = None
+
             scene.last_score = score
-            scene.last_result = result 
+            scene.last_result = result
             scene.state = "results"
             scene.start_fade_in()
 
-            continue 
+            continue
 
     cv2.imshow("Camera Feed", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
