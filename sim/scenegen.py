@@ -269,33 +269,33 @@ class SceneGen :
             return 
         
         try :
-            if self.auth_mode == "login" : 
-                success = auth_client.login(email, password)
-        
-                if success : 
-                    self.is_authenticated = True 
+            if self.auth_mode == "login" :
+                success, message = auth_client.login(email, password)
+
+                if success :
+                    self.is_authenticated = True
                     self.is_guest = False
                     self.username = email.split("@")[0]
 
                     if self.pending_destination :
                         self.state = self.pending_destination
-                        self.pending_destination = None 
-                    else : 
+                        self.pending_destination = None
+                    else :
                         self.state = "home"
-                        
+
                     self.start_fade_in()
-                else: 
-                    self.auth_error = "Invalid email or password."
-            
-            else : 
+                else:
+                    self.auth_error = message
+
+            else :
                 full_name = self.auth_form["full_name"].strip()
 
-                if not full_name : 
+                if not full_name :
                     self.auth_error = "Please enter your full name."
-                    return 
+                    return
 
-                success = auth_client.signup(email, password)
-                
+                success, message = auth_client.signup(email, password)
+
                 if success:
                     self.is_authenticated = True
                     self.is_guest = False
@@ -309,17 +309,11 @@ class SceneGen :
 
                     self.start_fade_in()
                 else:
-                    self.auth_error = "An account with that email may already exist."
+                    self.auth_error = message
 
         except Exception as e:
-            message = str(e).lower()
-
-            if "invalid credentials" in message:
-                self.auth_error = "Invalid email or password."
-            elif "already" in message or "exists" in message or "registered" in message:
-                self.auth_error = "That email is already registered."
-            else:
-                self.auth_error = "Something went wrong. Please try again."
+            print("submit_auth error:", e)
+            self.auth_error = "Couldn't reach the server. Make sure the backend is running."
             
 
     def start_fade_in(self) :
