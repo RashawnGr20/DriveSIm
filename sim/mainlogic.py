@@ -104,8 +104,8 @@ while running:
         simulation_initialized = True
         gaze_calibrated = False
         gaze_warmup_frames = 30
-        gaze_warmup_count = 0  
-        gaze_phase = "center"         
+        gaze_warmup_count = 0
+        gaze_phase = "center_ref"
         
 
     ret, frame = cap.read()
@@ -239,9 +239,12 @@ while running:
                 eye_data = tracker.get_gaze_pos(face_landmarks)
                 left_height = tracker.compute_eye_height(eye_data["left_eye"])
                 right_height = tracker.compute_eye_height(eye_data["right_eye"])
-                
-                
-                if gaze_phase == "center_ref" : 
+
+                # Default so the render call below always has a target, even if
+                # gaze_phase somehow isn't one of the handled values.
+                display_target = "center"
+
+                if gaze_phase == "center_ref" :
                     done = tracker.collect_gaze_ref("center_ref", left_height, right_height )
                     print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
                     
@@ -298,9 +301,9 @@ while running:
                             scene.state = "simulation"
                             scene.start_fade_in()
 
-                        else : 
-                            print("CALIBRATION FAILED RESETTING PHASE") 
-                            gaze_phase = "center"
+                        else :
+                            print("CALIBRATION FAILED RESETTING PHASE")
+                            gaze_phase = "center_ref"
                             gaze_warmup_count = 0
                             prev_gaze = (0.0, 0.0)
                             prev_smoothed = smoothed_pos
