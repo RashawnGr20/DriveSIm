@@ -371,38 +371,38 @@ class SceneGen :
         return True 
 
     
-    def update(self, pitch=None, yaw=None, roll=None, pose=None, offset_x=None, offset_y=None, progress_data=None, target_position=None) :
+    def update(self, pitch=None, yaw=None, roll=None, pose=None, progress_data=None, target_position=None) :
         if not self.handle_events() :
             return False
-        
-        if self.state == "home": 
+
+        if self.state == "home":
             return self.update_homepage()
-        
+
         elif self.state == "auth" :
             return self.update_auth()
-        
+
         elif self.state == "scene_select" :
             return self.update_scene_select()
 
         elif self.state == "scene_intro" :
             return self.update_scene_intro()
-        
+
         elif self.state == "calibration":
             if pitch is None or yaw is None or roll is None or pose is None:
                 return True
-            return self.update_calibration(pitch, yaw, roll, pose, offset_x, offset_y, progress_data, target_position)
-        
+            return self.update_calibration(pitch, yaw, roll, pose, progress_data, target_position)
+
         elif self.state == "simulation" :
-            if pitch is None or yaw is None or roll is None or pose is None : 
-                return True 
-            return self.update_simulation(pitch, yaw, roll, pose, offset_x, offset_y, progress_data)
+            if pitch is None or yaw is None or roll is None or pose is None :
+                return True
+            return self.update_simulation(pitch, yaw, roll, pose, progress_data)
         elif self.state == "results" :
             return self.update_results()
-        
-        return True 
+
+        return True
 
 
-    def update_simulation(self, pitch, yaw, roll, pose, offset_x, offset_y, progress_data=None) : 
+    def update_simulation(self, pitch, yaw, roll, pose, progress_data=None) :
         
         
         minYaw = -70
@@ -428,39 +428,29 @@ class SceneGen :
         target_x = normx*(self.pano_width - viewport.w)
         target_y = normy*(self.pano_height - viewport.h)
 
-        self.camera_x += (target_x - self.camera_x) * smoothing 
+        self.camera_x += (target_x - self.camera_x) * smoothing
         self.camera_y += (target_y - self.camera_y) * smoothing
-
-        gaze_x = viewport.x + ((offset_x + 1) / 2) * viewport.w
-        gaze_y = viewport.y + ((offset_y + 1) / 2) * viewport.h
-
-        gaze_x = max(viewport.x, min(viewport.x + viewport.w, gaze_x))
-        gaze_y = max(viewport.y, min(viewport.y + viewport.h, gaze_y))
 
         x = max(0, min((self.pano_width - viewport.w), self.camera_x))
         y = max(0, min((self.pano_height - viewport.h), self.camera_y))
 
         viewport_surface = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
         viewport_surface.blit(self.pano, (0, 0), (x, y, viewport.w, viewport.h))
-        
+
         mask = pygame.Surface((viewport.w, viewport.h), pygame.SRCALPHA)
         pygame.draw.rect(mask, (255,255,255,255), (0,0,viewport.w,viewport.h), border_radius=10)
 
         viewport_surface.blit(mask, (0,0), special_flags=pygame.BLEND_RGBA_MULT)
-            
+
         self.screen.blit(viewport_surface, (viewport.x, viewport.y))
-        pygame.draw.circle(self.screen, (255, 0, 0), (int(gaze_x), int(gaze_y)), 6)
         self.ui.draw_overlay(pose, progress_data)
 
-        
-        print("render offsets:", offset_x, offset_y)
-       
         self.draw_fade_overlay()
         pygame.display.flip()
         self.clock.tick(self.fps)
-        return True 
+        return True
 
-    def update_calibration(self, pitch, yaw, roll, pose, offset_x, offset_y, progress_data=None, target_position="center"):
+    def update_calibration(self, pitch, yaw, roll, pose, progress_data=None, target_position="center"):
         minYaw = -70
         maxYaw = 70
         minPitch = -20

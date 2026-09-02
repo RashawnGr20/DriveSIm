@@ -1,5 +1,12 @@
-import pygame 
-import os 
+import pygame
+import os
+
+from gaze_zones import ZONE_CATALOG
+
+_TARGET_MAP = {"center": (0.5, 0.5)}
+for _zone in ZONE_CATALOG:
+    _TARGET_MAP[_zone.name] = _zone.screen_pos
+
 
 class UI :
   
@@ -186,20 +193,7 @@ class UI :
         return self.colors[key]
     
     def get_calibration_target_pos(self, target_position):
-        target_map = {
-            "top_left": (0.1, 0.1),
-            "top_center": (0.5, 0.1),
-            "top_right": (0.9, 0.1),
-            "mid_left": (0.1, 0.5),
-            "center": (0.5, 0.5),
-            "mid_right": (0.9, 0.5),
-            "bottom_left": (0.1, 0.9),
-            "bottom_center": (0.5, 0.9),
-            "bottom_right": (0.9, 0.9),
-            "TOP MIRROR": (0.5, 0.08),
-        }
-
-        return target_map.get(target_position, (0.5, 0.5))
+        return _TARGET_MAP.get(target_position, (0.5, 0.5))
   
     def draw_background(self):
         self.screen.fill(self.c("background"))

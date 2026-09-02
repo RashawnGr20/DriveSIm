@@ -16,33 +16,9 @@ class HeadTracker:
             min_tracking_confidence =  min_tracking_confidence 
             )
             self.mp_drawing =  mp.solutions.drawing_utils
-            
-            self.calibration_targets = [
-                  {"name": "top_left",      "screen_pos": (0.1, 0.1)},
-                  {"name": "top_center",    "screen_pos": (0.5, 0.1)},
-                  {"name": "top_right",     "screen_pos": (0.9, 0.1)},
-                  {"name": "mid_left",      "screen_pos": (0.1, 0.5)},
-                  {"name": "center",        "screen_pos": (0.5, 0.5)},
-                  {"name": "mid_right",     "screen_pos": (0.9, 0.5)},
-                  {"name": "bottom_left",   "screen_pos": (0.1, 0.9)},
-                  {"name": "bottom_center", "screen_pos": (0.5, 0.9)},
-                  {"name": "bottom_right",  "screen_pos": (0.9, 0.9)},
-            ]
-            
-            self.calibration_samples = {
-                  target["name"]: [] for target in self.calibration_targets
-            }
-            
-            self.calibration_points = {}
-            
-            self.samples_per_target = 50
-            
+
             self.GAZE_BASELINE_FRAMES = 50
-            
-            self.prev_gaze = None 
-            self.gaze_baseline = None 
-            self.gaze_baseline_buffer = []
-            
+
             self.eye_height_ref = {"left": None, "right": None}
             self.eye_height_buffer = {"left": [], "right": []}
             
@@ -121,37 +97,16 @@ class HeadTracker:
             }
 
       def reset_gaze(self) :
-            
-            self.calibration_samples = {
-                  target["name"]: [] for target in self.calibration_targets
-            }
-            
-            self.calibration_points = {}
-            
-            self.prev_gaze = None 
-            self.gaze_baseline = None 
-            self.gaze_baseline_buffer = []
-            
             self.eye_height_ref = {"left": None, "right": None}
             self.eye_height_buffer = {"left": [], "right": []}
-            
-            
 
-      def collect_gaze_ref(self, buffer_name, left_height, right_height): 
-            if buffer_name == "center_ref" : 
+      def collect_gaze_ref(self, buffer_name, left_height, right_height):
+            if buffer_name == "center_ref" :
                   self.eye_height_buffer["left"].append(left_height)
                   self.eye_height_buffer["right"].append(right_height)
                   return len(self.eye_height_buffer["left"]) >= self.GAZE_BASELINE_FRAMES
-            
-            
-      def collect_target_sample(self, target_name, normx, normy) :
-            if target_name not in self.calibration_samples  :
-                  return False 
-            
-            self.calibration_samples[target_name].append((normx, normy))
-            return len(self.calibration_samples[target_name]) >= self.samples_per_target
-      
-      def finalize_center_ref(self) : 
+
+      def finalize_center_ref(self) :
             
             if not self.eye_height_buffer["left"] or not self.eye_height_buffer["right"] : 
                   return False 
@@ -162,145 +117,6 @@ class HeadTracker:
       
             self.eye_height_buffer["right"].clear()
             self.eye_height_buffer["left"].clear()
-            return True 
-      
-      def finalize_target_calibration(self): 
-            self.calibration_points = {}
-            
-            for target in self.calibration_targets : 
-                  name = target["name"]
-                  screen_pos = target["screen_pos"]
-                  samples = self.calibration_samples[name]
-                  
-                  if not samples :
-                        return False 
-                  
-                  avg_x = sum(x for x,y in samples) / len(samples)
-                  avg_y = sum(y for x,y in samples) / len(samples)
-
-                  self.calibration_points[name] = {
-                        "gaze": (avg_x, avg_y),
-                        "screen": screen_pos, 
-                  }
-                  
-            return True 
-                
-      def gaze_vectors(self, norm_x, norm_y) :  
-            
-            if not self.calibration_points or len(self.calibration_points) < len(self.calibration_targets) : 
-                  return 0.0,0.0
-            
-            weighted_screen_x = 0.0
-            weighted_screen_y = 0.0 
-            total_weight = 0.0 
-            eps = 1e-6
-            
-            for name, point in self.calibration_points.items():
-                  gx, gy = point["gaze"]
-                  sx, sy = point["screen"]
-                  
-                  dx = norm_x - gx
-                  dy = norm_y - gy
-                  distance = math.sqrt(dx**2 + dy**2)
-                  
-                  weight = 1.0 / ((distance + eps)**2)
-                  
-                  weighted_screen_x += weight * sx 
-                  weighted_screen_y += weight * sy 
-                  total_weight += weight 
-                  
-            if total_weight <= 0 :
-                  return 0.0,0.0 
-            
-            screen_x = weighted_screen_x / total_weight
-            screen_y = weighted_screen_y / total_weight
-            
-            offset_x = 2.0 * screen_x - 1.0 
-            offset_y = 2.0 * screen_y - 1.0
-
-            p_x = 0.8
-            b_x = 0.2
-            
-            p_y = 0.85
-            b_y = 0.1
-            
-            x = offset_x
-            sign_x = 1 if x>=0 else -1 
-            shaped_x = sign_x * ((1-b_x)*abs(x) + b_x*abs(x)**p_x)
-            offset_x = shaped_x
-            
-            y = offset_y
-            sign_y = 1 if y>=0 else -1 
-            shaped_y = sign_y *((1-b_y)*abs(y) + b_y*abs(y)**p_y)
-            offset_y = shaped_y 
-           
-           #offset_y*= 0.6
-            
-            offset_x = max(-1, min(1, offset_x))
-            offset_y = max(-1, min(1, offset_y))
-
-            #offset_x = -offset_x
-            #offset_y = -offset_y
-
-
-            print("raw offset:", offset_x, offset_y)
-
-            if self.prev_gaze is None : 
-                  smoothed_x = offset_x
-                  smoothed_y = offset_y
-            else : 
-                  prev_x, prev_y = self.prev_gaze
-
-                  smoothed_x = self.smoothed_gaze(prev_x, offset_x)
-                  smoothed_y = self.smoothed_gaze(prev_y, offset_y)
-
-            self.prev_gaze = (smoothed_x, smoothed_y)
-
-            print("smoothed offset:", smoothed_x, smoothed_y)
-
-            deadzoned_x = self.apply_gaze_deadzone(smoothed_x, 0.025)
-            deadzoned_y = self.apply_gaze_deadzone(smoothed_y, 0.02)
-            
-            print("norm_x:", norm_x)
-            print("norm_y:", norm_y)
-            print("mapped_y_after_clamp:", offset_y)
-            print("weighted_x:", screen_x)
-            print("weighted_y:", screen_y)
-            print("final_x:", offset_x)
-            print("final_y:", offset_y)
-            
-            
-
-            return deadzoned_x, deadzoned_y
-      
-
-
-      def update_gaze_baseline(self, norm_x, norm_y, eye_data) : 
-            self.gaze_baseline_buffer.append((norm_x, norm_y))
-
-            left_height = self.compute_eye_height(eye_data["left_eye"])
-            right_height = self.compute_eye_height(eye_data["right_eye"])
-
-            self.eye_height_buffer["left"].append(left_height)
-            self.eye_height_buffer["right"].append(right_height)
-
-            if len(self.gaze_baseline_buffer) < self.GAZE_BASELINE_FRAMES :
-                  print("baseline sample:", norm_x, norm_y)
-                  print("baseline buffer size:", len(self.gaze_baseline_buffer)) 
-                  return False 
-
-                  
-            baseline_x = sum(x for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
-            baseline_y = sum(y for x, y in self.gaze_baseline_buffer) / len(self.gaze_baseline_buffer)
-            
-            self.gaze_baseline = (baseline_x, baseline_y)
-            self.eye_height_ref["left"] = sum(self.eye_height_buffer["left"]) / len(self.eye_height_buffer["left"])
-            self.eye_height_ref["right"] = sum(self.eye_height_buffer["right"]) / len(self.eye_height_buffer["right"])
-
-            print("FINAL BASELINE:", self.gaze_baseline)
-            self.gaze_baseline_buffer.clear()
-            self.eye_height_buffer["left"].clear()
-            self.eye_height_buffer["right"].clear()
             return True 
       
       def compute_eye_height(self, eye_data) :
@@ -429,20 +245,6 @@ class HeadTracker:
 
             return norm_x, norm_y
             
-
-      def smoothed_gaze(self, prev, offset, alpha=0.2) : 
-            if prev is None : 
-                  return offset 
-            
-            smoothed = prev + alpha *(offset - prev)
-
-            return smoothed
-
-      def apply_gaze_deadzone(self, offset, threshold):
-            distance = max(0, abs(offset) - threshold)
-            sign = 1 if offset >= 0 else -1
-            return sign * distance      
-                        
 
       def draw_landmarks(self, frame, face_landmarks) :
              self.mp_drawing.draw_landmarks(

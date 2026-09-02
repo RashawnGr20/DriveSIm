@@ -17,14 +17,21 @@ class ObservationEngine:
         self.confirmed_zone = "FORWARD"
 
     def estimate_zone(self, head_pose, gaze_x=None, gaze_y=None):
-        if head_pose != "FORWARD":
+        gaze_zone = self.classifier.classify(gaze_x, gaze_y)
+
+        if head_pose == "FORWARD":
+            return gaze_zone if gaze_zone is not None else "FORWARD"
+
+        if not self.classifier.has_anchor(head_pose):
             return head_pose
 
-        gaze_zone = self.classifier.classify(gaze_x, gaze_y)
-        if gaze_zone is not None:
-            return gaze_zone
+        if gaze_zone == head_pose:
+            return head_pose
 
-        return "FORWARD"
+        if self.classifier.is_at_forward_baseline(gaze_x, gaze_y):
+            return "FORWARD"
+
+        return head_pose
 
     def update(self, head_pose, gaze_x=None, gaze_y=None):
         zone = self.estimate_zone(head_pose, gaze_x, gaze_y)

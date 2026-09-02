@@ -120,13 +120,14 @@ class SequenceScene :
 class coverageScene :
 
         def __init__(self, min_glance, expected_sequence):
-            
+
             self.expected_sequence = expected_sequence
-            self.min_glance = min_glance 
+            self.min_glance = min_glance
             self.required_zones = set(expected_sequence)
             self.checked_zones = set()
             self.step_lock = False
             self.last_pose = None
+            self.step_results = ["correct"] * len(expected_sequence)
         
         def evaluate(self, pose, pose_counter) :
             

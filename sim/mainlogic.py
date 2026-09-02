@@ -40,13 +40,12 @@ baseline_buffer = []
 BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
-prev_gaze = (0.0, 0.0)
 gaze_calibrated = False
 gaze_warmup_frames = 30
 gaze_warmup_count = 0
 gaze_phase = "center_ref"
-current_target_index = 0
 
+gaze_forward_buffer = []
 zone_anchor_index = 0
 zone_anchor_buffer = []
 ZONE_ANCHOR_FRAMES = 30
@@ -109,12 +108,12 @@ while running:
         baseline_buffer = []
         prev_rel = None
         prev_prev_rel = None
-        prev_gaze = (0.0, 0.0)
         simulation_initialized = True
         gaze_calibrated = False
         gaze_warmup_frames = 30
         gaze_warmup_count = 0
         gaze_phase = "center_ref"
+        gaze_forward_buffer = []
         zone_anchor_index = 0
         zone_anchor_buffer = []
         gaze_zone_classifier.clear()
@@ -148,9 +147,8 @@ while running:
         if recorder is not None:
             recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
-        offset_x, offset_y = prev_gaze
 
-        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, offset_x, offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, progress_data)
         if not running:
             break
 
@@ -194,9 +192,9 @@ while running:
                     "status_text": "Hold still and face forward"
                 }
 
-                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data)
-                if not running : 
-                    break 
+                running = scene.update(0,0,0, "FORWARD", calibration_progress_data)
+                if not running :
+                    break
 
 
                 if len(baseline_buffer) < BASELINE_FRAMES:
@@ -215,8 +213,7 @@ while running:
                 }
 
                 tracker.reset_gaze()
-                gaze_calibrated = False 
-                prev_gaze = (0.0, 0.0)
+                gaze_calibrated = False
                 gaze_warmup_count = 0
 
                 prev_angles = {"pitch": 0, "yaw": 0, "roll": 0}
@@ -239,13 +236,13 @@ while running:
                         "status_text": "Look directly at the center dot"
                     } 
                     
-                    running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, "center")
+                    running = scene.update(0,0,0, "FORWARD", calibration_progress_data, "center")
 
                     if not running :
                         break
 
                     prev_smoothed = smoothed_pos
-                    continue 
+                    continue
                     
                     
                 norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
@@ -259,6 +256,7 @@ while running:
 
                 if gaze_phase == "center_ref" :
                     done = tracker.collect_gaze_ref("center_ref", left_height, right_height )
+                    gaze_forward_buffer.append((norm_x, norm_y))
                     print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
 
                     display_target = "center"
@@ -271,11 +269,15 @@ while running:
                     if done :
                         gaze_ref_calibrated = tracker.finalize_center_ref()
                         if gaze_ref_calibrated :
+                            if gaze_forward_buffer :
+                                gaze_zone_classifier.set_forward_baseline(list(gaze_forward_buffer))
+                                gaze_forward_buffer.clear()
                             if ZONE_CATALOG :
                                 gaze_phase = "zone_anchor"
                                 zone_anchor_index = 0
                                 zone_anchor_buffer = []
                             else :
+                                gaze_zone_classifier.finalize_anchors()
                                 gaze_calibrated = True
                                 scene.state = "simulation"
                                 scene.start_fade_in()
@@ -297,73 +299,23 @@ while running:
                         zone_anchor_buffer = []
                         zone_anchor_index += 1
                         if zone_anchor_index >= len(ZONE_CATALOG) :
+                            gaze_zone_classifier.finalize_anchors()
                             gaze_calibrated = True
                             scene.state = "simulation"
                             scene.start_fade_in()
 
-                elif gaze_phase == "target_calibration" :
-                    current_target = tracker.calibration_targets[current_target_index]
-                    target_name = current_target["name"]
-                    target_pos = current_target["screen_pos"]
-                    done = tracker.collect_target_sample(target_name, norm_x, norm_y)
-                    
-                    display_target = target_name
-                    
-                    
-                    if done : 
-                        current_target_index += 1
-                    
-                    
-                    completed_targets = min(current_target_index, len(tracker.calibration_targets))
-                    target_progress = completed_targets / len(tracker.calibration_targets)
-                    
-                    calibration_progress_data = {
-                        "progress": 0.92, 
-                        "status_text": "look directly at the upper dot"
-                    }
-                    
-                    if done :
-                        gaze_phase = "down"
-                        print("UP COMPLETE -> DOWN")
-                        
-                elif gaze_phase == "down" : 
-                    done = tracker.collect_gaze_sample("down", norm_x, norm_y, left_height, right_height)
-                    print("DOWN COUNT", len(tracker.gaze_down_buffer))
-                    calibration_progress_data = {
-                        "progress": 0.98, 
-                        "status_text": "Look directly at the lower dot"
-                    }
+                running = scene.update(0,0,0, "FORWARD", calibration_progress_data, display_target)
 
-                    if done : 
-                        print("DOWN COMPLETE -> FINALIZE")
-                        gaze_calibrated = tracker.finalize_calibration()
-                        if gaze_calibrated : 
-                            scene.state = "simulation"
-                            scene.start_fade_in()
+                if not running :
+                    break
 
-                        else :
-                            print("CALIBRATION FAILED RESETTING PHASE")
-                            gaze_phase = "center_ref"
-                            gaze_warmup_count = 0
-                            prev_gaze = (0.0, 0.0)
-                            prev_smoothed = smoothed_pos
-                
-                running = scene.update(0,0,0, "FORWARD", 0.0, 0.0, calibration_progress_data, display_target)
-
-                if not running : 
-                    break 
-                    
-                prev_gaze = (0.0, 0.0)
                 prev_smoothed = smoothed_pos
 
                 print("GAZE PHASE:", gaze_phase)
-                continue 
+                continue
 
-                
-        print("CURRENT BASELINE:", tracker.gaze_baseline)
+
         norm_x, norm_y = tracker.normalized_gaze(face_landmarks)
-        offset_x, offset_y = tracker.gaze_vectors(norm_x, norm_y)
-        prev_gaze = (offset_x, offset_y)
 
         rel_pitch = angle_diff_deg(pitch, baseline_angles["pitch"])
         rel_yaw = angle_diff_deg(yaw, baseline_angles["yaw"])
@@ -383,10 +335,7 @@ while running:
             recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
 
-        print("final render offsets:", offset_x, offset_y)
-        print("gaze_calibrated:", gaze_calibrated)
-
-        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, offset_x, offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, progress_data)
         if not running:
             break
 
