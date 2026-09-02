@@ -196,6 +196,7 @@ class UI :
             "bottom_left": (0.1, 0.9),
             "bottom_center": (0.5, 0.9),
             "bottom_right": (0.9, 0.9),
+            "TOP MIRROR": (0.5, 0.08),
         }
 
         return target_map.get(target_position, (0.5, 0.5))

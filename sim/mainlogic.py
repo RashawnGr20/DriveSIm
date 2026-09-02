@@ -7,6 +7,7 @@ import mediapipe as mp
 from headtracking import HeadTracker
 from feedback import feedBackEngine
 from observation import ObservationEngine
+from gaze_zones import ZONE_CATALOG, GazeZoneClassifier
 from scenegen import SceneGen, auth_client
 from scenes import Scene, Metrics
 from UI import UI
@@ -45,9 +46,13 @@ gaze_warmup_frames = 30
 gaze_warmup_count = 0
 gaze_phase = "center_ref"
 current_target_index = 0
-gaze_forward_buffer = []
 
-observation_engine = ObservationEngine()
+zone_anchor_index = 0
+zone_anchor_buffer = []
+ZONE_ANCHOR_FRAMES = 30
+
+gaze_zone_classifier = GazeZoneClassifier()
+observation_engine = ObservationEngine(gaze_zone_classifier)
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -110,7 +115,9 @@ while running:
         gaze_warmup_frames = 30
         gaze_warmup_count = 0
         gaze_phase = "center_ref"
-        gaze_forward_buffer = []
+        zone_anchor_index = 0
+        zone_anchor_buffer = []
+        gaze_zone_classifier.clear()
         observation_engine.reset()
         
 
@@ -252,7 +259,6 @@ while running:
 
                 if gaze_phase == "center_ref" :
                     done = tracker.collect_gaze_ref("center_ref", left_height, right_height )
-                    gaze_forward_buffer.append(norm_y)
                     print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
 
                     display_target = "center"
@@ -265,15 +271,37 @@ while running:
                     if done :
                         gaze_ref_calibrated = tracker.finalize_center_ref()
                         if gaze_ref_calibrated :
-                            if gaze_forward_buffer :
-                                avg_forward_y = sum(gaze_forward_buffer) / len(gaze_forward_buffer)
-                                observation_engine.set_gaze_forward_baseline(avg_forward_y)
-                                gaze_forward_buffer.clear()
+                            if ZONE_CATALOG :
+                                gaze_phase = "zone_anchor"
+                                zone_anchor_index = 0
+                                zone_anchor_buffer = []
+                            else :
+                                gaze_calibrated = True
+                                scene.state = "simulation"
+                                scene.start_fade_in()
+
+                elif gaze_phase == "zone_anchor" :
+                    zone = ZONE_CATALOG[zone_anchor_index]
+                    display_target = zone.name
+
+                    zone_anchor_buffer.append((norm_x, norm_y))
+
+                    zone_progress = (zone_anchor_index + len(zone_anchor_buffer) / ZONE_ANCHOR_FRAMES) / max(1, len(ZONE_CATALOG))
+                    calibration_progress_data = {
+                        "progress": 0.75 + 0.25 * zone_progress,
+                        "status_text": zone.calibration_prompt,
+                    }
+
+                    if len(zone_anchor_buffer) >= ZONE_ANCHOR_FRAMES :
+                        gaze_zone_classifier.register_anchor(zone.name, list(zone_anchor_buffer))
+                        zone_anchor_buffer = []
+                        zone_anchor_index += 1
+                        if zone_anchor_index >= len(ZONE_CATALOG) :
                             gaze_calibrated = True
                             scene.state = "simulation"
                             scene.start_fade_in()
-                    
-                elif gaze_phase == "target_calibration" : 
+
+                elif gaze_phase == "target_calibration" :
                     current_target = tracker.calibration_targets[current_target_index]
                     target_name = current_target["name"]
                     target_pos = current_target["screen_pos"]
@@ -349,11 +377,8 @@ while running:
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
         observed_zone = observation_engine.update(pose, gaze_x=norm_x, gaze_y=norm_y)
-        if observation_engine.gaze_forward_y is not None :
-            delta = norm_y - observation_engine.gaze_forward_y
-        else :
-            delta = None
-        print("[obs] head=", pose, "gaze_y=", norm_y, "delta=", delta, "zone=", observed_zone)
+        print("[obs] head=", pose, "gaze=", (norm_x, norm_y), "zone=", observed_zone,
+              "held=", observation_engine.zone_counter)
         if recorder is not None:
             recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
@@ -373,8 +398,7 @@ while running:
 
         prev_smoothed = smoothed_pos
 
-        pose_counter = feedback.pose_counter
-        outcome =  scene_manager.evaluation(pose_counter, observed_zone)
+        outcome = scene_manager.evaluation(observation_engine.zone_counter, observed_zone)
 
         if outcome and outcome["finished"] :
             result = outcome["result"]
