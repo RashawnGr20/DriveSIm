@@ -93,8 +93,15 @@ runs three sequential sub-phases, tracked with module-level state, not an object
   when the user is head-forward-eyes-forward).
 - **Zone anchor walk (`zone_anchor`)**: iterates `ZONE_CATALOG`, showing a dot at each zone's
   `screen_pos` and collecting ~30 samples of `(norm_x, norm_y)`. Each zone gets a per-user
-  anchor with a radius sized from sample stddev. After the last zone, `finalize_anchors()`
-  caps every radius at `0.45 × distance_to_nearest_neighbor` so anchors can't overlap.
+  anchor stored as a single point (no radius). After the last zone, `finalize_anchors()`
+  caps the forward baseline's dead-zone radius so it can't swallow the nearest anchor, and
+  emits a diagnostic dump of anchor positions and pairwise distances for future debugging.
+
+`GazeZoneClassifier` uses a Voronoi model rather than per-anchor discs: `classify(x, y)`
+returns `None` when the gaze is inside the forward baseline's dead-zone (at rest), else the
+name of the nearest anchor by Euclidean distance. `ObservationEngine.update` applies a light
+EMA smoothing (`α = 0.4`) to the gaze before classification to damp MediaPipe iris jitter at
+cell boundaries; the 5-frame `zone_counter` debouncer still filters transient flips.
 
 Adding a new gaze-observable zone is a one-line data edit: append a `ZoneSpec` to
 `ZONE_CATALOG` in `sim/gaze_zones.py`. `UI.get_calibration_target_pos` builds its target

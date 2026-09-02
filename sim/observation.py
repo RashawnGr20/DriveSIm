@@ -1,4 +1,5 @@
 DEFAULT_STABILITY_FRAMES = 5
+GAZE_EMA_ALPHA = 0.4
 
 
 class ObservationEngine:
@@ -11,10 +12,13 @@ class ObservationEngine:
         self.zone_counter = 0
         self.confirmed_zone = "FORWARD"
 
+        self._smoothed_gaze = None
+
     def reset(self):
         self.last_zone = "FORWARD"
         self.zone_counter = 0
         self.confirmed_zone = "FORWARD"
+        self._smoothed_gaze = None
 
     def estimate_zone(self, head_pose, gaze_x=None, gaze_y=None):
         gaze_zone = self.classifier.classify(gaze_x, gaze_y)
@@ -34,7 +38,20 @@ class ObservationEngine:
         return head_pose
 
     def update(self, head_pose, gaze_x=None, gaze_y=None):
-        zone = self.estimate_zone(head_pose, gaze_x, gaze_y)
+        if gaze_x is None or gaze_y is None:
+            smoothed_x, smoothed_y = None, None
+        else:
+            if self._smoothed_gaze is None:
+                self._smoothed_gaze = (gaze_x, gaze_y)
+            else:
+                sx, sy = self._smoothed_gaze
+                self._smoothed_gaze = (
+                    sx + GAZE_EMA_ALPHA * (gaze_x - sx),
+                    sy + GAZE_EMA_ALPHA * (gaze_y - sy),
+                )
+            smoothed_x, smoothed_y = self._smoothed_gaze
+
+        zone = self.estimate_zone(head_pose, smoothed_x, smoothed_y)
 
         if zone == self.last_zone:
             self.zone_counter += 1
