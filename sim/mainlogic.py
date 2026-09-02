@@ -6,6 +6,7 @@ import mediapipe as mp
 
 from headtracking import HeadTracker
 from feedback import feedBackEngine
+from observation import ObservationEngine
 from scenegen import SceneGen, auth_client
 from scenes import Scene, Metrics
 from UI import UI
@@ -39,11 +40,14 @@ BASELINE_FRAMES = 60
 prev_rel = None
 prev_prev_rel = None
 prev_gaze = (0.0, 0.0)
-gaze_calibrated = False 
+gaze_calibrated = False
 gaze_warmup_frames = 30
 gaze_warmup_count = 0
 gaze_phase = "center_ref"
-current_target_index = 0  
+current_target_index = 0
+gaze_forward_buffer = []
+
+observation_engine = ObservationEngine()
 
 DEADZONE_PITCH = 2
 DEADZONE_YAW = 1
@@ -106,6 +110,8 @@ while running:
         gaze_warmup_frames = 30
         gaze_warmup_count = 0
         gaze_phase = "center_ref"
+        gaze_forward_buffer = []
+        observation_engine.reset()
         
 
     ret, frame = cap.read()
@@ -131,12 +137,13 @@ while running:
         final_roll = apply_deadzone(final_roll, DEADZONE_ROLL)
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
+        observed_zone = observation_engine.update(pose, None, None)
         if recorder is not None:
             recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
         offset_x, offset_y = prev_gaze
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, offset_x, offset_y, progress_data)
         if not running:
             break
 
@@ -245,20 +252,26 @@ while running:
 
                 if gaze_phase == "center_ref" :
                     done = tracker.collect_gaze_ref("center_ref", left_height, right_height )
+                    gaze_forward_buffer.append(norm_y)
                     print("CENTER_REF COUNT", len(tracker.eye_height_buffer["left"]))
-                    
+
                     display_target = "center"
-                
+
                     calibration_progress_data = {
                         "progress": 0.68,
                         "status_text": "Look directly at the center point"
                     }
-                
-                    if done : 
+
+                    if done :
                         gaze_ref_calibrated = tracker.finalize_center_ref()
                         if gaze_ref_calibrated :
-                            gaze_phase = "target_calibration"
-                            current_target_index = 0
+                            if gaze_forward_buffer :
+                                avg_forward_y = sum(gaze_forward_buffer) / len(gaze_forward_buffer)
+                                observation_engine.set_gaze_forward_baseline(avg_forward_y)
+                                gaze_forward_buffer.clear()
+                            gaze_calibrated = True
+                            scene.state = "simulation"
+                            scene.start_fade_in()
                     
                 elif gaze_phase == "target_calibration" : 
                     current_target = tracker.calibration_targets[current_target_index]
@@ -335,6 +348,12 @@ while running:
         final_roll = apply_deadzone(final_roll, DEADZONE_ROLL)
 
         pose = feedback.update(final_pitch, final_yaw, final_roll)
+        observed_zone = observation_engine.update(pose, gaze_x=norm_x, gaze_y=norm_y)
+        if observation_engine.gaze_forward_y is not None :
+            delta = norm_y - observation_engine.gaze_forward_y
+        else :
+            delta = None
+        print("[obs] head=", pose, "gaze_y=", norm_y, "delta=", delta, "zone=", observed_zone)
         if recorder is not None:
             recorder.on_pose(pose, final_yaw, final_pitch, time.time())
         progress_data = scene_manager.get_progress_data()
@@ -342,7 +361,7 @@ while running:
         print("final render offsets:", offset_x, offset_y)
         print("gaze_calibrated:", gaze_calibrated)
 
-        running = scene.update(final_pitch, final_yaw, final_roll, pose, offset_x, offset_y, progress_data)
+        running = scene.update(final_pitch, final_yaw, final_roll, observed_zone, offset_x, offset_y, progress_data)
         if not running:
             break
 
@@ -355,7 +374,7 @@ while running:
         prev_smoothed = smoothed_pos
 
         pose_counter = feedback.pose_counter
-        outcome =  scene_manager.evaluation(pose_counter, pose)
+        outcome =  scene_manager.evaluation(pose_counter, observed_zone)
 
         if outcome and outcome["finished"] :
             result = outcome["result"]
